@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Thème sombre imposé, pas « suivre le système » : l'écran fait face au conducteur
+         de nuit. Un fond clair en plein pare-brise est un éblouissement, pas une préférence. -->
+    <style name="Theme.MG4Tasker" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/mg4_accent</item>
+        <item name="colorOnPrimary">@color/mg4_on_accent</item>
+        <item name="colorSurface">@color/mg4_surface</item>
+        <item name="colorSurfaceContainer">@color/mg4_surface_raised</item>
+        <item name="android:colorBackground">@color/mg4_background</item>
+        <item name="colorError">@color/mg4_error</item>
+        <item name="android:statusBarColor">@color/mg4_background</item>
+    </style>
+
+    <!-- Cible tactile de 64 dp : le doigt vise mal sur route, et l'écran est loin.
+         C'est la taille minimale utilisée partout dans l'application. -->
+    <style name="Widget.MG4.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:paddingStart">@dimen/spacing_lg</item>
+        <item name="android:paddingEnd">@dimen/spacing_lg</item>
+    </style>
+
+    <style name="Widget.MG4.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="android:textSize">@dimen/text_body</item>
+    </style>
+
+    <style name="Text.MG4.SectionHeader" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:textColor">@color/mg4_accent</item>
+        <item name="android:letterSpacing">0.12</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Text.MG4.Title" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">@dimen/text_title</item>
+    </style>
+
+    <style name="Text.MG4.Body" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">@dimen/text_body</item>
+    </style>
+
+    <style name="Text.MG4.Secondary" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">@dimen/text_secondary</item>
+        <item name="android:textColor">@color/mg4_text_secondary</item>
+    </style>
+</resources>

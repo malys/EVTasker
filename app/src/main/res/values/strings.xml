@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MG4Tasker</string>
+
+    <!-- Tabs -->
+    <string name="tab_rules">Rules</string>
+    <string name="tab_history">History</string>
+    <string name="tab_diagnostic">Diagnostic</string>
+
+    <!-- Catalogue groups -->
+    <string name="group_context">Context</string>
+    <string name="group_environment">Environment</string>
+    <string name="group_driving">Driving</string>
+    <string name="group_comfort">Comfort</string>
+    <string name="group_audio">Audio</string>
+    <string name="group_adas">Driver assistance</string>
+    <string name="group_climate">Climate</string>
+    <string name="group_profile">Profile</string>
+    <string name="group_system">System</string>
+
+    <!-- Units -->
+    <string name="unit_celsius">°C</string>
+    <string name="unit_kmh">km/h</string>
+    <string name="unit_percent">%</string>
+
+    <!-- Vehicle values -->
+    <string name="drive_eco">Eco</string>
+    <string name="drive_normal">Normal</string>
+    <string name="drive_sport">Sport</string>
+    <string name="drive_snow">Snow</string>
+    <string name="drive_custom">Custom</string>
+
+    <string name="regen_low">Low</string>
+    <string name="regen_medium">Medium</string>
+    <string name="regen_high">High</string>
+    <string name="regen_adaptive">Adaptive</string>
+    <string name="regen_off">Off</string>
+    <string name="regen_one_pedal">One pedal</string>
+
+    <string name="aeb_alert_only">Alert only</string>
+    <string name="aeb_alert_brake">Alert + braking</string>
+
+    <string name="sensitivity_low">Low</string>
+    <string name="sensitivity_standard">Standard</string>
+    <string name="sensitivity_high">High</string>
+
+    <string name="elk_off">Off</string>
+    <string name="elk_warn">Warning (LDW)</string>
+    <string name="elk_assist">Assist (LDP)</string>
+    <string name="elk_full">Emergency keeping (ELK)</string>
+
+    <string name="acc_off">Off</string>
+    <string name="acc_acc">Adaptive cruise (ACC)</string>
+    <string name="acc_tja">Traffic jam assist (TJA)</string>
+
+    <string name="limiter_off">Off</string>
+    <string name="limiter_manual">Manual</string>
+    <string name="limiter_smart">Intelligent</string>
+
+    <string name="ignition_lock">Locked</string>
+    <string name="ignition_off">Off</string>
+    <string name="ignition_acc">Accessory</string>
+    <string name="ignition_on">Running</string>
+    <string name="ignition_start">Starting</string>
+
+    <!-- Conditions -->
+    <string name="cond_bt_device">Bluetooth phone connected</string>
+    <string name="cond_bt_any">Any Bluetooth device connected</string>
+    <string name="cond_time">Time of day</string>
+    <string name="cond_day">Day of week</string>
+    <string name="cond_firmware">Firmware generation</string>
+    <string name="cond_outside_temp">Outside temperature</string>
+    <string name="cond_ignition">Ignition state</string>
+    <string name="cond_in_park">Gear in P</string>
+    <string name="cond_speed">Speed</string>
+    <string name="cond_drive_mode">Drive mode</string>
+    <string name="cond_regen">Regeneration</string>
+    <string name="cond_energy_saving">Energy saving</string>
+    <string name="cond_seat_heat_l">Left seat heating</string>
+    <string name="cond_seat_heat_r">Right seat heating</string>
+    <string name="cond_steering_heat">Steering wheel heating</string>
+    <string name="cond_media_volume">Media volume</string>
+    <string name="cond_brightness">Screen brightness</string>
+    <string name="cond_aeb">Emergency braking (AEB)</string>
+    <string name="cond_aeb_mode">AEB mode</string>
+    <string name="cond_aeb_sensitivity">AEB sensitivity</string>
+    <string name="cond_elk_mode">ELK mode</string>
+    <string name="cond_elk_sensitivity">ELK sensitivity</string>
+    <string name="cond_acc_tja">ACC / TJA mode</string>
+    <string name="cond_limiter">Speed limiter</string>
+    <string name="cond_tsr">Traffic sign recognition (TSR)</string>
+    <string name="cond_overspeed">Overspeed alarm</string>
+    <string name="cond_speed_limit_tone">Speed limit tone</string>
+    <string name="cond_sound_warning">ADAS sound warning</string>
+    <string name="cond_ac">Air conditioning on</string>
+    <string name="cond_hvac_auto">Climate AUTO on</string>
+    <string name="cond_recirc">Air recirculation on</string>
+    <string name="cond_fan_speed">Fan speed</string>
+    <string name="cond_temperature_set">Set temperature</string>
+    <string name="cond_window_open">A window is open</string>
+
+    <!-- Actions -->
+    <string name="act_apply_profile">Apply a profile</string>
+    <string name="act_drive_mode">Drive mode</string>
+    <string name="act_regen">Regeneration</string>
+    <string name="act_one_pedal">One pedal driving</string>
+    <string name="act_energy_saving">Energy saving</string>
+    <string name="act_seat_heat_l">Left seat heating</string>
+    <string name="act_seat_heat_r">Right seat heating</string>
+    <string name="act_steering_heat">Steering wheel heating</string>
+    <string name="act_brightness">Screen brightness</string>
+    <string name="act_media_volume">Media volume</string>
+    <string name="act_balance">Left / right balance</string>
+    <string name="act_fader">Front / rear fader</string>
+    <string name="act_tone">Tone</string>
+    <string name="act_bose">Bose sound profile</string>
+    <string name="act_3d">3D effect</string>
+    <string name="act_speed_volume">Speed-adaptive volume</string>
+    <string name="act_aeb">Emergency braking (AEB)</string>
+    <string name="act_aeb_mode">AEB mode</string>
+    <string name="act_aeb_sensitivity">AEB sensitivity</string>
+    <string name="act_elk_mode">ELK mode</string>
+    <string name="act_elk_sensitivity">ELK sensitivity</string>
+    <string name="act_acc_tja">ACC / TJA mode</string>
+    <string name="act_limiter">Speed limiter</string>
+    <string name="act_tsr">Traffic sign recognition (TSR)</string>
+    <string name="act_overspeed">Overspeed alarm</string>
+    <string name="act_speed_limit_tone">Speed limit tone</string>
+    <string name="act_sound_warning">ADAS sound warning</string>
+    <string name="act_las_sound">Lane departure sound warning</string>
+    <string name="act_las_vibration">Lane departure steering vibration</string>
+    <string name="act_launch_app">Launch an app</string>
+    <string name="act_notify">Show a notification</string>
+
+    <!-- Rules screen -->
+    <string name="rules_automation_switch">Automation enabled</string>
+    <string name="rules_empty_title">No rules yet</string>
+    <string name="rules_empty_body">A rule applies settings when the vehicle starts, if its conditions are met.</string>
+    <string name="rules_new">New rule</string>
+    <string name="rules_edit">Edit</string>
+    <string name="rules_delete">Delete</string>
+    <string name="rules_run_now">Test now</string>
+    <string name="rules_select_hint">Select a rule</string>
+    <string name="rules_quota_reached">Maximum number of rules reached</string>
+    <string name="rules_delete_confirm">Delete “%1$s”?</string>
+    <string name="rules_when">WHEN</string>
+    <string name="rules_then">THEN</string>
+    <string name="rules_running">Test running…</string>
+
+    <plurals name="rule_summary_conditions">
+        <item quantity="one">%d condition</item>
+        <item quantity="other">%d conditions</item>
+    </plurals>
+    <plurals name="rule_summary_actions">
+        <item quantity="one">%d action</item>
+        <item quantity="other">%d actions</item>
+    </plurals>
+
+    <!-- Editor -->
+    <string name="editor_new_title">New rule</string>
+    <string name="editor_edit_title">Edit rule</string>
+    <string name="editor_name_hint">Rule name</string>
+    <string name="editor_match_all">All conditions</string>
+    <string name="editor_match_any">Any condition</string>
+    <string name="editor_add_condition">Add a condition</string>
+    <string name="editor_add_action">Add an action</string>
+    <string name="editor_save">Save</string>
+    <string name="editor_cancel">Cancel</string>
+    <string name="editor_name_required">Give the rule a name</string>
+    <string name="editor_incomplete">At least one condition and one action are required</string>
+    <string name="editor_remove">Remove</string>
+    <string name="editor_gated_hint">When stopped only</string>
+    <string name="editor_gated_explain">This setting changes vehicle behaviour: MG4Control refuses it while the car is moving.</string>
+    <string name="editor_pick_condition">Choose a condition</string>
+    <string name="editor_pick_action">Choose an action</string>
+
+    <!-- Value editor -->
+    <string name="value_enabled">On</string>
+    <string name="value_disabled">Off</string>
+    <string name="value_from">From</string>
+    <string name="value_to">to</string>
+    <string name="value_ok">Confirm</string>
+    <string name="value_no_bt_devices">No paired Bluetooth device</string>
+    <string name="value_no_profiles">No MG4Control profile reachable</string>
+    <string name="value_notification_hint">Message to display</string>
+
+    <string name="op_eq">is equal to</string>
+    <string name="op_ne">is not</string>
+    <string name="op_lt">is below</string>
+    <string name="op_le">is at most</string>
+    <string name="op_gt">is above</string>
+    <string name="op_ge">is at least</string>
+
+    <string name="day_mon">Mon</string>
+    <string name="day_tue">Tue</string>
+    <string name="day_wed">Wed</string>
+    <string name="day_thu">Thu</string>
+    <string name="day_fri">Fri</string>
+    <string name="day_sat">Sat</string>
+    <string name="day_sun">Sun</string>
+
+    <!-- History -->
+    <string name="history_empty_title">Nothing has run yet</string>
+    <string name="history_empty_body">History fills up when the vehicle starts, or after a manual test.</string>
+    <string name="history_clear">Clear history</string>
+    <string name="history_trigger_ignition">Vehicle start</string>
+    <string name="history_trigger_manual">Manual test</string>
+    <string name="history_no_bridge">MG4Control was unreachable — no rule could be applied.</string>
+
+    <string name="outcome_fired">Applied</string>
+    <string name="outcome_not_matched">Conditions not met</string>
+    <string name="outcome_not_evaluable">Cannot be evaluated</string>
+    <string name="outcome_disabled">Disabled</string>
+    <string name="outcome_unavailable_detail">Unreadable data: %1$s</string>
+
+    <string name="verdict_allowed">applied</string>
+    <string name="verdict_moving">refused — vehicle moving</string>
+    <string name="verdict_unknown_speed">refused — speed unreadable</string>
+    <string name="verdict_unsupported">not supported</string>
+    <string name="verdict_error">failed</string>
+    <string name="verdict_no_bridge">MG4Control unreachable</string>
+
+    <!-- Diagnostic -->
+    <string name="diag_title">State read from MG4Control</string>
+    <string name="diag_refresh">Refresh</string>
+    <string name="diag_reading">Reading…</string>
+    <string name="diag_unavailable">unreadable</string>
+    <string name="diag_bridge_ok">MG4Control bridge: connected</string>
+    <string name="diag_bridge_ko">MG4Control bridge: unreachable</string>
+    <string name="diag_bridge_ko_hint">Check that MG4Control is installed and signed with the same platform key.</string>
+    <string name="diag_temp_note">Outside temperature is not exposed by every MG4 firmware. If it stays unreadable here, rules using it will never fire.</string>
+
+    <!-- Console -->
+    <string name="tab_console">Console</string>
+    <string name="console_share">Share</string>
+    <string name="console_clear">Clear</string>
+    <string name="console_empty">No log entries yet.</string>
+    <string name="console_crash_title">Previous crash detected</string>
+    <string name="console_crash_show">Show report</string>
+    <string name="console_crash_dismiss">Dismiss</string>
+
+    <!-- Notifications -->
+    <string name="channel_name">MG4Tasker</string>
+    <string name="notif_running_title">Applying rules…</string>
+</resources>

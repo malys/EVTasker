@@ -1,0 +1,62 @@
+# Environnement de développement MG4Tasker — aligné sur MG4Control.
+#
+#   mise install       installe le JDK
+#   mise run bootstrap installe le SDK Android si absent
+#   mise run test      tests unitaires JVM
+#   mise tasks         liste tout
+#
+# Pourquoi épingler le JDK : AGP 8.5.2 exige Java 17. Le JDK par défaut de la machine
+# fait échouer le build avec une erreur de version de classe peu parlante.
+
+[tools]
+java = "17"
+
+[env]
+ANDROID_HOME = "{{env.HOME}}/Android/Sdk"
+ANDROID_SDK_ROOT = "{{env.HOME}}/Android/Sdk"
+_.path = [
+    "{{env.HOME}}/Android/Sdk/platform-tools",
+    "{{env.HOME}}/Android/Sdk/cmdline-tools/latest/bin",
+]
+
+COMPILE_SDK = "34"
+BUILD_TOOLS = "34.0.0"
+
+# -Dorg.gradle.java.home : sans ça, Gradle réutilise un daemon lancé par l'extension Java
+# de VS Code, dont le JRE n'a pas jlink — le build échoue alors sur JdkImageTransform,
+# sans rapport avec le code.
+[tasks.bootstrap]
+description = "Installe le SDK Android (platform + build-tools) s'il manque"
+run = """
+set -e
+if [ -d "$ANDROID_HOME/platforms/android-$COMPILE_SDK" ]; then
+  echo "SDK $COMPILE_SDK déjà présent → rien à faire"
+  echo "sdk.dir=$ANDROID_HOME" > local.properties
+  exit 0
+fi
+echo "SDK $COMPILE_SDK absent — lancez 'mise run bootstrap' dans MG4Control, qui l'installe."
+exit 1
+"""
+
+[tasks.build]
+description = "Compile l'APK debug"
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME assembleDebug'
+
+[tasks.test]
+description = "Tests unitaires JVM"
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME testDebugUnitTest'
+
+[tasks.lint]
+description = "Analyse lint Android"
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME lintDebug'
+
+[tasks.check]
+description = "Ce que la CI exécute"
+depends = ["test"]
+
+[tasks.release]
+description = "APK release (R8 activé — passe véhicule requise avant diffusion)"
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME assembleRelease'
+
+[tasks.clean]
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME clean'

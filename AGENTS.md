@@ -1,0 +1,80 @@
+# AGENTS.md — MG4Tasker
+
+Companion app to [MG4Control](../MG4Control). Rule-based automation for the SAIC MG4:
+at ignition, evaluate rules and apply vehicle settings — **through MG4Control**, never
+directly.
+
+Commit author: malys.training@gmail.com
+
+## The one rule that shapes everything
+
+**MG4Tasker never touches the vehicle.** It reads a snapshot from MG4Control and requests
+named actions; MG4Control performs every write and applies the 0 km/h speed gate. So:
+
+- No `sharedUserId`, no `android.car.*` permission. MG4Tasker is an ordinary app.
+- One process writes to the car → no concurrent writes, one place enforces the gate.
+- The IPC surface is 4 methods (`ITaskerBridge`), and none takes a raw property id.
+
+## Boundary = the signature permission
+
+`com.mg4.control.permission.TASKER_BRIDGE` is declared by MG4Control at
+`protectionLevel="signature"`. Both apps must be signed with the **same platform key** or
+MG4Tasker installs and does nothing. The Diagnostic tab reports the bridge state.
+
+## Unreadable ≠ false
+
+The whole engine rests on this. A condition whose value is missing from the snapshot is
+`UNAVAILABLE`; a rule with an unavailable condition is *not evaluable* and does not fire.
+Never fill a missing reading with a default — that writes to a car on an assumption.
+Covered by `ConditionEvaluatorTest` and `RuleEngineTest`.
+
+## Firmware compatibility is annotation-driven
+
+Every vehicle `ConditionType` / `ActionType` entry carries `@SupportedOn(...)`, derived
+from MG4Control's `FirmwareInfo` (`hasHeatFeatures`, `isVsmBased`, `isNewGenVsm`) and the
+per-generation routing in `MG4Hardware`. It is the single source of truth for:
+
+- `docs/firmware-matrix.md` — **generated** by `FirmwareMatrix`, refreshed by the test
+  run. Never hand-edit it.
+- the editor's runtime filter — entries unsupported on the connected car are hidden; an
+  unknown firmware hides nothing.
+
+Adding a vehicle entry without `@SupportedOn` fails `FirmwareSupportTest`.
+
+## Vehicle writes go in MG4Control, reads too
+
+MG4Tasker adds no vehicle access code. When a new action needs a new capability, implement
+the read/write in MG4Control's `MG4Hardware` (branched per firmware generation — never
+assume universal), expose it through `TaskerBridgeService`, then add the catalogue entry
+here. Property ids and per-generation routing live in MG4Control; do not duplicate them.
+
+Climate/window signals are **read-only and unverified** today: standard AOSP ids that the
+R69 sources name, but not confirmed on any MG4. They exist so the Diagnostic tab can prove
+a signal is readable before any write path is added. Do not add climate/window writes
+until the reads are confirmed on a vehicle.
+
+## Reference patterns (inherited from MG4Control / ABRP_Uploader)
+
+- **Signing**: keystore path + passwords from env vars (CI) or `gradle.properties`
+  (local); `signingConfig` created only if the file exists. Never a literal secret in a
+  build file.
+- **Security CI**: `.github/workflows/security.yml` — blocking permission-drift gate +
+  gitleaks, plus SARIF from mobsfscan/semgrep/dependency-check.
+- **Crash capture**: `CrashLogger` → `filesDir`, keeps the **head** of an oversized
+  report, surfaced on the Console tab.
+- **In-app console**: `AppLogger` ring buffer + Console screen, so the car is diagnosable
+  without ADB.
+- **Atomic file writes**: temp file → rename over target. Never delete-then-write.
+- **Language**: English by default (code, comments, commits, docs). User strings in
+  `values/` (English) + `values-fr/` (French).
+
+## Testing
+
+Decision logic (`engine/`, `FirmwareSupport`, catalogue consistency) is Android-free and
+JVM-tested. A vehicle-affecting change is not done until its refusal path (speed > 0, speed
+unknown, unreadable property, missing bridge) is covered. Run `mise run test`.
+
+## Build
+
+`mise run test | build | check | release`. JDK 17 (AGP 8.5.2). The Android SDK is shared
+with MG4Control (`mise run bootstrap` lives there).

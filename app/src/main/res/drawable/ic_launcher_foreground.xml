@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Un embranchement : une entrée, une condition, deux issues. C'est ce que fait
+     l'application, et ça reste lisible à la taille d'une icône. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:strokeColor="#4FC3F7"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M38,34 L38,54 L70,54 M70,54 L70,40 M70,54 L70,68" />
+
+    <path
+        android:fillColor="#4FC3F7"
+        android:pathData="M38,28m-6,0a6,6 0 1,0 12,0a6,6 0 1,0 -12,0" />
+    <path
+        android:fillColor="#4FC3F7"
+        android:pathData="M70,36m-5,0a5,5 0 1,0 10,0a5,5 0 1,0 -10,0" />
+    <path
+        android:fillColor="#4FC3F7"
+        android:pathData="M70,72m-5,0a5,5 0 1,0 10,0a5,5 0 1,0 -10,0" />
+</vector>

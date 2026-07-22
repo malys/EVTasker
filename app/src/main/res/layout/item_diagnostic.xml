@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:minHeight="48dp"
+    android:gravity="center_vertical"
+    android:paddingVertical="@dimen/spacing_xs">
+
+    <TextView
+        android:id="@+id/diagLabel"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/Text.MG4.Body" />
+
+    <TextView
+        android:id="@+id/diagValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:textAppearance="@style/Text.MG4.Body"
+        android:fontFamily="monospace" />
+</LinearLayout>

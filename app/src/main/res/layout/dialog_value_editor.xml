@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One dialog for every value type: only the block matching the ValueKind is made
+     visible. One dialog per type would have multiplied files without changing anything
+     for the user. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_lg">
+
+        <TextView
+            android:id="@+id/gatedExplain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:text="@string/editor_gated_explain"
+            android:textAppearance="@style/Text.MG4.Secondary"
+            android:textColor="@color/mg4_refused"
+            android:visibility="gone" />
+
+        <!-- Operator — comparable numeric conditions only -->
+        <Spinner
+            android:id="@+id/opSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target"
+            android:visibility="gone" />
+
+        <!-- BOOL -->
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/boolSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target"
+            android:textSize="@dimen/text_body"
+            android:visibility="gone" />
+
+        <!-- NUMBER -->
+        <LinearLayout
+            android:id="@+id/numberBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/numberValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textAppearance="@style/Text.MG4.Title" />
+
+            <!-- Slider, not keyboard entry: adjusting a bounded value should be one
+                 gesture, without opening a keyboard on the vehicle screen. -->
+            <com.google.android.material.slider.Slider
+                android:id="@+id/numberSlider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:stepSize="1" />
+        </LinearLayout>
+
+        <!-- ENUM / BT_DEVICE / PROFILE / APP -->
+        <Spinner
+            android:id="@+id/choiceSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/choiceEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/Text.MG4.Secondary"
+            android:textColor="@color/mg4_error"
+            android:visibility="gone" />
+
+        <!-- TIME_RANGE -->
+        <LinearLayout
+            android:id="@+id/timeBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/value_from"
+                android:textAppearance="@style/Text.MG4.Body" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/timeFrom"
+                style="@style/Widget.MG4.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:text="@string/value_to"
+                android:textAppearance="@style/Text.MG4.Body" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/timeTo"
+                style="@style/Widget.MG4.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm" />
+        </LinearLayout>
+
+        <!-- DAYS -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/daysGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:singleSelection="false"
+            android:visibility="gone" />
+
+        <!-- TEXT -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/value_notification_hint"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:visibility="gone">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/touch_target"
+                android:textSize="@dimen/text_body"
+                android:inputType="textCapSentences" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+</ScrollView>

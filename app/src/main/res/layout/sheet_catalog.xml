@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/mg4_surface"
+    android:padding="@dimen/spacing_lg">
+
+    <TextView
+        android:id="@+id/catalogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/Text.MG4.Title" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/catalogList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:clipToPadding="false" />
+</LinearLayout>

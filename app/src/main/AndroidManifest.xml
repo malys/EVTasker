@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Permission signature déclarée par MG4Control. Elle n'est obtenue que parce que les
+         deux APK sont signées avec la même clé plateforme. Sans elle : bind refusé,
+         broadcast d'allumage jamais reçu, application inerte.
+         MG4Tasker ne déclare PAS sharedUserId="android.uid.system" et ne demande AUCUNE
+         permission véhicule : il ne touche jamais la voiture, MG4Control le fait pour lui. -->
+    <uses-permission android:name="com.mg4.control.permission.TASKER_BRIDGE" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Le cycle d'évaluation est de l'automatisation véhicule : aucun type standard
+         (mediaPlayback, location…) ne le décrit. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Liste des appareils appairés, pour proposer un choix dans l'éditeur de règle.
+         L'état « connecté » vient du pont, pas d'ici. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!-- Nécessaire à partir d'API 30 pour proposer les applications installées dans
+         l'action « lancer une application ». -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
+    <application
+        android:name=".MG4TaskerApp"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.MG4Tasker"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.RuleEditorActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize" />
+
+        <service
+            android:name=".service.TaskerRunService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Applique les règles d'automatisation véhicule au démarrage" />
+        </service>
+
+        <!-- exported=true : l'émetteur est MG4Control, un autre processus. L'accès est
+             fermé par la permission signature — seule une app signée avec la clé
+             plateforme peut émettre ce broadcast. -->
+        <receiver
+            android:name=".receiver.IgnitionReceiver"
+            android:exported="true"
+            android:permission="com.mg4.control.permission.TASKER_BRIDGE">
+            <intent-filter>
+                <action android:name="com.mg4.control.tasker.IGNITION_ON" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>

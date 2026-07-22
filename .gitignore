@@ -1,0 +1,20 @@
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build
+/app/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Surcharge locale de mise (machine-spécifique) — mise.toml, lui, est commité.
+mise.local.toml
+.mise.local.toml
+
+# Secrets de signature : jamais dans le dépôt.
+keystore.properties
+*.keystore
+*.jks

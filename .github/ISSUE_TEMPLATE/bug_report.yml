@@ -1,0 +1,55 @@
+name: Bug report
+description: A rule misbehaves on the car
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not report security issues here — see
+        [SECURITY.md](../blob/main/SECURITY.md) for private reporting.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What the rule did, and what you expected instead.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: From the GitHub release you installed, e.g. v1.0.0.
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Car firmware
+      description: "MG4 infotainment version, e.g. SWI68. The Diagnostic tab shows what MG4Control reports."
+  - type: dropdown
+    id: bridge
+    attributes:
+      label: MG4Control bridge
+      description: What the Diagnostic tab shows at the top.
+      options: ["Connected", "Unreachable", "Not sure"]
+    validations:
+      required: true
+  - type: dropdown
+    id: moving
+    attributes:
+      label: Was the car moving?
+      options: ["Parked", "Driving", "Charging", "Not sure"]
+  - type: textarea
+    id: rule
+    attributes:
+      label: The rule and the history entry
+      description: >
+        The rule's conditions and actions, and the matching line from the History tab
+        (Applied / Conditions not met / Cannot be evaluated, and any verdict).
+      render: text
+  - type: textarea
+    id: console
+    attributes:
+      label: Console log
+      description: "The Console tab has a Share button. Paste the relevant lines here."
+      render: text

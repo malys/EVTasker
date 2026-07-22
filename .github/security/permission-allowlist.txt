@@ -1,0 +1,33 @@
+# Allowed permissions for MG4Tasker.
+# Any uses-permission in a manifest NOT listed here FAILS the CI.
+# Why: this app decides when settings get written to a car. Every new permission
+# widens what an automation rule could reach, and must be reviewed explicitly.
+#
+# One line = one full permission name. '#' = comment.
+
+# --- Le pont MG4Control ---
+# protectionLevel="signature", déclarée par MG4Control. C'est la frontière de sécurité
+# de tout le projet : sans la clé plateforme, aucun bind au pont, aucun broadcast reçu.
+# Elle n'accorde AUCUN accès véhicule à MG4Tasker — elle ouvre l'accès à un service qui,
+# lui, applique le verrou de vitesse avant toute écriture.
+com.mg4.control.permission.TASKER_BRIDGE
+
+# --- Exécution ---
+# Le cycle d'évaluation peut durer plus longtemps qu'un BroadcastReceiver n'a le droit
+# de vivre. Sans service de premier plan, le système tuerait le processus au milieu
+# d'une séquence d'écriture véhicule.
+android.permission.FOREGROUND_SERVICE
+android.permission.FOREGROUND_SERVICE_SPECIAL_USE
+android.permission.POST_NOTIFICATIONS
+
+# --- Bluetooth ---
+# Lecture des appareils APPAIRÉS uniquement, pour peupler l'éditeur de règle.
+# L'état « connecté maintenant » ne vient pas d'ici : il est lu par MG4Control et
+# transmis dans l'instantané.
+android.permission.BLUETOOTH_CONNECT
+
+# --- Volontairement ABSENTES ---
+# Aucune permission android.car.* : MG4Tasker ne parle jamais au véhicule directement.
+# Aucune permission réseau : l'application ne contacte aucun serveur, et n'embarque pas
+# d'auto-updater. Ajouter INTERNET ici demanderait de justifier ce qui sortirait du
+# véhicule et vers où.

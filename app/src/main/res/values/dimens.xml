@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Écran de véhicule : environ 10 pouces, à ~70 cm du conducteur, utilisé en
+         conduite. Tout est plus grand que sur un téléphone tenu en main. -->
+    <dimen name="touch_target">64dp</dimen>
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">16dp</dimen>
+    <dimen name="spacing_lg">24dp</dimen>
+
+    <dimen name="text_title">24sp</dimen>
+    <dimen name="text_body">18sp</dimen>
+    <dimen name="text_secondary">15sp</dimen>
+    <dimen name="text_label">14sp</dimen>
+
+    <!-- Largeur du volet gauche en paysage. Assez pour lire un nom de règle complet,
+         assez étroit pour que le détail reste la zone principale. -->
+    <dimen name="pane_list_width">340dp</dimen>
+</resources>

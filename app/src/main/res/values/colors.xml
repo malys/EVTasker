@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="mg4_background">#FF101214</color>
+    <color name="mg4_surface">#FF181B1F</color>
+    <color name="mg4_surface_raised">#FF22262B</color>
+    <color name="mg4_accent">#FF4FC3F7</color>
+    <color name="mg4_on_accent">#FF06131A</color>
+    <color name="mg4_text_secondary">#FF9EA6AE</color>
+    <color name="mg4_error">#FFEF6B6B</color>
+
+    <!-- Verdicts de l'historique : lus d'un coup d'œil, jamais seuls porteurs de sens
+         (un libellé texte accompagne toujours la couleur). -->
+    <color name="mg4_ok">#FF6BD68A</color>
+    <color name="mg4_refused">#FFFFB74D</color>
+</resources>

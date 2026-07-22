@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MG4Tasker</string>
+
+    <!-- Onglets -->
+    <string name="tab_rules">Règles</string>
+    <string name="tab_history">Historique</string>
+    <string name="tab_diagnostic">Diagnostic</string>
+
+    <!-- Groupes du catalogue -->
+    <string name="group_context">Contexte</string>
+    <string name="group_environment">Environnement</string>
+    <string name="group_driving">Conduite</string>
+    <string name="group_comfort">Confort</string>
+    <string name="group_audio">Audio</string>
+    <string name="group_adas">Aides à la conduite</string>
+    <string name="group_climate">Climatisation</string>
+    <string name="group_profile">Profil</string>
+    <string name="group_system">Système</string>
+
+    <!-- Unités -->
+    <string name="unit_celsius">°C</string>
+    <string name="unit_kmh">km/h</string>
+    <string name="unit_percent">%</string>
+
+    <!-- Valeurs véhicule -->
+    <string name="drive_eco">Eco</string>
+    <string name="drive_normal">Normal</string>
+    <string name="drive_sport">Sport</string>
+    <string name="drive_snow">Neige</string>
+    <string name="drive_custom">Personnalisé</string>
+
+    <string name="regen_low">Faible</string>
+    <string name="regen_medium">Moyenne</string>
+    <string name="regen_high">Forte</string>
+    <string name="regen_adaptive">Adaptative</string>
+    <string name="regen_off">Désactivée</string>
+    <string name="regen_one_pedal">Une pédale</string>
+
+    <string name="aeb_alert_only">Alerte seule</string>
+    <string name="aeb_alert_brake">Alerte + freinage</string>
+
+    <string name="sensitivity_low">Faible</string>
+    <string name="sensitivity_standard">Standard</string>
+    <string name="sensitivity_high">Élevée</string>
+
+    <string name="elk_off">Désactivé</string>
+    <string name="elk_warn">Alerte (LDW)</string>
+    <string name="elk_assist">Assistance (LDP)</string>
+    <string name="elk_full">Maintien actif (ELK)</string>
+
+    <string name="acc_off">Désactivé</string>
+    <string name="acc_acc">Régulateur adaptatif (ACC)</string>
+    <string name="acc_tja">Assistance embouteillage (TJA)</string>
+
+    <string name="limiter_off">Désactivé</string>
+    <string name="limiter_manual">Manuel</string>
+    <string name="limiter_smart">Intelligent</string>
+
+    <string name="ignition_lock">Verrouillé</string>
+    <string name="ignition_off">Éteint</string>
+    <string name="ignition_acc">Accessoires</string>
+    <string name="ignition_on">Démarré</string>
+    <string name="ignition_start">Démarrage</string>
+
+    <!-- Conditions -->
+    <string name="cond_bt_device">Téléphone Bluetooth connecté</string>
+    <string name="cond_bt_any">Un appareil Bluetooth est connecté</string>
+    <string name="cond_time">Heure</string>
+    <string name="cond_day">Jour de la semaine</string>
+    <string name="cond_firmware">Génération de firmware</string>
+    <string name="cond_outside_temp">Température extérieure</string>
+    <string name="cond_ignition">État d\'allumage</string>
+    <string name="cond_in_park">Levier en position P</string>
+    <string name="cond_speed">Vitesse</string>
+    <string name="cond_drive_mode">Mode de conduite</string>
+    <string name="cond_regen">Récupération</string>
+    <string name="cond_energy_saving">Économie d\'énergie</string>
+    <string name="cond_seat_heat_l">Siège chauffant gauche</string>
+    <string name="cond_seat_heat_r">Siège chauffant droit</string>
+    <string name="cond_steering_heat">Volant chauffant</string>
+    <string name="cond_media_volume">Volume média</string>
+    <string name="cond_brightness">Luminosité écran</string>
+    <string name="cond_aeb">Freinage d\'urgence (AEB)</string>
+    <string name="cond_aeb_mode">Mode AEB</string>
+    <string name="cond_aeb_sensitivity">Sensibilité AEB</string>
+    <string name="cond_elk_mode">Mode ELK</string>
+    <string name="cond_elk_sensitivity">Sensibilité ELK</string>
+    <string name="cond_acc_tja">Mode ACC / TJA</string>
+    <string name="cond_limiter">Limiteur de vitesse</string>
+    <string name="cond_tsr">Lecture des panneaux (TSR)</string>
+    <string name="cond_overspeed">Alerte survitesse</string>
+    <string name="cond_speed_limit_tone">Bip de limitation</string>
+    <string name="cond_sound_warning">Alerte sonore ADAS</string>
+    <string name="cond_ac">Climatisation active</string>
+    <string name="cond_hvac_auto">Mode AUTO climatisation</string>
+    <string name="cond_recirc">Recyclage d\'air actif</string>
+    <string name="cond_fan_speed">Vitesse ventilation</string>
+    <string name="cond_temperature_set">Température de consigne</string>
+    <string name="cond_window_open">Une vitre est ouverte</string>
+
+    <!-- Actions -->
+    <string name="act_apply_profile">Appliquer un profil</string>
+    <string name="act_drive_mode">Mode de conduite</string>
+    <string name="act_regen">Récupération</string>
+    <string name="act_one_pedal">Conduite une pédale</string>
+    <string name="act_energy_saving">Économie d\'énergie</string>
+    <string name="act_seat_heat_l">Siège chauffant gauche</string>
+    <string name="act_seat_heat_r">Siège chauffant droit</string>
+    <string name="act_steering_heat">Volant chauffant</string>
+    <string name="act_brightness">Luminosité écran</string>
+    <string name="act_media_volume">Volume média</string>
+    <string name="act_balance">Balance gauche / droite</string>
+    <string name="act_fader">Balance avant / arrière</string>
+    <string name="act_tone">Tonalité</string>
+    <string name="act_bose">Ambiance Bose</string>
+    <string name="act_3d">Effet 3D</string>
+    <string name="act_speed_volume">Volume adaptatif à la vitesse</string>
+    <string name="act_aeb">Freinage d\'urgence (AEB)</string>
+    <string name="act_aeb_mode">Mode AEB</string>
+    <string name="act_aeb_sensitivity">Sensibilité AEB</string>
+    <string name="act_elk_mode">Mode ELK</string>
+    <string name="act_elk_sensitivity">Sensibilité ELK</string>
+    <string name="act_acc_tja">Mode ACC / TJA</string>
+    <string name="act_limiter">Limiteur de vitesse</string>
+    <string name="act_tsr">Lecture des panneaux (TSR)</string>
+    <string name="act_overspeed">Alerte survitesse</string>
+    <string name="act_speed_limit_tone">Bip de limitation</string>
+    <string name="act_sound_warning">Alerte sonore ADAS</string>
+    <string name="act_las_sound">Alerte sonore de voie</string>
+    <string name="act_las_vibration">Vibration volant en sortie de voie</string>
+    <string name="act_launch_app">Lancer une application</string>
+    <string name="act_notify">Afficher une notification</string>
+
+    <!-- Écran des règles -->
+    <string name="rules_automation_switch">Automatisation activée</string>
+    <string name="rules_empty_title">Aucune règle</string>
+    <string name="rules_empty_body">Une règle applique des réglages au démarrage du véhicule quand ses conditions sont remplies.</string>
+    <string name="rules_new">Nouvelle règle</string>
+    <string name="rules_edit">Modifier</string>
+    <string name="rules_delete">Supprimer</string>
+    <string name="rules_run_now">Tester maintenant</string>
+    <string name="rules_select_hint">Sélectionnez une règle</string>
+    <string name="rules_quota_reached">Nombre maximal de règles atteint</string>
+    <string name="rules_delete_confirm">Supprimer « %1$s » ?</string>
+    <string name="rules_when">QUAND</string>
+    <string name="rules_then">ALORS</string>
+    <string name="rules_running">Test en cours…</string>
+
+    <plurals name="rule_summary_conditions">
+        <item quantity="one">%d condition</item>
+        <item quantity="other">%d conditions</item>
+    </plurals>
+    <plurals name="rule_summary_actions">
+        <item quantity="one">%d action</item>
+        <item quantity="other">%d actions</item>
+    </plurals>
+
+    <!-- Éditeur -->
+    <string name="editor_new_title">Nouvelle règle</string>
+    <string name="editor_edit_title">Modifier la règle</string>
+    <string name="editor_name_hint">Nom de la règle</string>
+    <string name="editor_match_all">Toutes les conditions</string>
+    <string name="editor_match_any">Au moins une condition</string>
+    <string name="editor_add_condition">Ajouter une condition</string>
+    <string name="editor_add_action">Ajouter une action</string>
+    <string name="editor_save">Enregistrer</string>
+    <string name="editor_cancel">Annuler</string>
+    <string name="editor_name_required">Donnez un nom à la règle</string>
+    <string name="editor_incomplete">Il faut au moins une condition et une action</string>
+    <string name="editor_remove">Retirer</string>
+    <string name="editor_gated_hint">À l\'arrêt uniquement</string>
+    <string name="editor_gated_explain">Ce réglage modifie le comportement du véhicule : MG4Control le refuse si la voiture roule.</string>
+    <string name="editor_pick_condition">Choisir une condition</string>
+    <string name="editor_pick_action">Choisir une action</string>
+
+    <!-- Éditeur de valeur -->
+    <string name="value_enabled">Activé</string>
+    <string name="value_disabled">Désactivé</string>
+    <string name="value_from">De</string>
+    <string name="value_to">à</string>
+    <string name="value_ok">Valider</string>
+    <string name="value_no_bt_devices">Aucun appareil Bluetooth appairé</string>
+    <string name="value_no_profiles">Aucun profil MG4Control accessible</string>
+    <string name="value_notification_hint">Message à afficher</string>
+
+    <string name="op_eq">est égal à</string>
+    <string name="op_ne">est différent de</string>
+    <string name="op_lt">est inférieur à</string>
+    <string name="op_le">est inférieur ou égal à</string>
+    <string name="op_gt">est supérieur à</string>
+    <string name="op_ge">est supérieur ou égal à</string>
+
+    <string name="day_mon">Lun</string>
+    <string name="day_tue">Mar</string>
+    <string name="day_wed">Mer</string>
+    <string name="day_thu">Jeu</string>
+    <string name="day_fri">Ven</string>
+    <string name="day_sat">Sam</string>
+    <string name="day_sun">Dim</string>
+
+    <!-- Historique -->
+    <string name="history_empty_title">Aucun déclenchement</string>
+    <string name="history_empty_body">L\'historique se remplit au démarrage du véhicule, ou après un test manuel.</string>
+    <string name="history_clear">Vider l\'historique</string>
+    <string name="history_trigger_ignition">Démarrage véhicule</string>
+    <string name="history_trigger_manual">Test manuel</string>
+    <string name="history_no_bridge">MG4Control était injoignable — aucune règle n\'a pu s\'appliquer.</string>
+
+    <string name="outcome_fired">Appliquée</string>
+    <string name="outcome_not_matched">Conditions non remplies</string>
+    <string name="outcome_not_evaluable">Non évaluable</string>
+    <string name="outcome_disabled">Désactivée</string>
+    <string name="outcome_unavailable_detail">Donnée illisible : %1$s</string>
+
+    <string name="verdict_allowed">appliqué</string>
+    <string name="verdict_moving">refusé — véhicule en mouvement</string>
+    <string name="verdict_unknown_speed">refusé — vitesse illisible</string>
+    <string name="verdict_unsupported">non pris en charge</string>
+    <string name="verdict_error">échec</string>
+    <string name="verdict_no_bridge">MG4Control injoignable</string>
+
+    <!-- Diagnostic -->
+    <string name="diag_title">État lu depuis MG4Control</string>
+    <string name="diag_refresh">Actualiser</string>
+    <string name="diag_reading">Lecture en cours…</string>
+    <string name="diag_unavailable">illisible</string>
+    <string name="diag_bridge_ok">Pont MG4Control : connecté</string>
+    <string name="diag_bridge_ko">Pont MG4Control : injoignable</string>
+    <string name="diag_bridge_ko_hint">Vérifiez que MG4Control est installé et signé avec la même clé plateforme.</string>
+    <string name="diag_temp_note">La température extérieure n\'est pas exposée par tous les firmwares MG4. Si elle reste illisible ici, les règles qui l\'utilisent ne se déclencheront jamais.</string>
+
+    <!-- Console -->
+    <string name="tab_console">Console</string>
+    <string name="console_share">Partager</string>
+    <string name="console_clear">Vider</string>
+    <string name="console_empty">Aucune entrée de journal.</string>
+    <string name="console_crash_title">Plantage précédent détecté</string>
+    <string name="console_crash_show">Afficher le rapport</string>
+    <string name="console_crash_dismiss">Ignorer</string>
+
+    <!-- Notifications -->
+    <string name="channel_name">MG4Tasker</string>
+    <string name="notif_running_title">Application des règles…</string>
+</resources>
