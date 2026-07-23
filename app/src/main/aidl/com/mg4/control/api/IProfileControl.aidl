@@ -1,16 +1,19 @@
-package com.mg4.control.tasker;
+package com.mg4.control.api;
 
 /**
- * Narrow IPC surface exposed by MG4Control to MG4Tasker — profiles only.
+ * MG4Control's external control API — driving profiles. Client-side copy.
  *
  * MG4Tasker is an independent system app: it reads and writes the vehicle itself through
  * the shared MG4Hardware layer. The one thing it cannot do on its own is apply an
- * MG4Control *profile* (those live in MG4Control), so this bridge exposes exactly that and
- * nothing else. There is no vehicle read or raw property write here.
+ * MG4Control *profile* (those live in MG4Control), so it binds this API and calls exactly
+ * that. There is no vehicle read or raw property write here.
  *
- * Guarded by the signature permission com.mg4.control.permission.TASKER_BRIDGE.
+ * This file must stay byte-identical to MG4Control's declaration; the AIDL Stub/Proxy is
+ * matched by package + interface name at bind time.
+ *
+ * Guarded by the signature permission com.mg4.control.permission.CONTROL_PROFILES.
  */
-interface ITaskerBridge {
+interface IProfileControl {
 
     /** MG4Control profiles. Bundle: "ids" String[], "names" String[], "defaultId" String. */
     Bundle listProfiles();

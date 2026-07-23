@@ -1,7 +1,7 @@
 package com.mg4.tasker.bridge
 
 /**
- * Keys of the protocol shared with `com.mg4.control.tasker.TaskerBridgeService`.
+ * Keys of the protocol shared with `com.mg4.control.api.ProfileControlService`.
  *
  * ⚠️ Cross-application contract: these strings are duplicated on the other side and
  * nothing checks them at compile time. Any change must be made in BOTH projects.
@@ -13,9 +13,8 @@ package com.mg4.tasker.bridge
 object BridgeContract {
 
     const val MG4CONTROL_PACKAGE = "com.mg4.control"
-    const val BRIDGE_SERVICE     = "com.mg4.control.tasker.TaskerBridgeService"
-    const val ACTION_IGNITION_ON = "com.mg4.control.tasker.IGNITION_ON"
-    const val PERMISSION_BRIDGE  = "com.mg4.control.permission.TASKER_BRIDGE"
+    const val BRIDGE_SERVICE     = "com.mg4.control.api.ProfileControlService"
+    const val PERMISSION_BRIDGE  = "com.mg4.control.permission.CONTROL_PROFILES"
 
     // ── Snapshot ─────────────────────────────────────────────────────────────
     const val KEY_SPEED_KMH        = "speedKmh"

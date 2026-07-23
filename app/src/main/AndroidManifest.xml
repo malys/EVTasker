@@ -30,7 +30,7 @@
 
     <!-- Optional MG4Control bridge (the "apply profile" action only). Signature-level,
          obtained solely because both APKs are signed with the same platform key. -->
-    <uses-permission android:name="com.mg4.control.permission.TASKER_BRIDGE" />
+    <uses-permission android:name="com.mg4.control.permission.CONTROL_PROFILES" />
 
     <!-- API 30+: list installed apps for the "launch an app" action; detect MG4Control. -->
     <queries>

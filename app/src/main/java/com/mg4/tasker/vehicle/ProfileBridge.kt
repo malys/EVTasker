@@ -7,7 +7,7 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
-import com.mg4.control.tasker.ITaskerBridge
+import com.mg4.control.api.IProfileControl
 import com.mg4.tasker.bridge.BridgeContract
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -37,7 +37,7 @@ class ProfileBridge(private val context: Context) {
         }
     }
 
-    private var bridge: ITaskerBridge? = null
+    private var bridge: IProfileControl? = null
     private var connection: ServiceConnection? = null
 
     fun connect(): Boolean {
@@ -47,7 +47,7 @@ class ProfileBridge(private val context: Context) {
         val latch = CountDownLatch(1)
         val conn = object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-                bridge = ITaskerBridge.Stub.asInterface(binder); latch.countDown()
+                bridge = IProfileControl.Stub.asInterface(binder); latch.countDown()
             }
             override fun onServiceDisconnected(name: ComponentName?) { bridge = null }
             override fun onNullBinding(name: ComponentName?) { latch.countDown() }

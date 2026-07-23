@@ -233,8 +233,9 @@ refusals and missing data — is testable on the JVM, with no vehicle.
 
 One enum line in `ConditionType` or `ActionType`, one string, and — for a vehicle entry —
 one `@SupportedOn(...)`. The editor builds itself from the `ValueSpec`; no screen to write.
-For a vehicle action, add the matching branch to `TaskerBridgeService.dispatch()` in
-MG4Hardware (the catalogue lives there). The firmware matrix regenerates on the next test run.
+For a vehicle action, add the matching branch to `DirectExecutor` (MG4Tasker writes the
+vehicle directly through MG4Hardware, where the catalogue lives). The firmware matrix
+regenerates on the next test run.
 
 ---
 
@@ -261,9 +262,9 @@ See [SECURITY.md](SECURITY.md) for reporting and scope. Three structural decisio
 1. **The speed gate lives in MG4Hardware.** MG4Tasker writes the vehicle directly, but the
    0 km/h gate is enforced in the shared write primitives — the same code MG4Control uses.
 2. **The action catalogue is closed.** No arbitrary property write crosses the IPC contract.
-3. **The optional MG4Control bridge is signature-protected.** The exported bridge service and the
-   ignition receiver both require `com.mg4.control.permission.TASKER_BRIDGE`, at
-   `protectionLevel="signature"`.
+3. **The optional MG4Control bridge is signature-protected.** MG4Control's exported
+   `ProfileControlService` requires `com.mg4.control.permission.CONTROL_PROFILES`, at
+   `protectionLevel="signature"` — only apps signed with the same platform key can bind.
 
 See also [DISCLAIMER.md](DISCLAIMER.md) — this software runs on a vehicle.
 

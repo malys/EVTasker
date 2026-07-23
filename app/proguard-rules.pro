@@ -1,7 +1,7 @@
 # Contrat IPC avec MG4Control. Le Stub/Proxy AIDL est résolu par nom au moment du bind :
 # le renommer casserait la liaison à l'exécution, sans erreur de compilation.
--keep interface com.mg4.control.tasker.ITaskerBridge { *; }
--keep class com.mg4.control.tasker.ITaskerBridge$* { *; }
+-keep interface com.mg4.control.api.IProfileControl { *; }
+-keep class com.mg4.control.api.IProfileControl$* { *; }
 
 # Gson (règles + historique). Sans Signature, le type générique de
 # TypeToken<List<Rule>> est effacé et la désérialisation rend des LinkedTreeMap :

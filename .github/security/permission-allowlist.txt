@@ -32,7 +32,7 @@ android.permission.BLUETOOTH_CONNECT
 # --- Optional MG4Control bridge (profile action only) ---
 # Signature-level, obtained solely because both APKs share the platform key. Used only to
 # apply an MG4Control profile when MG4Control is installed.
-com.mg4.control.permission.TASKER_BRIDGE
+com.mg4.control.permission.CONTROL_PROFILES
 
 # --- Network / OTA — UNSTABLE flavor only ---
 # Declared solely in src/unstable/AndroidManifest.xml. The unstable channel self-updates
