@@ -31,11 +31,14 @@
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.MG4Tasker"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
         android:supportsRtl="true">
 
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
+            android:taskAffinity=""
             android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
