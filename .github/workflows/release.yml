@@ -61,7 +61,9 @@ jobs:
       - name: Collect APK
         run: |
           mkdir -p dist
-          find app/build/outputs/apk -name "MG4Tasker-*.apk" -exec cp {} dist/ \;
+          # AGP 9 emits app-release.apk; rename to the published convention.
+          ver=$(grep -oE 'versionName = "[^"]+"' app/build.gradle.kts | head -1 | sed -E 's/.*"([^"]+)"/\1/')
+          find app/build/outputs/apk -name "app-release.apk" -exec cp {} "dist/MG4Tasker-${ver}.apk" \;
           ls -la dist/
 
       - uses: actions/upload-artifact@v4
