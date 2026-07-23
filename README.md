@@ -200,7 +200,7 @@ in (via the on-screen keyboard) is:
 ## Building
 
 ```bash
-mise install        # JDK 17 (required by AGP 8.5.2)
+mise install        # JDK 17 (AGP 9.1.1)
 mise run test       # JVM unit tests (also regenerates docs/firmware-matrix.md)
 mise run build      # debug APK
 mise run check      # what CI runs
@@ -256,6 +256,21 @@ See [SECURITY.md](SECURITY.md) for reporting and scope. Three structural decisio
    `protectionLevel="signature"`.
 
 See also [DISCLAIMER.md](DISCLAIMER.md) — this software runs on a vehicle.
+
+## The MG4 app suite
+
+Part of a small set of projects for the SAIC MG4 (AAOS 9, MT2712), all sharing the
+**MG4Hardware** vehicle layer:
+
+| Project | Role |
+|---|---|
+| [MG4Hardware](https://github.com/malys/MG4Hardware) | Shared vehicle-access layer: reflection hardware layer, 0 km/h safety gate, driving models, condition/action catalogue + firmware matrix |
+| [MG4Control](https://github.com/malys/MG4Control) | Drive-profile manager; applies settings at startup; owns the signature-protected TaskerBridge |
+| [MG4Tasker](https://github.com/malys/MG4Tasker) | Rule engine — *when* conditions *then* actions — driving the car through MG4Control |
+| [MG4AbrpTelemetry](https://github.com/malys/MG4AbrpTelemetry) | Live telemetry uploader to A Better Route Planner |
+
+Common toolchain: **AGP 9.1.1 / Gradle 9.3.1 / compileSdk 36 / JDK 17**. Each app consumes
+MG4Hardware as a git submodule (`MG4Hardware/lib` as the `:mg4hardware` subproject).
 
 ## License
 
