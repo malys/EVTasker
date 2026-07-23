@@ -1,5 +1,7 @@
 # MG4Tasker
 
+<p align="center"><img src="docs/logo.svg" width="440" alt="MG4Tasker"></p>
+
 [![Tests](../../actions/workflows/tests.yml/badge.svg)](../../actions/workflows/tests.yml)
 [![Security](../../actions/workflows/security.yml/badge.svg)](../../actions/workflows/security.yml)
 [![Release](../../actions/workflows/release.yml/badge.svg)](../../actions/workflows/release.yml)
