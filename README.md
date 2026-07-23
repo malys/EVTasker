@@ -179,6 +179,24 @@ deferred. Confirm the reads on the Diagnostic tab, and the write actions can fol
 
 ---
 
+## Installing on the MG4
+
+The MG4 head unit has no visible way to open Settings or install an APK. The known route
+in (via the on-screen keyboard) is:
+
+1. Open any app with a text field and tap it to raise the on-screen keyboard — e.g. the
+   Amazon Music app's email/login field.
+2. **Long-press** the comma `,` (or the `@`) key on the keyboard.
+3. Tap **"Language settings"**.
+4. Tap the **search** icon in the top bar and type **`backup`**. It opens an empty page —
+   now press the **back** arrow, and you land in Android's Settings panel.
+5. Enable **Developer options**, and turn on **"Install unknown apps"** (unknown sources).
+6. In Settings, search **`storage`** — you now have access to internal storage and the USB
+   key. Navigate to the APK and tap it to install.
+
+> ⚠️ You are enabling developer options and sideloading on a car. Do this **parked**, and
+> only with an APK you trust. See [DISCLAIMER.md](DISCLAIMER.md).
+
 ## Building
 
 ```bash
