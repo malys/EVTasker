@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- INTERNET is declared ONLY in the unstable flavor: the OTA updater fetches the release
+     list and downloads the APK. The stable flavor has no network permission and no updater
+     code at all, so a stable build cannot reach the network by construction. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

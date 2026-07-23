@@ -26,8 +26,12 @@ android.permission.POST_NOTIFICATIONS
 # transmis dans l'instantané.
 android.permission.BLUETOOTH_CONNECT
 
-# --- Volontairement ABSENTES ---
-# Aucune permission android.car.* : MG4Tasker ne parle jamais au véhicule directement.
-# Aucune permission réseau : l'application ne contacte aucun serveur, et n'embarque pas
-# d'auto-updater. Ajouter INTERNET ici demanderait de justifier ce qui sortirait du
-# véhicule et vers où.
+# --- Deliberately ABSENT ---
+# No android.car.* permission: MG4Tasker never talks to the vehicle directly.
+# No network permission in the STABLE flavor: it contacts no server and carries no updater.
+
+# --- Network / OTA — UNSTABLE flavor only ---
+# Declared solely in src/unstable/AndroidManifest.xml. The unstable channel self-updates
+# (checks GitHub pre-releases, https + host allowlist + signature check). The stable APK
+# has neither this permission nor any updater code, by construction.
+android.permission.INTERNET

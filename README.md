@@ -246,6 +246,22 @@ MG4Control. The firmware matrix regenerates itself on the next test run.
 
 ---
 
+### Channels
+
+Two build flavors, like the sibling apps:
+
+- **stable** — tagged releases, **no self-update**. The updater class is not in the APK and
+  it has no network permission.
+- **unstable** — pre-releases published on every push to `master`, with **OTA**: the app
+  checks GitHub pre-releases and downloads a newer unstable APK (https + GitHub host
+  allowlist + same-signature check, all fail-closed; install is a manual tap). Installs
+  beside stable as `com.mg4.tasker.unstable`.
+
+```bash
+mise run test            # both flavors
+./gradlew assembleStableDebug assembleUnstableDebug
+```
+
 ## Security
 
 See [SECURITY.md](SECURITY.md) for reporting and scope. Three structural decisions:

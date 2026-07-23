@@ -1,0 +1,91 @@
+name: Unstable
+
+# Unstable / pre-release channel. These builds DO self-update: the app checks GitHub
+# pre-releases and downloads a newer unstable APK (https + host allowlist + signature check).
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build and publish unstable APK
+    runs-on: ubuntu-latest
+    env:
+      MG4_KEYSTORE_BASE64: ${{ secrets.MG4_KEYSTORE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 1, submodules: recursive }
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Decode platform keystore
+        if: ${{ env.MG4_KEYSTORE_BASE64 != '' }}
+        run: |
+          printf '%s' "$MG4_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > "$RUNNER_TEMP/platform.keystore"
+          if [ "$(head -c1 "$RUNNER_TEMP/platform.keystore" | od -An -tx1 | tr -d ' ')" != "30" ]; then
+            echo "::error::MG4_KEYSTORE_BASE64 is invalid. Recreate the secret with: base64 -w0 platform.keystore"
+            exit 1
+          fi
+          echo "MG4_KEYSTORE=$RUNNER_TEMP/platform.keystore" >> "$GITHUB_ENV"
+
+      - name: Run checks
+        run: |
+          chmod +x gradlew
+          bash .github/security/check-permissions.sh
+          ./gradlew testUnstableDebugUnitTest lintUnstableDebug --no-daemon
+
+      - name: Resolve unstable version
+        id: version
+        run: |
+          v=$(./gradlew -q printUnstableVersion -PunstableBuild=${{ github.run_number }} --no-daemon | tail -1)
+          echo "value=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Build unstable release APK
+        env:
+          MG4_KEYSTORE_PASSWORD: ${{ secrets.MG4_KEYSTORE_PASSWORD }}
+          MG4_KEY_ALIAS: ${{ secrets.MG4_KEY_ALIAS }}
+          MG4_KEY_PASSWORD: ${{ secrets.MG4_KEY_PASSWORD }}
+        run: ./gradlew assembleUnstableRelease -PunstableBuild=${{ github.run_number }} --no-daemon
+
+      - name: Collect APK
+        run: |
+          mkdir -p dist
+          # Keep a stable filename with "unstable" in it: the updater matches release assets
+          # by ".apk" + "unstable", and the file name is the identity across builds.
+          find app/build/outputs/apk -name "app-unstable-release.apk" -exec cp {} dist/MG4Tasker-unstable.apk \;
+          ls -la dist/
+
+      - name: Publish pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          # The in-app updater compares this tag against the installed version, so it must
+          # stay parseable as a version (e.g. v1.0.0.42).
+          tag_name: v${{ steps.version.outputs.value }}
+          name: Unstable ${{ steps.version.outputs.value }}
+          prerelease: true
+          files: dist/*.apk
+          body: |
+            ## Unstable build ${{ github.run_number }}
+
+            Automated build from `master`. **Not tested on a vehicle.**
+
+            Installed unstable builds update themselves from this channel. The updater
+            accepts an APK only over https from a GitHub host, and only if it is signed with
+            the same certificate as the running app — otherwise it deletes the file. Install
+            is still a manual tap.
+
+            Requires MG4Control installed and signed with the same platform key. The unstable
+            id is `com.mg4.tasker.unstable` (installs beside stable); it does not receive the
+            auto ignition trigger — use "Test now" to run rules.
+
+            Commit: ${{ github.sha }}

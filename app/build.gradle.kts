@@ -31,6 +31,30 @@ android {
         }
     }
 
+    // Distribution channels (mirrors ABRP / MG4Control):
+    //  - stable  : tagged releases, NO self-update. The updater class is not in the APK.
+    //  - unstable: pre-releases published on every push to master, with OTA so testers stay
+    //              current without manual work. Installs alongside stable (.unstable suffix).
+    // Note: MG4Control targets the ignition broadcast at package "com.mg4.tasker"; the
+    // unstable id is "com.mg4.tasker.unstable", so an unstable build is a test/manual-run
+    // channel and does not receive the auto ignition trigger.
+    flavorDimensions += "channel"
+    productFlavors {
+        create("stable") {
+            dimension = "channel"
+            buildConfigField("boolean", "OTA_ENABLED", "false")
+        }
+        create("unstable") {
+            dimension = "channel"
+            applicationIdSuffix = ".unstable"
+            // Version stays numerically comparable for the updater ("1.0.0.42-unstable"):
+            // the CI passes -PunstableBuild=<n>; 0 locally.
+            versionName = "${defaultConfig.versionName}.${project.findProperty("unstableBuild") ?: "0"}"
+            versionNameSuffix = "-unstable"
+            buildConfigField("boolean", "OTA_ENABLED", "true")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -51,6 +75,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
         // ITaskerBridge : copie conforme du contrat déclaré par MG4Control.
         aidl = true
     }
@@ -69,6 +94,14 @@ android {
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
+// Prints the unstable versionName so the release workflow can name the pre-release
+// numerically comparable ("1.0.0.42"), not "unstable-42".
+tasks.register("printUnstableVersion") {
+    doLast {
+        println("${android.defaultConfig.versionName}.${project.findProperty("unstableBuild") ?: "0"}")
     }
 }
 

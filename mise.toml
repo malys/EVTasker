@@ -44,11 +44,11 @@ run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME assembleDebug'
 
 [tasks.test]
 description = "Tests unitaires JVM"
-run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME testDebugUnitTest'
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME testStableDebugUnitTest testUnstableDebugUnitTest'
 
 [tasks.lint]
 description = "Analyse lint Android"
-run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME lintDebug'
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME lintStableDebug'
 
 [tasks.check]
 description = "Ce que la CI exécute"
@@ -56,7 +56,7 @@ depends = ["test"]
 
 [tasks.release]
 description = "APK release (R8 activé — passe véhicule requise avant diffusion)"
-run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME assembleRelease'
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME assembleStableRelease'
 
 [tasks.clean]
 run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME clean'

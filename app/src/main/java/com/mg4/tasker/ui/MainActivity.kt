@@ -32,6 +32,10 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             binding.tabGroup.check(R.id.tabRules)
         }
+
+        // Unstable builds check for a newer pre-release; the stable flavor's UpdateHook is
+        // a no-op and the stable APK contains no updater code or network permission.
+        com.mg4.tasker.update.UpdateHook.checkInBackground(this)
     }
 
     private fun show(fragment: Fragment) {
