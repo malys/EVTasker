@@ -9,17 +9,19 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.mg4.hardware.MG4Hardware
 import com.mg4.tasker.R
-import com.mg4.tasker.bridge.BridgeClient
 import com.mg4.tasker.databinding.FragmentDiagnosticBinding
 import com.mg4.tasker.databinding.ItemDiagnosticBinding
 import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.Snapshot
 import com.mg4.hardware.catalog.ValueKind
+import com.mg4.tasker.vehicle.BtTracker
+import com.mg4.tasker.vehicle.VehicleReader
 import kotlin.concurrent.thread
 
 /**
- * What MG4Control can actually read on THIS vehicle.
+ * What MG4Tasker can actually read on THIS vehicle — read directly through MG4Hardware.
  *
  * Rationale: the condition catalogue is wider than what every firmware exposes. Outside
  * temperature in particular has not been verified on a vehicle. This screen lets you see
@@ -46,15 +48,10 @@ class DiagnosticFragment : Fragment() {
         binding.bridgeStatus.setText(R.string.diag_reading)
         binding.bridgeHint.visibility = View.GONE
 
-        // connect() blocks for up to 15 s: never on the main thread.
+        // MG4Hardware reflection reads are blocking: never on the main thread.
         thread(name = "mg4-tasker-diag") {
-            val client = BridgeClient(requireContext().applicationContext)
-            val snapshot = try {
-                client.connect()
-                client.readSnapshot()
-            } finally {
-                client.disconnect()
-            }
+            MG4Hardware.init(requireContext().applicationContext)   // idempotent
+            val snapshot = VehicleReader.read(BtTracker.snapshot())
             Handler(Looper.getMainLooper()).post {
                 if (_binding != null) render(snapshot)
             }

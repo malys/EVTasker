@@ -97,7 +97,7 @@
     <string name="history_clear">Clear history</string>
     <string name="history_trigger_ignition">Vehicle start</string>
     <string name="history_trigger_manual">Manual test</string>
-    <string name="history_no_bridge">MG4Control was unreachable — no rule could be applied.</string>
+    <string name="history_no_bridge">Vehicle layer was not ready — no rule could be applied.</string>
 
     <string name="outcome_fired">Applied</string>
     <string name="outcome_not_matched">Conditions not met</string>
@@ -117,9 +117,9 @@
     <string name="diag_refresh">Refresh</string>
     <string name="diag_reading">Reading…</string>
     <string name="diag_unavailable">unreadable</string>
-    <string name="diag_bridge_ok">MG4Control bridge: connected</string>
-    <string name="diag_bridge_ko">MG4Control bridge: unreachable</string>
-    <string name="diag_bridge_ko_hint">Check that MG4Control is installed and signed with the same platform key.</string>
+    <string name="diag_bridge_ok">Vehicle layer: ready</string>
+    <string name="diag_bridge_ko">Vehicle layer: not ready</string>
+    <string name="diag_bridge_ko_hint">Open MG4Tasker on the car so its vehicle service can start. It needs the platform signature and system permissions.</string>
     <string name="diag_temp_note">Outside temperature is not exposed by every MG4 firmware. If it stays unreadable here, rules using it will never fire.</string>
 
     <!-- Console -->
@@ -130,6 +130,8 @@
     <string name="console_crash_title">Previous crash detected</string>
     <string name="console_crash_show">Show report</string>
     <string name="console_crash_dismiss">Dismiss</string>
+
+    <string name="warn_mg4control_present">MG4Control is also installed — both apps can change vehicle settings.</string>
 
     <!-- Notifications -->
     <string name="channel_name">MG4Tasker</string>

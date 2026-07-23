@@ -1,29 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- MG4Tasker is an independent system app: it reads and writes the vehicle directly
+     through the shared MG4Hardware layer, and works with no MG4Control installed.
+     sharedUserId + the platform signature are what grant vehicle access (the car
+     permissions are signature|privileged), exactly as MG4Control does.
 
-    <!-- Permission signature déclarée par MG4Control. Elle n'est obtenue que parce que les
-         deux APK sont signées avec la même clé plateforme. Sans elle : bind refusé,
-         broadcast d'allumage jamais reçu, application inerte.
-         MG4Tasker ne déclare PAS sharedUserId="android.uid.system" et ne demande AUCUNE
-         permission véhicule : il ne touche jamais la voiture, MG4Control le fait pour lui. -->
-    <uses-permission android:name="com.mg4.control.permission.TASKER_BRIDGE" />
+     MG4Control is optional: when it is installed, the "Apply MG4Control profile" action
+     becomes available (via its signature-protected bridge). That is the only capability
+     that needs MG4Control. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    android:sharedUserId="android.uid.system">
 
+    <!-- Vehicle access (Android Automotive / SAIC) — same set MG4Control uses. -->
+    <uses-permission android:name="android.car.permission.CAR_ENERGY" />
+    <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />
+    <uses-permission android:name="android.car.permission.CAR_VENDOR_EXTENSION" />
+    <uses-permission android:name="android.car.permission.CONTROL_CAR_CLIMATE" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
+    <!-- Own vehicle service: foreground + wake + start at boot to catch the ignition. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <!-- Le cycle d'évaluation est de l'automatisation véhicule : aucun type standard
-         (mediaPlayback, location…) ne le décrit. -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- Liste des appareils appairés, pour proposer un choix dans l'éditeur de règle.
-         L'état « connecté » vient du pont, pas d'ici. -->
+
+    <!-- Bluetooth: paired list for the editor, and live connection tracking for rules. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
-    <!-- Nécessaire à partir d'API 30 pour proposer les applications installées dans
-         l'action « lancer une application ». -->
+    <!-- Optional MG4Control bridge (the "apply profile" action only). Signature-level,
+         obtained solely because both APKs are signed with the same platform key. -->
+    <uses-permission android:name="com.mg4.control.permission.TASKER_BRIDGE" />
+
+    <!-- API 30+: list installed apps for the "launch an app" action; detect MG4Control. -->
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <package android:name="com.mg4.control" />
     </queries>
 
     <application
@@ -34,6 +49,9 @@
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:supportsRtl="true">
+
+        <!-- Car API (CarPropertyManager / CarHvacManager reflection targets). -->
+        <uses-library android:name="android.car" android:required="false" />
 
         <activity
             android:name=".ui.MainActivity"
@@ -53,24 +71,28 @@
             android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- Persistent vehicle service: inits MG4Hardware, listens for ignition, evaluates
+             rules and applies actions directly. connectedDevice matches what it does. -->
+        <service
+            android:name=".service.TaskerVehicleService"
+            android:exported="false"
+            android:directBootAware="true"
+            android:foregroundServiceType="connectedDevice" />
+
+        <!-- Runs one evaluation cycle for a manual test (from the Rules screen). -->
         <service
             android:name=".service.TaskerRunService"
             android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Applique les règles d'automatisation véhicule au démarrage" />
-        </service>
+            android:foregroundServiceType="connectedDevice" />
 
-        <!-- exported=true : l'émetteur est MG4Control, un autre processus. L'accès est
-             fermé par la permission signature — seule une app signée avec la clé
-             plateforme peut émettre ce broadcast. -->
         <receiver
-            android:name=".receiver.IgnitionReceiver"
+            android:name=".receiver.BootReceiver"
             android:exported="true"
-            android:permission="com.mg4.control.permission.TASKER_BRIDGE">
+            android:directBootAware="true">
             <intent-filter>
-                <action android:name="com.mg4.control.tasker.IGNITION_ON" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
 

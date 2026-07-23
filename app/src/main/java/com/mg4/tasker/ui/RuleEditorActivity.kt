@@ -10,8 +10,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.mg4.tasker.R
-import com.mg4.tasker.bridge.BridgeClient
-import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.databinding.ActivityRuleEditorBinding
 import com.mg4.tasker.databinding.ItemEditorRowBinding
 import com.mg4.tasker.model.Action
@@ -109,28 +107,29 @@ class RuleEditorActivity : AppCompatActivity() {
     }
 
     /**
-     * Loads what only MG4Control knows: the profile list and the maximum volume.
-     * The editor stays usable if the bridge does not answer — the affected actions
-     * simply show "no profile reachable".
+     * Firmware and max volume come straight from MG4Hardware; the profile list is the one
+     * thing that needs MG4Control (via the optional bridge). The editor stays usable when
+     * MG4Control is absent — the "apply profile" action just shows "no profile reachable".
      */
     private fun loadVehicleContext() {
         thread(name = "mg4-tasker-editor-context") {
-            val client = BridgeClient(this)
-            try {
-                if (!client.connect()) return@thread
-                val loadedProfiles = client.listProfiles()
-                val snapshot = client.readSnapshot()
-                val maxVolume = snapshot.int(BridgeContract.KEY_MEDIA_VOLUME_MAX)
-                val gen = com.mg4.hardware.FirmwareSupport.parse(
-                    snapshot.string(BridgeContract.KEY_FIRMWARE_GEN)
-                )
-                Handler(Looper.getMainLooper()).post {
-                    profiles = loadedProfiles
-                    mediaVolumeMax = maxVolume
-                    firmware = gen
-                }
+            com.mg4.hardware.MG4Hardware.init(applicationContext)   // idempotent
+            val gen = com.mg4.hardware.FirmwareInfo.getGeneration().let {
+                com.mg4.hardware.FirmwareSupport.parse(it.name)
+            }
+            val maxVolume = com.mg4.hardware.MG4Hardware.getMediaVolumeMax()
+
+            val bridge = com.mg4.tasker.vehicle.ProfileBridge(this)
+            val loadedProfiles = try {
+                if (bridge.connect()) bridge.listProfiles() else emptyList()
             } finally {
-                client.disconnect()
+                bridge.disconnect()
+            }
+
+            Handler(Looper.getMainLooper()).post {
+                profiles = loadedProfiles
+                mediaVolumeMax = if (maxVolume >= 0) maxVolume else null
+                firmware = gen
             }
         }
     }

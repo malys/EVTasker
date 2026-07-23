@@ -1,34 +1,38 @@
 # Allowed permissions for MG4Tasker.
 # Any uses-permission in a manifest NOT listed here FAILS the CI.
-# Why: this app decides when settings get written to a car. Every new permission
-# widens what an automation rule could reach, and must be reviewed explicitly.
+# Why: this app decides when settings get written to a car, and now writes them directly
+# (system app). Every new permission widens what a rule can reach and must be reviewed here.
 #
 # One line = one full permission name. '#' = comment.
 
-# --- Le pont MG4Control ---
-# protectionLevel="signature", déclarée par MG4Control. C'est la frontière de sécurité
-# de tout le projet : sans la clé plateforme, aucun bind au pont, aucun broadcast reçu.
-# Elle n'accorde AUCUN accès véhicule à MG4Tasker — elle ouvre l'accès à un service qui,
-# lui, applique le verrou de vitesse avant toute écriture.
-com.mg4.control.permission.TASKER_BRIDGE
+# --- Vehicle access (system app) ---
+# MG4Tasker reads and writes the vehicle directly through MG4Hardware. These car
+# permissions are signature|privileged and are granted because the app is signed with the
+# ROM platform key and declares sharedUserId="android.uid.system" (same as MG4Control).
+android.car.permission.CAR_ENERGY
+android.car.permission.CAR_POWERTRAIN
+android.car.permission.CAR_VENDOR_EXTENSION
+android.car.permission.CONTROL_CAR_CLIMATE
+android.permission.WRITE_SETTINGS
 
-# --- Exécution ---
-# Le cycle d'évaluation peut durer plus longtemps qu'un BroadcastReceiver n'a le droit
-# de vivre. Sans service de premier plan, le système tuerait le processus au milieu
-# d'une séquence d'écriture véhicule.
+# --- Own vehicle service ---
+# A persistent foreground service inits MG4Hardware and listens for ignition; it starts at
+# boot to catch the first ignition without the app being opened.
 android.permission.FOREGROUND_SERVICE
-android.permission.FOREGROUND_SERVICE_SPECIAL_USE
+android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE
+android.permission.WAKE_LOCK
+android.permission.RECEIVE_BOOT_COMPLETED
 android.permission.POST_NOTIFICATIONS
 
 # --- Bluetooth ---
-# Lecture des appareils APPAIRÉS uniquement, pour peupler l'éditeur de règle.
-# L'état « connecté maintenant » ne vient pas d'ici : il est lu par MG4Control et
-# transmis dans l'instantané.
+# Paired list for the editor + live connection tracking (ACL) for context conditions.
+android.permission.BLUETOOTH
 android.permission.BLUETOOTH_CONNECT
 
-# --- Deliberately ABSENT ---
-# No android.car.* permission: MG4Tasker never talks to the vehicle directly.
-# No network permission in the STABLE flavor: it contacts no server and carries no updater.
+# --- Optional MG4Control bridge (profile action only) ---
+# Signature-level, obtained solely because both APKs share the platform key. Used only to
+# apply an MG4Control profile when MG4Control is installed.
+com.mg4.control.permission.TASKER_BRIDGE
 
 # --- Network / OTA — UNSTABLE flavor only ---
 # Declared solely in src/unstable/AndroidManifest.xml. The unstable channel self-updates

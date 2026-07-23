@@ -17,9 +17,10 @@ apply settings.
 > If my partner's phone is connected, apply the "Comfort" profile and set the volume to 14.
 > If it is below 5 °C on a weekday morning, turn on the seat heating.
 
-MG4Tasker never touches the vehicle itself. It decides, then asks
-[MG4Control](../MG4Control) to act — MG4Control holds the vehicle privileges and applies
-the safety gate.
+MG4Tasker is **independent**. It reads and writes the vehicle directly through the shared
+[MG4Hardware](https://github.com/malys/MG4Hardware) layer and works with **no MG4Control
+installed**. MG4Control is optional: when present, one extra action — *apply an MG4Control
+profile* — becomes available.
 
 ---
 
@@ -27,6 +28,7 @@ the safety gate.
 
 - [How it works](#how-it-works)
 - [Requirements](#requirements)
+- [MG4Control (optional)](#mg4control-optional)
 - [The speed gate](#the-speed-gate)
 - [Conditions and actions](#conditions-and-actions)
 - [Firmware compatibility](#firmware-compatibility)
@@ -40,69 +42,59 @@ the safety gate.
 
 ```
                     ┌──────────────────────────────────────┐
-   Ignition ON  ──► │ MG4Control                           │
-                    │  • applies its default profile       │
-                    │  • ~8 s later: broadcast             │
+   Ignition ON  ──► │ MG4Tasker (system app)               │
+                    │  own foreground service               │
+                    │  1. reads the vehicle  ┐              │
+                    │  2. evaluates rules    │ MG4Hardware  │
+                    │  3. applies actions    ┘ (direct)     │
+                    │     VehicleWriteGate → write / refuse │
+                    │  4. logs the outcome                  │
                     └──────────────┬───────────────────────┘
-                                   │ signature permission
+                                   │ only for the "apply profile" action
                                    ▼
                     ┌──────────────────────────────────────┐
-                    │ MG4Tasker                            │
-                    │  1. reads a vehicle snapshot         │
-                    │  2. evaluates the rules              │
-                    │  3. requests the actions             │
-                    │  4. logs the outcome                 │
-                    └──────────────┬───────────────────────┘
-                                   │ ITaskerBridge (4 methods)
-                                   ▼
-                    ┌──────────────────────────────────────┐
-                    │ MG4Control                           │
-                    │  VehicleWriteGate → write or refuse  │
+                    │ MG4Control (optional)                │
+                    │  applyProfile(id) via TaskerBridge   │
                     └──────────────────────────────────────┘
 ```
 
-The 8-second delay is not cosmetic: MG4Control applies its own profile at start, and its
-climate writes poll vehicle state for several seconds. Waking the tasker earlier would
-interleave two write sequences.
+MG4Tasker runs its **own** persistent service: it initialises MG4Hardware, listens for
+ignition directly (no dependency on MG4Control), reads the vehicle and applies the rules'
+actions through MG4Hardware. Started at boot and on app open.
 
-**Trigger: ignition only.** No periodic polling, no permanent service. The "Test now"
-button replays the same path on demand, and a master switch on the Rules screen disables
-automation without deleting rules.
-
-### The IPC contract
-
-Four methods, not eighty. Adding an action to the catalogue does not change the interface,
-only the internal `when` on the MG4Control side.
-
-| Method | Role |
-|---|---|
-| `readSnapshot()` | Full vehicle state in one call |
-| `listProfiles()` | MG4Control profiles (id → name) |
-| `applyProfile(id)` | Applies a whole profile |
-| `applyAction(type, params)` | One action from the closed catalogue |
-
-There is **no** "write property 0xNNNN" method. A compromised caller can only ask for what
-the user could already do from MG4Control's own UI.
+**Trigger: ignition.** The "Test now" button replays the exact same path on demand, and a
+master switch on the Rules screen disables automation without deleting rules.
 
 ---
 
 ## Requirements
 
-- A working **MG4Control** install.
-- Both APKs **signed with the same platform key**. The permission protecting the bridge is
-  `protectionLevel="signature"`: signed otherwise, MG4Tasker installs and stays inert. The
-  Diagnostic tab says so explicitly.
+- Signed with the ROM **platform key** and `sharedUserId="android.uid.system"` — the car
+  permissions are `signature|privileged`, so this is what grants direct vehicle access (the
+  same footing as MG4Control). The Diagnostic tab shows whether the vehicle layer came up.
 
-MG4Tasker does **not** declare `sharedUserId="android.uid.system"` and requests no
-`android.car.*` permission. It does not need them — that is the point of the design.
+That's it. MG4Control is **not** required.
+
+---
+
+## MG4Control (optional)
+
+If [MG4Control](https://github.com/malys/MG4Control) is installed (and signed with the same
+key), one extra action appears: **apply an MG4Control profile**. It reaches MG4Control's
+`applyProfile` over the signature-protected bridge. It is the *only* MG4Control-dependent
+capability; without MG4Control the action shows "not installed" and everything else works.
+
+> ⚠️ With both apps installed, **two apps can write the vehicle**. Each gates writes at
+> 0 km/h independently, but a concurrent profile application and rule run can interleave
+> multi-step ADAS writes. MG4Tasker warns once at start when it detects MG4Control.
 
 ---
 
 ## The speed gate
 
-MG4Control refuses any write that changes road behaviour while the car is moving, or when
-its speed is unreadable (*fail closed*). MG4Tasker inherits that and does not try to bypass
-it.
+MG4Hardware refuses any write that changes road behaviour while the car is moving, or when
+its speed is unreadable (*fail closed*) — the gate lives in the shared layer, so MG4Tasker
+and MG4Control enforce the identical rule.
 
 | | Speed-gated |
 |---|---|
@@ -140,7 +132,7 @@ below.
 ## Firmware compatibility
 
 Every vehicle catalogue entry carries a `@SupportedOn(...)` annotation naming the firmware
-generations it works on, derived from MG4Control's `FirmwareInfo` and `MG4Hardware`
+generations it works on, derived from MG4Hardware's `FirmwareInfo` and per-generation
 routing. That annotation is the single source of truth for three things:
 
 1. **Self-documenting source** — the support set sits next to the entry.
@@ -148,10 +140,10 @@ routing. That annotation is the single source of truth for three things:
    *generated* from the annotations by `FirmwareMatrix`, checked by a unit test. It is
    never edited by hand.
 3. **The runtime filter** — the editor offers only the entries supported on the connected
-   car's firmware (reported by MG4Control). One APK adapts to the car; there is no separate
+   car's firmware (detected via MG4Hardware). One APK adapts to the car; there is no separate
    per-firmware build.
 
-> The matrix is derived from MG4Control's code, **not** from on-vehicle testing. The app's
+> The matrix is derived from MG4Hardware's code, **not** from on-vehicle testing. The app's
 > Diagnostic tab is the source of truth for your own car: it reads each signal and shows
 > "unreadable" where the firmware does not expose it.
 
@@ -172,7 +164,7 @@ Highlights (see the generated matrix for the full grid):
 Air conditioning (A/C, AUTO, recirculation, fan speed, set temperature) and window state
 are available as **conditions** — read-only. They use standard AOSP HVAC/window property
 ids that the R69 OEM sources expose, but which are **not yet verified on any MG4
-generation**. MG4Control reads them null-safely; the Diagnostic tab shows whether each one
+generation**. MG4Hardware reads them null-safely; the Diagnostic tab shows whether each one
 is actually readable on your car.
 
 Climate/window **writes** are intentionally not in the catalogue. Adding them means a
@@ -224,7 +216,7 @@ mg4.key.password=…
 
 ```
 app/src/main/java/com/mg4/tasker/
-  bridge/    bridge client, shared contract, action executor
+  vehicle/   direct MG4Hardware access, executor, snapshot reader, profile bridge
   model/     Rule, Condition, Action, catalogues, @SupportedOn, FirmwareMatrix
   engine/    condition and rule evaluation — no Android dependency
   store/     JSON persistence of rules and history
@@ -242,7 +234,7 @@ refusals and missing data — is testable on the JVM, with no vehicle.
 One enum line in `ConditionType` or `ActionType`, one string, and — for a vehicle entry —
 one `@SupportedOn(...)`. The editor builds itself from the `ValueSpec`; no screen to write.
 For a vehicle action, add the matching branch to `TaskerBridgeService.dispatch()` in
-MG4Control. The firmware matrix regenerates itself on the next test run.
+MG4Hardware (the catalogue lives there). The firmware matrix regenerates on the next test run.
 
 ---
 
@@ -266,10 +258,10 @@ mise run test            # both flavors
 
 See [SECURITY.md](SECURITY.md) for reporting and scope. Three structural decisions:
 
-1. **MG4Tasker never writes to the vehicle.** One process (MG4Control) talks to the car, so
-   there are no concurrent writes and one place applies the speed gate.
+1. **The speed gate lives in MG4Hardware.** MG4Tasker writes the vehicle directly, but the
+   0 km/h gate is enforced in the shared write primitives — the same code MG4Control uses.
 2. **The action catalogue is closed.** No arbitrary property write crosses the IPC contract.
-3. **The signature permission is the boundary.** The exported bridge service and the
+3. **The optional MG4Control bridge is signature-protected.** The exported bridge service and the
    ignition receiver both require `com.mg4.control.permission.TASKER_BRIDGE`, at
    `protectionLevel="signature"`.
 
@@ -284,7 +276,7 @@ Part of a small set of projects for the SAIC MG4 (AAOS 9, MT2712), all sharing t
 |---|---|
 | [MG4Hardware](https://github.com/malys/MG4Hardware) | Shared vehicle-access layer: reflection hardware layer, 0 km/h safety gate, driving models, condition/action catalogue + firmware matrix |
 | [MG4Control](https://github.com/malys/MG4Control) | Drive-profile manager; applies settings at startup; owns the signature-protected TaskerBridge |
-| [MG4Tasker](https://github.com/malys/MG4Tasker) | Rule engine — *when* conditions *then* actions — driving the car through MG4Control |
+| [MG4Tasker](https://github.com/malys/MG4Tasker) | Independent rule engine — *when* conditions *then* actions — writes the car directly via MG4Hardware |
 | [MG4AbrpTelemetry](https://github.com/malys/MG4AbrpTelemetry) | Live telemetry uploader to A Better Route Planner |
 
 Common toolchain: **AGP 9.1.1 / Gradle 9.3.1 / compileSdk 36 / JDK 17**. Each app consumes

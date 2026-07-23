@@ -59,7 +59,7 @@ class RulesFragment : Fragment() {
         binding.runNowButton.setOnClickListener {
             // The test reuses the run service: testing a rule must take exactly the
             // vehicle-start path, otherwise the test proves nothing.
-            TaskerRunService.start(requireContext(), TaskerRunService.TRIGGER_MANUAL)
+            TaskerRunService.start(requireContext())
             toast(getString(R.string.rules_running))
         }
     }

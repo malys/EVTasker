@@ -97,7 +97,7 @@
     <string name="history_clear">Vider l\'historique</string>
     <string name="history_trigger_ignition">Démarrage véhicule</string>
     <string name="history_trigger_manual">Test manuel</string>
-    <string name="history_no_bridge">MG4Control était injoignable — aucune règle n\'a pu s\'appliquer.</string>
+    <string name="history_no_bridge">La couche véhicule n\'était pas prête — aucune règle n\'a pu s\'appliquer.</string>
 
     <string name="outcome_fired">Appliquée</string>
     <string name="outcome_not_matched">Conditions non remplies</string>
@@ -117,9 +117,9 @@
     <string name="diag_refresh">Actualiser</string>
     <string name="diag_reading">Lecture en cours…</string>
     <string name="diag_unavailable">illisible</string>
-    <string name="diag_bridge_ok">Pont MG4Control : connecté</string>
-    <string name="diag_bridge_ko">Pont MG4Control : injoignable</string>
-    <string name="diag_bridge_ko_hint">Vérifiez que MG4Control est installé et signé avec la même clé plateforme.</string>
+    <string name="diag_bridge_ok">Couche véhicule : prête</string>
+    <string name="diag_bridge_ko">Couche véhicule : indisponible</string>
+    <string name="diag_bridge_ko_hint">Ouvrez MG4Tasker sur la voiture pour démarrer son service véhicule. Il requiert la signature plateforme et les permissions système.</string>
     <string name="diag_temp_note">La température extérieure n\'est pas exposée par tous les firmwares MG4. Si elle reste illisible ici, les règles qui l\'utilisent ne se déclencheront jamais.</string>
 
     <!-- Console -->
@@ -130,6 +130,8 @@
     <string name="console_crash_title">Plantage précédent détecté</string>
     <string name="console_crash_show">Afficher le rapport</string>
     <string name="console_crash_dismiss">Ignorer</string>
+
+    <string name="warn_mg4control_present">MG4Control est aussi installé — les deux apps peuvent modifier les réglages du véhicule.</string>
 
     <!-- Notifications -->
     <string name="channel_name">MG4Tasker</string>

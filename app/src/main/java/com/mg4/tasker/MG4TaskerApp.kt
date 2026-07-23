@@ -15,5 +15,8 @@ class MG4TaskerApp : Application() {
         // can happen at ignition without any activity ever having been opened.
         Notifier.ensureChannel(this)
         AppLogger.i("App", "MG4Tasker started")
+        // Start the persistent vehicle service so ignition triggers even before the UI is
+        // opened. BootReceiver does the same at boot.
+        com.mg4.tasker.service.TaskerVehicleService.start(this)
     }
 }

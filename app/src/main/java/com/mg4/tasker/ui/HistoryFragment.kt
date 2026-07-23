@@ -12,7 +12,6 @@ import com.mg4.tasker.databinding.FragmentHistoryBinding
 import com.mg4.tasker.databinding.ItemHistoryRunBinding
 import com.mg4.tasker.model.EngineRun
 import com.mg4.tasker.model.RuleOutcome
-import com.mg4.tasker.service.TaskerRunService
 import com.mg4.tasker.store.HistoryStore
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -81,7 +80,7 @@ class HistoryFragment : Fragment() {
             val context = holder.itemView.context
 
             val trigger = context.getString(
-                if (run.trigger == TaskerRunService.TRIGGER_MANUAL) R.string.history_trigger_manual
+                if (run.trigger == "MANUAL") R.string.history_trigger_manual
                 else R.string.history_trigger_ignition
             )
             holder.binding.runHeader.text = "${timeFormat.format(Date(run.timestamp))} — $trigger"
