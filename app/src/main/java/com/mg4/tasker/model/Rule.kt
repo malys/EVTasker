@@ -1,5 +1,7 @@
 package com.mg4.tasker.model
 
+import com.mg4.hardware.catalog.ConditionType
+import com.mg4.hardware.catalog.ActionType
 import java.util.UUID
 
 /** Comparison operator for numeric conditions. */

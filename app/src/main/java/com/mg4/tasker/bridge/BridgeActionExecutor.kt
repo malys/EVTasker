@@ -3,12 +3,12 @@ package com.mg4.tasker.bridge
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import com.mg4.tasker.debug.AppLogger
+import com.mg4.hardware.AppLogger
 import com.mg4.tasker.engine.ActionExecutor
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.ActionResult
-import com.mg4.tasker.model.ActionType
-import com.mg4.tasker.model.ValueKind
+import com.mg4.hardware.catalog.ActionType
+import com.mg4.hardware.catalog.ValueKind
 import com.mg4.tasker.util.Notifier
 
 /**

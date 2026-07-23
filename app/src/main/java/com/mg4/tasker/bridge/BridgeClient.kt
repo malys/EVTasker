@@ -7,7 +7,7 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import com.mg4.control.tasker.ITaskerBridge
-import com.mg4.tasker.debug.AppLogger
+import com.mg4.hardware.AppLogger
 import com.mg4.tasker.model.Snapshot
 import java.util.Calendar
 import java.util.concurrent.CountDownLatch

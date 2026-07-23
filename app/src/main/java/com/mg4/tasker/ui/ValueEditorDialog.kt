@@ -12,15 +12,15 @@ import com.mg4.tasker.databinding.DialogValueEditorBinding
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.CompareOp
 import com.mg4.tasker.model.Condition
-import com.mg4.tasker.model.ConditionType
-import com.mg4.tasker.model.ValueKind
+import com.mg4.hardware.catalog.ConditionType
+import com.mg4.hardware.catalog.ValueKind
 import com.mg4.tasker.util.BtDevices
 import java.util.Calendar
 
 /**
  * Value entry for a condition or an action.
  *
- * A single dialog drives every type: it reads the [com.mg4.tasker.model.ValueSpec] and
+ * A single dialog drives every type: it reads the [com.mg4.hardware.catalog.ValueSpec] and
  * shows only the matching control. That is what lets a catalogue entry be added without
  * writing a line of UI.
  */
@@ -63,7 +63,7 @@ object ValueEditorDialog {
             firmwareEnum = condition.type == ConditionType.FIRMWARE_GEN,
             choices = when {
                 condition.type == ConditionType.FIRMWARE_GEN ->
-                    com.mg4.tasker.catalog.VehicleEnums.FIRMWARE_GENS.map { Choice(it, it) }
+                    com.mg4.hardware.catalog.VehicleEnums.FIRMWARE_GENS.map { Choice(it, it) }
                 spec.kind == ValueKind.BT_DEVICE ->
                     BtDevices.bonded(context).map { Choice(it.mac, "${it.name} (${it.mac})") }
                 else -> emptyList()
@@ -165,7 +165,7 @@ object ValueEditorDialog {
     private fun bindValue(
         context: Context,
         binding: DialogValueEditorBinding,
-        spec: com.mg4.tasker.model.ValueSpec,
+        spec: com.mg4.hardware.catalog.ValueSpec,
         dynamicMax: Int?,
         gated: Boolean,
         initialNumber: Float,

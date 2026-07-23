@@ -77,6 +77,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":mg4hardware"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

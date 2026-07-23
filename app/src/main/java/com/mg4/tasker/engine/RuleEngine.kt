@@ -3,7 +3,7 @@ package com.mg4.tasker.engine
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.ActionResult
 import com.mg4.tasker.model.ConditionOutcome
-import com.mg4.tasker.model.ConditionType
+import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.EngineRun
 import com.mg4.tasker.model.MatchMode
 import com.mg4.tasker.model.Rule

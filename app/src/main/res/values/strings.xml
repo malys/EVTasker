@@ -8,129 +8,21 @@
     <string name="tab_diagnostic">Diagnostic</string>
 
     <!-- Catalogue groups -->
-    <string name="group_context">Context</string>
-    <string name="group_environment">Environment</string>
-    <string name="group_driving">Driving</string>
-    <string name="group_comfort">Comfort</string>
-    <string name="group_audio">Audio</string>
-    <string name="group_adas">Driver assistance</string>
-    <string name="group_climate">Climate</string>
-    <string name="group_profile">Profile</string>
-    <string name="group_system">System</string>
 
     <!-- Units -->
-    <string name="unit_celsius">°C</string>
-    <string name="unit_kmh">km/h</string>
-    <string name="unit_percent">%</string>
 
     <!-- Vehicle values -->
-    <string name="drive_eco">Eco</string>
-    <string name="drive_normal">Normal</string>
-    <string name="drive_sport">Sport</string>
-    <string name="drive_snow">Snow</string>
-    <string name="drive_custom">Custom</string>
 
-    <string name="regen_low">Low</string>
-    <string name="regen_medium">Medium</string>
-    <string name="regen_high">High</string>
-    <string name="regen_adaptive">Adaptive</string>
-    <string name="regen_off">Off</string>
-    <string name="regen_one_pedal">One pedal</string>
 
-    <string name="aeb_alert_only">Alert only</string>
-    <string name="aeb_alert_brake">Alert + braking</string>
 
-    <string name="sensitivity_low">Low</string>
-    <string name="sensitivity_standard">Standard</string>
-    <string name="sensitivity_high">High</string>
 
-    <string name="elk_off">Off</string>
-    <string name="elk_warn">Warning (LDW)</string>
-    <string name="elk_assist">Assist (LDP)</string>
-    <string name="elk_full">Emergency keeping (ELK)</string>
 
-    <string name="acc_off">Off</string>
-    <string name="acc_acc">Adaptive cruise (ACC)</string>
-    <string name="acc_tja">Traffic jam assist (TJA)</string>
 
-    <string name="limiter_off">Off</string>
-    <string name="limiter_manual">Manual</string>
-    <string name="limiter_smart">Intelligent</string>
 
-    <string name="ignition_lock">Locked</string>
-    <string name="ignition_off">Off</string>
-    <string name="ignition_acc">Accessory</string>
-    <string name="ignition_on">Running</string>
-    <string name="ignition_start">Starting</string>
 
     <!-- Conditions -->
-    <string name="cond_bt_device">Bluetooth phone connected</string>
-    <string name="cond_bt_any">Any Bluetooth device connected</string>
-    <string name="cond_time">Time of day</string>
-    <string name="cond_day">Day of week</string>
-    <string name="cond_firmware">Firmware generation</string>
-    <string name="cond_outside_temp">Outside temperature</string>
-    <string name="cond_ignition">Ignition state</string>
-    <string name="cond_in_park">Gear in P</string>
-    <string name="cond_speed">Speed</string>
-    <string name="cond_drive_mode">Drive mode</string>
-    <string name="cond_regen">Regeneration</string>
-    <string name="cond_energy_saving">Energy saving</string>
-    <string name="cond_seat_heat_l">Left seat heating</string>
-    <string name="cond_seat_heat_r">Right seat heating</string>
-    <string name="cond_steering_heat">Steering wheel heating</string>
-    <string name="cond_media_volume">Media volume</string>
-    <string name="cond_brightness">Screen brightness</string>
-    <string name="cond_aeb">Emergency braking (AEB)</string>
-    <string name="cond_aeb_mode">AEB mode</string>
-    <string name="cond_aeb_sensitivity">AEB sensitivity</string>
-    <string name="cond_elk_mode">ELK mode</string>
-    <string name="cond_elk_sensitivity">ELK sensitivity</string>
-    <string name="cond_acc_tja">ACC / TJA mode</string>
-    <string name="cond_limiter">Speed limiter</string>
-    <string name="cond_tsr">Traffic sign recognition (TSR)</string>
-    <string name="cond_overspeed">Overspeed alarm</string>
-    <string name="cond_speed_limit_tone">Speed limit tone</string>
-    <string name="cond_sound_warning">ADAS sound warning</string>
-    <string name="cond_ac">Air conditioning on</string>
-    <string name="cond_hvac_auto">Climate AUTO on</string>
-    <string name="cond_recirc">Air recirculation on</string>
-    <string name="cond_fan_speed">Fan speed</string>
-    <string name="cond_temperature_set">Set temperature</string>
-    <string name="cond_window_open">A window is open</string>
 
     <!-- Actions -->
-    <string name="act_apply_profile">Apply a profile</string>
-    <string name="act_drive_mode">Drive mode</string>
-    <string name="act_regen">Regeneration</string>
-    <string name="act_one_pedal">One pedal driving</string>
-    <string name="act_energy_saving">Energy saving</string>
-    <string name="act_seat_heat_l">Left seat heating</string>
-    <string name="act_seat_heat_r">Right seat heating</string>
-    <string name="act_steering_heat">Steering wheel heating</string>
-    <string name="act_brightness">Screen brightness</string>
-    <string name="act_media_volume">Media volume</string>
-    <string name="act_balance">Left / right balance</string>
-    <string name="act_fader">Front / rear fader</string>
-    <string name="act_tone">Tone</string>
-    <string name="act_bose">Bose sound profile</string>
-    <string name="act_3d">3D effect</string>
-    <string name="act_speed_volume">Speed-adaptive volume</string>
-    <string name="act_aeb">Emergency braking (AEB)</string>
-    <string name="act_aeb_mode">AEB mode</string>
-    <string name="act_aeb_sensitivity">AEB sensitivity</string>
-    <string name="act_elk_mode">ELK mode</string>
-    <string name="act_elk_sensitivity">ELK sensitivity</string>
-    <string name="act_acc_tja">ACC / TJA mode</string>
-    <string name="act_limiter">Speed limiter</string>
-    <string name="act_tsr">Traffic sign recognition (TSR)</string>
-    <string name="act_overspeed">Overspeed alarm</string>
-    <string name="act_speed_limit_tone">Speed limit tone</string>
-    <string name="act_sound_warning">ADAS sound warning</string>
-    <string name="act_las_sound">Lane departure sound warning</string>
-    <string name="act_las_vibration">Lane departure steering vibration</string>
-    <string name="act_launch_app">Launch an app</string>
-    <string name="act_notify">Show a notification</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automation enabled</string>

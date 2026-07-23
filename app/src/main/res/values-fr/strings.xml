@@ -8,129 +8,21 @@
     <string name="tab_diagnostic">Diagnostic</string>
 
     <!-- Groupes du catalogue -->
-    <string name="group_context">Contexte</string>
-    <string name="group_environment">Environnement</string>
-    <string name="group_driving">Conduite</string>
-    <string name="group_comfort">Confort</string>
-    <string name="group_audio">Audio</string>
-    <string name="group_adas">Aides à la conduite</string>
-    <string name="group_climate">Climatisation</string>
-    <string name="group_profile">Profil</string>
-    <string name="group_system">Système</string>
 
     <!-- Unités -->
-    <string name="unit_celsius">°C</string>
-    <string name="unit_kmh">km/h</string>
-    <string name="unit_percent">%</string>
 
     <!-- Valeurs véhicule -->
-    <string name="drive_eco">Eco</string>
-    <string name="drive_normal">Normal</string>
-    <string name="drive_sport">Sport</string>
-    <string name="drive_snow">Neige</string>
-    <string name="drive_custom">Personnalisé</string>
 
-    <string name="regen_low">Faible</string>
-    <string name="regen_medium">Moyenne</string>
-    <string name="regen_high">Forte</string>
-    <string name="regen_adaptive">Adaptative</string>
-    <string name="regen_off">Désactivée</string>
-    <string name="regen_one_pedal">Une pédale</string>
 
-    <string name="aeb_alert_only">Alerte seule</string>
-    <string name="aeb_alert_brake">Alerte + freinage</string>
 
-    <string name="sensitivity_low">Faible</string>
-    <string name="sensitivity_standard">Standard</string>
-    <string name="sensitivity_high">Élevée</string>
 
-    <string name="elk_off">Désactivé</string>
-    <string name="elk_warn">Alerte (LDW)</string>
-    <string name="elk_assist">Assistance (LDP)</string>
-    <string name="elk_full">Maintien actif (ELK)</string>
 
-    <string name="acc_off">Désactivé</string>
-    <string name="acc_acc">Régulateur adaptatif (ACC)</string>
-    <string name="acc_tja">Assistance embouteillage (TJA)</string>
 
-    <string name="limiter_off">Désactivé</string>
-    <string name="limiter_manual">Manuel</string>
-    <string name="limiter_smart">Intelligent</string>
 
-    <string name="ignition_lock">Verrouillé</string>
-    <string name="ignition_off">Éteint</string>
-    <string name="ignition_acc">Accessoires</string>
-    <string name="ignition_on">Démarré</string>
-    <string name="ignition_start">Démarrage</string>
 
     <!-- Conditions -->
-    <string name="cond_bt_device">Téléphone Bluetooth connecté</string>
-    <string name="cond_bt_any">Un appareil Bluetooth est connecté</string>
-    <string name="cond_time">Heure</string>
-    <string name="cond_day">Jour de la semaine</string>
-    <string name="cond_firmware">Génération de firmware</string>
-    <string name="cond_outside_temp">Température extérieure</string>
-    <string name="cond_ignition">État d\'allumage</string>
-    <string name="cond_in_park">Levier en position P</string>
-    <string name="cond_speed">Vitesse</string>
-    <string name="cond_drive_mode">Mode de conduite</string>
-    <string name="cond_regen">Récupération</string>
-    <string name="cond_energy_saving">Économie d\'énergie</string>
-    <string name="cond_seat_heat_l">Siège chauffant gauche</string>
-    <string name="cond_seat_heat_r">Siège chauffant droit</string>
-    <string name="cond_steering_heat">Volant chauffant</string>
-    <string name="cond_media_volume">Volume média</string>
-    <string name="cond_brightness">Luminosité écran</string>
-    <string name="cond_aeb">Freinage d\'urgence (AEB)</string>
-    <string name="cond_aeb_mode">Mode AEB</string>
-    <string name="cond_aeb_sensitivity">Sensibilité AEB</string>
-    <string name="cond_elk_mode">Mode ELK</string>
-    <string name="cond_elk_sensitivity">Sensibilité ELK</string>
-    <string name="cond_acc_tja">Mode ACC / TJA</string>
-    <string name="cond_limiter">Limiteur de vitesse</string>
-    <string name="cond_tsr">Lecture des panneaux (TSR)</string>
-    <string name="cond_overspeed">Alerte survitesse</string>
-    <string name="cond_speed_limit_tone">Bip de limitation</string>
-    <string name="cond_sound_warning">Alerte sonore ADAS</string>
-    <string name="cond_ac">Climatisation active</string>
-    <string name="cond_hvac_auto">Mode AUTO climatisation</string>
-    <string name="cond_recirc">Recyclage d\'air actif</string>
-    <string name="cond_fan_speed">Vitesse ventilation</string>
-    <string name="cond_temperature_set">Température de consigne</string>
-    <string name="cond_window_open">Une vitre est ouverte</string>
 
     <!-- Actions -->
-    <string name="act_apply_profile">Appliquer un profil</string>
-    <string name="act_drive_mode">Mode de conduite</string>
-    <string name="act_regen">Récupération</string>
-    <string name="act_one_pedal">Conduite une pédale</string>
-    <string name="act_energy_saving">Économie d\'énergie</string>
-    <string name="act_seat_heat_l">Siège chauffant gauche</string>
-    <string name="act_seat_heat_r">Siège chauffant droit</string>
-    <string name="act_steering_heat">Volant chauffant</string>
-    <string name="act_brightness">Luminosité écran</string>
-    <string name="act_media_volume">Volume média</string>
-    <string name="act_balance">Balance gauche / droite</string>
-    <string name="act_fader">Balance avant / arrière</string>
-    <string name="act_tone">Tonalité</string>
-    <string name="act_bose">Ambiance Bose</string>
-    <string name="act_3d">Effet 3D</string>
-    <string name="act_speed_volume">Volume adaptatif à la vitesse</string>
-    <string name="act_aeb">Freinage d\'urgence (AEB)</string>
-    <string name="act_aeb_mode">Mode AEB</string>
-    <string name="act_aeb_sensitivity">Sensibilité AEB</string>
-    <string name="act_elk_mode">Mode ELK</string>
-    <string name="act_elk_sensitivity">Sensibilité ELK</string>
-    <string name="act_acc_tja">Mode ACC / TJA</string>
-    <string name="act_limiter">Limiteur de vitesse</string>
-    <string name="act_tsr">Lecture des panneaux (TSR)</string>
-    <string name="act_overspeed">Alerte survitesse</string>
-    <string name="act_speed_limit_tone">Bip de limitation</string>
-    <string name="act_sound_warning">Alerte sonore ADAS</string>
-    <string name="act_las_sound">Alerte sonore de voie</string>
-    <string name="act_las_vibration">Vibration volant en sortie de voie</string>
-    <string name="act_launch_app">Lancer une application</string>
-    <string name="act_notify">Afficher une notification</string>
 
     <!-- Écran des règles -->
     <string name="rules_automation_switch">Automatisation activée</string>

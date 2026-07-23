@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.mg4.tasker.bridge.BridgeContract
-import com.mg4.tasker.debug.AppLogger
+import com.mg4.hardware.AppLogger
 import com.mg4.tasker.service.TaskerRunService
 import com.mg4.tasker.store.AppState
 

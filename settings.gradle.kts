@@ -15,3 +15,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "MG4Tasker"
 include(":app")
+
+include(":mg4hardware")
+project(":mg4hardware").projectDir = file("MG4Hardware/lib")

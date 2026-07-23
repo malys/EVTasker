@@ -8,7 +8,7 @@ import android.os.Build
 import android.os.IBinder
 import com.mg4.tasker.bridge.BridgeActionExecutor
 import com.mg4.tasker.bridge.BridgeClient
-import com.mg4.tasker.debug.AppLogger
+import com.mg4.hardware.AppLogger
 import com.mg4.tasker.engine.RuleEngine
 import com.mg4.tasker.store.HistoryStore
 import com.mg4.tasker.store.RuleStore
@@ -73,7 +73,7 @@ class TaskerRunService : Service() {
             HistoryStore(this).append(result)
             AppLogger.i(TAG, "cycle $trigger finished — ${result.ruleRuns.size} rules evaluated")
         } catch (e: Exception) {
-            AppLogger.e(TAG, "cycle $trigger aborted: ${e.message}", e)
+            AppLogger.e(TAG, "cycle $trigger aborted: ${e.message}")
         } finally {
             client.disconnect()
         }

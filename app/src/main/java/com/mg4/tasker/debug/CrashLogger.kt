@@ -1,5 +1,6 @@
 package com.mg4.tasker.debug
 
+import com.mg4.hardware.AppLogger
 import android.content.Context
 import java.io.File
 import java.io.PrintWriter

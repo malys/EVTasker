@@ -4,7 +4,7 @@ import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.model.CompareOp
 import com.mg4.tasker.model.Condition
 import com.mg4.tasker.model.ConditionOutcome
-import com.mg4.tasker.model.ConditionType
+import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.Snapshot
 import org.junit.Assert.assertEquals
 import org.junit.Test

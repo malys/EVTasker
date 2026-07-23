@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mg4.tasker.R
 import com.mg4.tasker.databinding.FragmentConsoleBinding
-import com.mg4.tasker.debug.AppLogger
+import com.mg4.hardware.AppLogger
 import com.mg4.tasker.debug.CrashLogger
 
 /**

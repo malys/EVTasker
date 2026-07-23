@@ -18,7 +18,7 @@ import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.Condition
 import com.mg4.tasker.model.MatchMode
 import com.mg4.tasker.model.Rule
-import com.mg4.tasker.model.ValueKind
+import com.mg4.hardware.catalog.ValueKind
 import com.mg4.tasker.store.RuleStore
 import com.mg4.tasker.util.BtDevices
 import kotlin.concurrent.thread
@@ -54,7 +54,7 @@ class RuleEditorActivity : AppCompatActivity() {
     private var mediaVolumeMax: Int? = null
 
     /** Connected car firmware, if reported: drives which catalogue entries are offered. */
-    private var firmware: com.mg4.tasker.model.FirmwareGen? = null
+    private var firmware: com.mg4.hardware.FirmwareGen? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,7 +121,7 @@ class RuleEditorActivity : AppCompatActivity() {
                 val loadedProfiles = client.listProfiles()
                 val snapshot = client.readSnapshot()
                 val maxVolume = snapshot.int(BridgeContract.KEY_MEDIA_VOLUME_MAX)
-                val gen = com.mg4.tasker.model.FirmwareSupport.parse(
+                val gen = com.mg4.hardware.FirmwareSupport.parse(
                     snapshot.string(BridgeContract.KEY_FIRMWARE_GEN)
                 )
                 Handler(Looper.getMainLooper()).post {

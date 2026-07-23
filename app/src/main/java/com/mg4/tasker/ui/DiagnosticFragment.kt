@@ -13,9 +13,9 @@ import com.mg4.tasker.R
 import com.mg4.tasker.bridge.BridgeClient
 import com.mg4.tasker.databinding.FragmentDiagnosticBinding
 import com.mg4.tasker.databinding.ItemDiagnosticBinding
-import com.mg4.tasker.model.ConditionType
+import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.Snapshot
-import com.mg4.tasker.model.ValueKind
+import com.mg4.hardware.catalog.ValueKind
 import kotlin.concurrent.thread
 
 /**

@@ -1,7 +1,7 @@
 package com.mg4.tasker
 
 import android.app.Application
-import com.mg4.tasker.debug.AppLogger
+import com.mg4.hardware.AppLogger
 import com.mg4.tasker.debug.CrashLogger
 import com.mg4.tasker.util.Notifier
 

@@ -10,10 +10,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.mg4.tasker.R
 import com.mg4.tasker.databinding.ItemCatalogEntryBinding
 import com.mg4.tasker.databinding.SheetCatalogBinding
-import com.mg4.tasker.model.ActionType
-import com.mg4.tasker.model.ConditionType
-import com.mg4.tasker.model.FirmwareGen
-import com.mg4.tasker.model.FirmwareSupport
+import com.mg4.hardware.catalog.ActionType
+import com.mg4.hardware.catalog.ConditionType
+import com.mg4.hardware.FirmwareGen
+import com.mg4.hardware.FirmwareSupport
 
 /**
  * Condition or action picker, grouped by theme.

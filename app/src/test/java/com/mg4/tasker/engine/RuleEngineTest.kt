@@ -3,10 +3,10 @@ package com.mg4.tasker.engine
 import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.ActionResult
-import com.mg4.tasker.model.ActionType
+import com.mg4.hardware.catalog.ActionType
 import com.mg4.tasker.model.CompareOp
 import com.mg4.tasker.model.Condition
-import com.mg4.tasker.model.ConditionType
+import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.MatchMode
 import com.mg4.tasker.model.Rule
 import com.mg4.tasker.model.RuleOutcome

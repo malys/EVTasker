@@ -1,5 +1,8 @@
 package com.mg4.tasker.model
 
+import com.mg4.hardware.catalog.ConditionType
+import com.mg4.hardware.catalog.ActionType
+
 /** Outcome of evaluating one condition. */
 enum class ConditionOutcome {
     MATCH,
