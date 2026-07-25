@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MG4 Tasker</string>
+
+    <!-- Tabs -->
+    <string name="tab_rules">Regeln</string>
+    <string name="tab_history">Verlauf</string>
+    <string name="tab_diagnostic">Diagnose</string>
+
+    <!-- Rules screen -->
+    <string name="rules_automation_switch">Automatisierung aktiviert</string>
+    <string name="rules_language">Sprache: %1$s</string>
+    <string name="rules_language_title">Sprache</string>
+    <string name="lang_system">Systemstandard</string>
+    <string name="rules_empty_title">Noch keine Regeln</string>
+    <string name="rules_empty_body">Eine Regel wendet Einstellungen beim Start des Fahrzeugs an, wenn ihre Bedingungen erfüllt sind.</string>
+    <string name="rules_new">Neue Regel</string>
+    <string name="rules_edit">Bearbeiten</string>
+    <string name="rules_delete">Löschen</string>
+    <string name="rules_run_now">Jetzt testen</string>
+    <string name="rules_select_hint">Regel auswählen</string>
+    <string name="rules_quota_reached">Maximale Anzahl an Regeln erreicht</string>
+    <string name="rules_delete_confirm">„%1$s“ löschen?</string>
+    <string name="rules_when">WENN</string>
+    <string name="rules_then">DANN</string>
+    <string name="rules_running">Test läuft…</string>
+
+    <plurals name="rule_summary_conditions">
+        <item quantity="one">%d Bedingung</item>
+        <item quantity="other">%d Bedingungen</item>
+    </plurals>
+    <plurals name="rule_summary_actions">
+        <item quantity="one">%d Aktion</item>
+        <item quantity="other">%d Aktionen</item>
+    </plurals>
+
+    <!-- Editor -->
+    <string name="editor_new_title">Neue Regel</string>
+    <string name="editor_edit_title">Regel bearbeiten</string>
+    <string name="editor_name_hint">Regelname</string>
+    <string name="editor_match_all">Alle Bedingungen</string>
+    <string name="editor_match_any">Beliebige Bedingung</string>
+    <string name="editor_add_condition">Bedingung hinzufügen</string>
+    <string name="editor_add_action">Aktion hinzufügen</string>
+    <string name="editor_save">Speichern</string>
+    <string name="editor_cancel">Abbrechen</string>
+    <string name="editor_name_required">Geben Sie der Regel einen Namen</string>
+    <string name="editor_incomplete">Mindestens eine Bedingung und eine Aktion sind erforderlich</string>
+    <string name="editor_remove">Entfernen</string>
+    <string name="editor_gated_hint">Nur im Stand</string>
+    <string name="editor_gated_explain">Diese Einstellung ändert das Fahrverhalten: MG4Control verweigert sie während der Fahrt.</string>
+    <string name="editor_pick_condition">Bedingung wählen</string>
+    <string name="editor_pick_action">Aktion wählen</string>
+
+    <!-- Value editor -->
+    <string name="value_enabled">Ein</string>
+    <string name="value_disabled">Aus</string>
+    <string name="value_from">Von</string>
+    <string name="value_to">bis</string>
+    <string name="value_ok">Bestätigen</string>
+    <string name="value_no_bt_devices">Kein gekoppeltes Bluetooth-Gerät</string>
+    <string name="value_no_profiles">Kein MG4Control-Profil erreichbar</string>
+    <string name="value_notification_hint">Anzuzeigende Nachricht</string>
+
+    <string name="op_eq">ist gleich</string>
+    <string name="op_ne">ist nicht</string>
+    <string name="op_lt">ist unter</string>
+    <string name="op_le">ist höchstens</string>
+    <string name="op_gt">ist über</string>
+    <string name="op_ge">ist mindestens</string>
+
+    <string name="day_mon">Mo</string>
+    <string name="day_tue">Di</string>
+    <string name="day_wed">Mi</string>
+    <string name="day_thu">Do</string>
+    <string name="day_fri">Fr</string>
+    <string name="day_sat">Sa</string>
+    <string name="day_sun">So</string>
+
+    <!-- History -->
+    <string name="history_empty_title">Noch nichts ausgeführt</string>
+    <string name="history_empty_body">Der Verlauf füllt sich beim Start des Fahrzeugs oder nach einem manuellen Test.</string>
+    <string name="history_clear">Verlauf löschen</string>
+    <string name="history_trigger_ignition">Fahrzeugstart</string>
+    <string name="history_trigger_manual">Manueller Test</string>
+    <string name="history_no_bridge">Fahrzeugebene war nicht bereit — keine Regel konnte angewendet werden.</string>
+
+    <string name="outcome_fired">Angewendet</string>
+    <string name="outcome_failed">Fehlgeschlagen</string>
+    <string name="outcome_not_matched">Bedingungen nicht erfüllt</string>
+    <string name="outcome_not_evaluable">Nicht auswertbar</string>
+    <string name="outcome_disabled">Deaktiviert</string>
+    <string name="outcome_unavailable_detail">Unlesbare Daten: %1$s</string>
+
+    <string name="verdict_allowed">angewendet</string>
+    <string name="verdict_moving">verweigert — Fahrzeug fährt</string>
+    <string name="verdict_unknown_speed">verweigert — Geschwindigkeit unlesbar</string>
+    <string name="verdict_unsupported">nicht unterstützt</string>
+    <string name="verdict_error">fehlgeschlagen</string>
+    <string name="verdict_no_bridge">MG4Control nicht erreichbar</string>
+
+    <!-- Diagnostic -->
+    <string name="diag_title">Von MG4Control gelesener Zustand</string>
+    <string name="diag_refresh">Aktualisieren</string>
+    <string name="diag_reading">Wird gelesen…</string>
+    <string name="diag_unavailable">unlesbar</string>
+    <string name="diag_bridge_ok">Fahrzeugebene: bereit</string>
+    <string name="diag_bridge_ko">Fahrzeugebene: nicht bereit</string>
+    <string name="diag_bridge_ko_hint">Öffnen Sie MG4Tasker im Fahrzeug, damit sein Fahrzeugdienst starten kann. Er benötigt die Plattformsignatur und Systemberechtigungen.</string>
+    <string name="diag_temp_note">Die Außentemperatur wird nicht von jeder MG4-Firmware bereitgestellt. Bleibt sie hier unlesbar, werden Regeln, die sie verwenden, nie ausgelöst.</string>
+    <string name="diag_check_support">Unterstützung prüfen</string>
+    <string name="diag_support_checking">Unterstützte Funktionen werden geprüft…</string>
+    <string name="diag_support_summary">%1$d Bedingungen, %2$d Aktionen unterstützt</string>
+    <string name="diag_support_gen">Firmware %1$s</string>
+    <string name="diag_support_unknown">unbekannt</string>
+    <string name="diag_support_never">Unterstützte Funktionen noch nicht geprüft</string>
+
+    <!-- Console -->
+    <string name="tab_console">Konsole</string>
+    <string name="console_share">Teilen</string>
+    <string name="console_clear">Löschen</string>
+    <string name="console_empty">Noch keine Protokolleinträge.</string>
+    <string name="console_crash_title">Vorheriger Absturz erkannt</string>
+    <string name="console_crash_show">Bericht anzeigen</string>
+    <string name="console_crash_dismiss">Verwerfen</string>
+
+    <string name="warn_mg4control_present">MG4Control ist ebenfalls installiert — beide Apps können Fahrzeugeinstellungen ändern.</string>
+
+    <!-- Notifications -->
+    <string name="channel_name">MG4Tasker</string>
+    <string name="notif_running_title">Regeln werden angewendet…</string>
+</resources>

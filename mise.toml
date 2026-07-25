@@ -117,7 +117,7 @@ create_avd "$EMU_SCREEN_AVD" "$EMU_SCREEN_IMAGE" "pixel_c"
 description = "Lance l'émulateur Automotive (API 33 — a un CarPropertyManager)"
 run = '''
 set -e
-"$ANDROID_HOME/emulator/emulator" -avd "$EMU_CAR_AVD" -gpu swiftshader_indirect -no-snapshot-save -no-boot-anim &
+"$ANDROID_HOME/emulator/emulator" -avd "$EMU_CAR_AVD" -gpu host -no-snapshot-save -no-boot-anim &
 "$ANDROID_HOME/platform-tools/adb" wait-for-device
 echo "Émulateur voiture prêt."
 '''
@@ -126,7 +126,7 @@ echo "Émulateur voiture prêt."
 description = "Lance l'émulateur écran MG4 (API 28, 1920x1080 @ 160dpi — pas de service voiture)"
 run = '''
 set -e
-"$ANDROID_HOME/emulator/emulator" -avd "$EMU_SCREEN_AVD" -gpu swiftshader_indirect -no-snapshot-save -no-boot-anim &
+"$ANDROID_HOME/emulator/emulator" -avd "$EMU_SCREEN_AVD" -gpu host -no-snapshot-save -no-boot-anim &
 "$ANDROID_HOME/platform-tools/adb" wait-for-device
 echo "Émulateur écran prêt."
 '''

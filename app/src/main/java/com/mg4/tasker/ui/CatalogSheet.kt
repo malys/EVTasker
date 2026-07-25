@@ -14,6 +14,7 @@ import com.mg4.hardware.catalog.ActionType
 import com.mg4.hardware.catalog.ConditionType
 import com.mg4.hardware.FirmwareGen
 import com.mg4.hardware.FirmwareSupport
+import com.mg4.tasker.store.SupportStore
 
 /**
  * Condition or action picker, grouped by theme.
@@ -21,16 +22,19 @@ import com.mg4.hardware.FirmwareSupport
  * A sheet rather than a new screen: picking an entry is a short step in the middle of
  * editing, and switching activity would hide the rule being built.
  *
- * [firmware] is the connected car's generation, when known. Entries not supported on it
- * are hidden — but a null firmware (no bridge, or MG4Control did not report one) hides
- * nothing: filtering on a guess would be worse than offering an entry that later refuses.
+ * Entries not supported on this car are hidden. The source is the stored support state
+ * computed by the "check support" step ([SupportStore]); until that has ever run it falls
+ * back to the live matrix filter on [firmware]. A null firmware (no bridge, or MG4Control
+ * did not report one) hides nothing: filtering on a guess would be worse than offering an
+ * entry that later refuses.
  */
 object CatalogSheet {
 
     fun pickCondition(context: Context, firmware: FirmwareGen?, onPick: (ConditionType) -> Unit) {
+        val allowed = SupportStore.supportedConditions(context)
         val entries = mutableListOf<Entry>()
         ConditionType.byGroup().forEach { (group, types) ->
-            val supported = types.filter { FirmwareSupport.isSupported(it, firmware) }
+            val supported = types.filter { allow(allowed, it.name) { FirmwareSupport.isSupported(it, firmware) } }
             if (supported.isEmpty()) return@forEach
             entries += Entry.Header(context.getString(group.labelRes))
             supported.forEach { entries += Entry.Item(context.getString(it.labelRes), null) { onPick(it) } }
@@ -39,9 +43,10 @@ object CatalogSheet {
     }
 
     fun pickAction(context: Context, firmware: FirmwareGen?, onPick: (ActionType) -> Unit) {
+        val allowed = SupportStore.supportedActions(context)
         val entries = mutableListOf<Entry>()
         ActionType.byGroup().forEach { (group, types) ->
-            val supported = types.filter { FirmwareSupport.isSupported(it, firmware) }
+            val supported = types.filter { allow(allowed, it.name) { FirmwareSupport.isSupported(it, firmware) } }
             if (supported.isEmpty()) return@forEach
             entries += Entry.Header(context.getString(group.labelRes))
             supported.forEach { type ->
@@ -56,6 +61,10 @@ object CatalogSheet {
     }
 
     // -------------------------------------------------------------------------
+
+    /** Stored support wins when a check has run; otherwise fall back to the live matrix. */
+    private inline fun allow(allowed: Set<String>?, name: String, live: () -> Boolean): Boolean =
+        allowed?.contains(name) ?: live()
 
     private sealed interface Entry {
         data class Header(val label: String) : Entry

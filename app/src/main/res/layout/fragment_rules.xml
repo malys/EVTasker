@@ -21,6 +21,13 @@
             android:text="@string/rules_automation_switch" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/languageButton"
+            style="@style/Widget.MG4.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_md" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/newRuleButton"
             style="@style/Widget.MG4.Button"
             android:layout_width="match_parent"

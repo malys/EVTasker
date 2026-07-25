@@ -43,6 +43,30 @@
         android:textColor="@color/mg4_error"
         android:visibility="gone" />
 
+    <!-- Feature support: which catalogue entries this firmware exposes. Computed
+         automatically on first launch / after an update, re-runnable here on demand. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/supportStatus"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/Text.MG4.Body" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/checkSupportButton"
+            style="@style/Widget.MG4.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/diag_check_support" />
+    </LinearLayout>
+
     <!-- Always shown: outside temperature is the only catalogue signal whose
          availability has not been verified on a vehicle. The user must be able to link
          "unreadable here" to "my weather rule never fires". -->

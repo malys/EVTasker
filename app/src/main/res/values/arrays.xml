@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Supported display languages. Order must match language_names. Add a language by
+         dropping a values-xx/ translation and appending its tag + endonym here. Parity
+         target is MG4Control (de/en/es/fr/it/pt); only shipped translations are listed. -->
+    <string-array name="language_tags" translatable="false">
+        <item>system</item>
+        <item>de</item>
+        <item>en</item>
+        <item>es</item>
+        <item>fr</item>
+        <item>it</item>
+        <item>pt</item>
+    </string-array>
+
+    <!-- Language names are endonyms (shown in their own language), except the first entry
+         which follows the current UI locale. -->
+    <string-array name="language_names">
+        <item>@string/lang_system</item>
+        <item>Deutsch</item>
+        <item>English</item>
+        <item>Español</item>
+        <item>Français</item>
+        <item>Italiano</item>
+        <item>Português</item>
+    </string-array>
+</resources>

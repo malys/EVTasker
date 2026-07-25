@@ -13,6 +13,7 @@ import com.mg4.tasker.databinding.FragmentRulesBinding
 import com.mg4.tasker.model.Rule
 import com.mg4.tasker.service.TaskerRunService
 import com.mg4.tasker.store.AppState
+import com.mg4.tasker.store.LanguageStore
 import com.mg4.tasker.store.RuleStore
 import com.mg4.tasker.util.BtDevices
 
@@ -37,6 +38,9 @@ class RulesFragment : Fragment() {
         binding.automationSwitch.setOnCheckedChangeListener { _, checked ->
             AppState.setAutomationEnabled(requireContext(), checked)
         }
+
+        binding.languageButton.text = getString(R.string.rules_language, currentLanguageName())
+        binding.languageButton.setOnClickListener { pickLanguage() }
 
         adapter = RuleAdapter(
             onSelect = { rule -> selected = rule; refresh() },
@@ -92,6 +96,30 @@ class RulesFragment : Fragment() {
         binding.detailName.text = current.name
         binding.detailConditions.text = current.conditions.joinToString("\n") { "• " + labels.describe(it) }
         binding.detailActions.text = current.actions.joinToString("\n") { "• " + labels.describe(it) }
+    }
+
+    /** Display name of the current language choice, for the button label. */
+    private fun currentLanguageName(): String {
+        val tags = resources.getStringArray(R.array.language_tags)
+        val names = resources.getStringArray(R.array.language_names)
+        val index = tags.indexOf(LanguageStore.getTag(requireContext())).takeIf { it >= 0 } ?: 0
+        return names[index]
+    }
+
+    private fun pickLanguage() {
+        val tags = resources.getStringArray(R.array.language_tags)
+        val names = resources.getStringArray(R.array.language_names)
+        val current = tags.indexOf(LanguageStore.getTag(requireContext())).takeIf { it >= 0 } ?: 0
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.rules_language_title)
+            // Picking a language re-applies the per-app locale, which recreates the activity
+            // with the new resources — no manual restart, the button label reflects it.
+            .setSingleChoiceItems(names, current) { dialog, which ->
+                dialog.dismiss()
+                LanguageStore.setTag(requireContext(), tags[which])
+            }
+            .setNegativeButton(R.string.editor_cancel, null)
+            .show()
     }
 
     private fun confirmDelete() {

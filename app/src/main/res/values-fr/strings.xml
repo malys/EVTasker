@@ -26,6 +26,9 @@
 
     <!-- Écran des règles -->
     <string name="rules_automation_switch">Automatisation activée</string>
+    <string name="rules_language">Langue : %1$s</string>
+    <string name="rules_language_title">Langue</string>
+    <string name="lang_system">Langue du système</string>
     <string name="rules_empty_title">Aucune règle</string>
     <string name="rules_empty_body">Une règle applique des réglages au démarrage du véhicule quand ses conditions sont remplies.</string>
     <string name="rules_new">Nouvelle règle</string>
@@ -122,6 +125,12 @@
     <string name="diag_bridge_ko">Couche véhicule : indisponible</string>
     <string name="diag_bridge_ko_hint">Ouvrez MG4Tasker sur la voiture pour démarrer son service véhicule. Il requiert la signature plateforme et les permissions système.</string>
     <string name="diag_temp_note">La température extérieure n\'est pas exposée par tous les firmwares MG4. Si elle reste illisible ici, les règles qui l\'utilisent ne se déclencheront jamais.</string>
+    <string name="diag_check_support">Vérifier le support</string>
+    <string name="diag_support_checking">Vérification des fonctions supportées…</string>
+    <string name="diag_support_summary">%1$d conditions, %2$d actions supportées</string>
+    <string name="diag_support_gen">firmware %1$s</string>
+    <string name="diag_support_unknown">inconnu</string>
+    <string name="diag_support_never">Fonctions supportées pas encore vérifiées</string>
 
     <!-- Console -->
     <string name="tab_console">Console</string>

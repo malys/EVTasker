@@ -15,6 +15,8 @@ import com.mg4.tasker.databinding.FragmentDiagnosticBinding
 import com.mg4.tasker.databinding.ItemDiagnosticBinding
 import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.Snapshot
+import com.mg4.tasker.store.SupportChecker
+import com.mg4.tasker.store.SupportStore
 import com.mg4.hardware.catalog.ValueKind
 import com.mg4.tasker.vehicle.BtTracker
 import com.mg4.tasker.vehicle.VehicleReader
@@ -41,7 +43,33 @@ class DiagnosticFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.diagList.layoutManager = LinearLayoutManager(requireContext())
         binding.refreshButton.setOnClickListener { load() }
+        binding.checkSupportButton.setOnClickListener { checkSupport() }
         load()
+        showSupport()
+    }
+
+    /** Shows the stored support summary; the check itself runs off the main thread. */
+    private fun showSupport() {
+        val ctx = requireContext()
+        val conds = SupportStore.supportedConditions(ctx)
+        if (conds == null) {
+            binding.supportStatus.setText(R.string.diag_support_never)
+            return
+        }
+        val acts = SupportStore.supportedActions(ctx) ?: emptySet()
+        val gen = SupportStore.lastCheck(ctx)?.gen ?: getString(R.string.diag_support_unknown)
+        binding.supportStatus.text =
+            getString(R.string.diag_support_summary, conds.size, acts.size) +
+                " · " + getString(R.string.diag_support_gen, gen)
+    }
+
+    private fun checkSupport() {
+        binding.supportStatus.setText(R.string.diag_support_checking)
+        val appCtx = requireContext().applicationContext
+        thread(name = "mg4-tasker-support-check") {
+            SupportChecker.refresh(appCtx)
+            Handler(Looper.getMainLooper()).post { if (_binding != null) showSupport() }
+        }
     }
 
     private fun load() {
