@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MG4Tasker</string>
+    <string name="app_name">MG4 Tasker</string>
 
     <!-- Onglets -->
     <string name="tab_rules">Règles</string>
@@ -100,6 +100,7 @@
     <string name="history_no_bridge">La couche véhicule n\'était pas prête — aucune règle n\'a pu s\'appliquer.</string>
 
     <string name="outcome_fired">Appliquée</string>
+    <string name="outcome_failed">Échouée</string>
     <string name="outcome_not_matched">Conditions non remplies</string>
     <string name="outcome_not_evaluable">Non évaluable</string>
     <string name="outcome_disabled">Désactivée</string>

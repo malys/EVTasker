@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MG4Tasker</string>
+    <string name="app_name">MG4 Tasker</string>
 
     <!-- Tabs -->
     <string name="tab_rules">Rules</string>
@@ -100,6 +100,7 @@
     <string name="history_no_bridge">Vehicle layer was not ready — no rule could be applied.</string>
 
     <string name="outcome_fired">Applied</string>
+    <string name="outcome_failed">Failed</string>
     <string name="outcome_not_matched">Conditions not met</string>
     <string name="outcome_not_evaluable">Cannot be evaluated</string>
     <string name="outcome_disabled">Disabled</string>

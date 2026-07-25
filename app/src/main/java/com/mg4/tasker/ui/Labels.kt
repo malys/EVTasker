@@ -89,8 +89,10 @@ class Labels(
     }
 
     /** One history line: what was attempted, and what the vehicle made of it. */
-    fun describe(result: ActionResult): String =
-        "${context.getString(result.actionType.labelRes)} — ${verdictLabel(result.verdict)}"
+    fun describe(result: ActionResult): String {
+        val retries = if (result.attempts > 1) " (${result.attempts}×)" else ""
+        return "${context.getString(result.actionType.labelRes)} — ${verdictLabel(result.verdict)}$retries"
+    }
 
     fun verdictLabel(verdict: String): String = context.getString(
         when (verdict) {

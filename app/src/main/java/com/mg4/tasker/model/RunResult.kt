@@ -33,8 +33,17 @@ data class ActionResult(
     val actionType: ActionType,
     val ok: Boolean,
     val verdict: String,
-    val detail: String? = null
+    val detail: String? = null,
+    /** How many tries this took. >1 means the earlier ones hit a transient ERROR and were retried. */
+    val attempts: Int = 1
 )
+
+/** One clear verdict for a rule's cycle: applied, skipped, or failed. */
+enum class RuleStatus {
+    APPLIED,
+    SKIPPED,
+    FAILED
+}
 
 /** Trace of one rule during a cycle, as shown in the history. */
 data class RuleRun(
@@ -44,7 +53,15 @@ data class RuleRun(
     val actionResults: List<ActionResult> = emptyList(),
     /** Conditions that could not be read, to explain a NOT_EVALUABLE. */
     val unavailableConditions: List<ConditionType> = emptyList()
-)
+) {
+    /** Derived from [outcome] and [actionResults] so callers don't re-derive this logic themselves. */
+    val status: RuleStatus
+        get() = when {
+            outcome != RuleOutcome.FIRED -> RuleStatus.SKIPPED
+            actionResults.any { !it.ok }  -> RuleStatus.FAILED
+            else                          -> RuleStatus.APPLIED
+        }
+}
 
 /** Trace of a full trigger (one ignition cycle, or a manual test). */
 data class EngineRun(

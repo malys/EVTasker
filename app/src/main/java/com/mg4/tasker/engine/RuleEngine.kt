@@ -1,5 +1,6 @@
 package com.mg4.tasker.engine
 
+import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.ActionResult
 import com.mg4.tasker.model.ConditionOutcome
@@ -22,8 +23,20 @@ fun interface ActionExecutor {
  * No Android dependency: the engine receives a frozen snapshot and an executor. That is
  * what makes the firing behaviour testable — including refusals and missing data — with
  * no vehicle.
+ *
+ * Retries [BridgeContract.VERDICT_ERROR] with exponential backoff ([initialDelayMs], then
+ * ×[backoffFactor] each time, up to [maxAttempts] tries): that verdict means a transient
+ * IPC/binder hiccup. Every other verdict (moving, unsupported, no bridge) is a deliberate
+ * refusal — retrying it would just repeat the same answer. [sleep] is injectable so tests
+ * can verify backoff without actually waiting.
  */
-class RuleEngine(private val executor: ActionExecutor) {
+class RuleEngine(
+    private val executor: ActionExecutor,
+    private val maxAttempts: Int = 3,
+    private val initialDelayMs: Long = 250,
+    private val backoffFactor: Double = 2.0,
+    private val sleep: (Long) -> Unit = Thread::sleep
+) {
 
     fun run(rules: List<Rule>, snapshot: Snapshot, trigger: String, now: Long): EngineRun =
         EngineRun(
@@ -62,8 +75,21 @@ class RuleEngine(private val executor: ActionExecutor) {
             }
         }
 
-        val results = rule.actions.map { executor.execute(it) }
+        val results = rule.actions.map { executeWithBackoff(it) }
         return RuleRun(rule.id, rule.name, RuleOutcome.FIRED, results)
+    }
+
+    private fun executeWithBackoff(action: Action): ActionResult {
+        var delay = initialDelayMs
+        var attempt = 1
+        var result = executor.execute(action)
+        while (result.verdict == BridgeContract.VERDICT_ERROR && attempt < maxAttempts) {
+            sleep(delay)
+            delay = (delay * backoffFactor).toLong()
+            attempt++
+            result = executor.execute(action)
+        }
+        return result.copy(attempts = attempt)
     }
 
     private fun notEvaluable(rule: Rule, unavailable: List<ConditionType>) =

@@ -10,6 +10,7 @@ import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.MatchMode
 import com.mg4.tasker.model.Rule
 import com.mg4.tasker.model.RuleOutcome
+import com.mg4.tasker.model.RuleStatus
 import com.mg4.tasker.model.Snapshot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -196,5 +197,85 @@ class RuleEngineTest {
         assertEquals(RuleOutcome.FIRED, run.ruleRuns[0].outcome)
         assertEquals(RuleOutcome.NOT_MATCHED, run.ruleRuns[1].outcome)
         assertEquals(listOf(ActionType.SET_STEERING_HEAT), executor.executed)
+    }
+
+    // -------------------------------------------------------------------------
+    // Backoff — ERROR only, and rule status
+    // -------------------------------------------------------------------------
+
+    /** Fails the first [failures] calls with ERROR, then succeeds. */
+    private class FlakyExecutor(private val failures: Int) : ActionExecutor {
+        var calls = 0
+        override fun execute(action: Action): ActionResult {
+            calls++
+            return if (calls <= failures) ActionResult(action.type, false, BridgeContract.VERDICT_ERROR)
+            else ActionResult(action.type, true, BridgeContract.VERDICT_ALLOWED)
+        }
+    }
+
+    @Test
+    fun `une erreur transitoire est retentee avec un delai croissant puis reussit`() {
+        val executor = FlakyExecutor(failures = 2)
+        val sleeps = mutableListOf<Long>()
+        val warm = rule(conditions = arrayOf(Condition(ConditionType.IN_PARK, flag = true)))
+
+        val engine = RuleEngine(executor, maxAttempts = 3, initialDelayMs = 100, sleep = { sleeps += it })
+        val result = engine.run(listOf(warm), Snapshot(readings = mapOf(BridgeContract.KEY_IN_PARK to true)), "TEST", 0L)
+            .ruleRuns.first()
+
+        assertEquals(3, executor.calls)
+        assertEquals(listOf(100L, 200L), sleeps)
+        assertEquals(true, result.actionResults.first().ok)
+        assertEquals(3, result.actionResults.first().attempts)
+        assertEquals(RuleStatus.APPLIED, result.status)
+    }
+
+    @Test
+    fun `une erreur transitoire persistante epuise les tentatives et la regle est en echec`() {
+        val executor = FlakyExecutor(failures = 10)
+        val warm = rule(conditions = arrayOf(Condition(ConditionType.IN_PARK, flag = true)))
+
+        val engine = RuleEngine(executor, maxAttempts = 3, initialDelayMs = 0, sleep = {})
+        val result = engine.run(listOf(warm), Snapshot(readings = mapOf(BridgeContract.KEY_IN_PARK to true)), "TEST", 0L)
+            .ruleRuns.first()
+
+        assertEquals(3, executor.calls)
+        assertEquals(false, result.actionResults.first().ok)
+        assertEquals(RuleStatus.FAILED, result.status)
+    }
+
+    @Test
+    fun `un refus delibere n est pas retente`() {
+        val executor = RecordingExecutor(verdict = BridgeContract.VERDICT_MOVING)
+        val warm = rule(conditions = arrayOf(Condition(ConditionType.IN_PARK, flag = true)))
+
+        val engine = RuleEngine(executor, sleep = { throw AssertionError("no sleep expected") })
+        val result = engine.run(listOf(warm), Snapshot(readings = mapOf(BridgeContract.KEY_IN_PARK to true)), "TEST", 0L)
+            .ruleRuns.first()
+
+        assertEquals(1, result.actionResults.first().attempts)
+        assertEquals(RuleStatus.FAILED, result.status)
+    }
+
+    @Test
+    fun `une regle appliquee sans echec est au statut applied`() {
+        val executor = RecordingExecutor()
+        val warm = rule(conditions = arrayOf(Condition(ConditionType.IN_PARK, flag = true)))
+
+        val result = run(warm, Snapshot(readings = mapOf(BridgeContract.KEY_IN_PARK to true)), executor)
+
+        assertEquals(RuleStatus.APPLIED, result.status)
+    }
+
+    @Test
+    fun `une regle non evaluable est au statut skipped`() {
+        val executor = RecordingExecutor()
+        val warm = rule(conditions = arrayOf(
+            Condition(ConditionType.OUTSIDE_TEMP, op = CompareOp.GT, number = 10f)
+        ))
+
+        val result = run(warm, Snapshot(bridgeAvailable = false), executor)
+
+        assertEquals(RuleStatus.SKIPPED, result.status)
     }
 }

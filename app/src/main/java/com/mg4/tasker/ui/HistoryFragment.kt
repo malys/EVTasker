@@ -12,6 +12,7 @@ import com.mg4.tasker.databinding.FragmentHistoryBinding
 import com.mg4.tasker.databinding.ItemHistoryRunBinding
 import com.mg4.tasker.model.EngineRun
 import com.mg4.tasker.model.RuleOutcome
+import com.mg4.tasker.model.RuleStatus
 import com.mg4.tasker.store.HistoryStore
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -91,7 +92,8 @@ class HistoryFragment : Fragment() {
             holder.binding.runDetail.text = run.ruleRuns.joinToString("\n") { ruleRun ->
                 val outcome = context.getString(
                     when (ruleRun.outcome) {
-                        RuleOutcome.FIRED         -> R.string.outcome_fired
+                        RuleOutcome.FIRED         ->
+                            if (ruleRun.status == RuleStatus.FAILED) R.string.outcome_failed else R.string.outcome_fired
                         RuleOutcome.NOT_MATCHED   -> R.string.outcome_not_matched
                         RuleOutcome.NOT_EVALUABLE -> R.string.outcome_not_evaluable
                         RuleOutcome.DISABLED      -> R.string.outcome_disabled
