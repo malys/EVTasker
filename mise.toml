@@ -19,8 +19,24 @@ _.path = [
     "{{env.HOME}}/Android/Sdk/cmdline-tools/latest/bin",
 ]
 
-COMPILE_SDK = "34"
-BUILD_TOOLS = "34.0.0"
+# ── Émulateur ────────────────────────────────────────────────────────────────────
+# Le véhicule tourne en AAOS 9 (API 28), mais Google ne publie aucune image Automotive
+# sous API 33. Deux profils, chacun fidèle sur un axe :
+#   emulator-car     API 33 Automotive — a un CarPropertyManager (mauvaise version d'OS).
+#   emulator-screen  API 28, écran du MG4 (1920x1080 @ 160dpi, densité confirmée depuis
+#                    la ROM SWI68-29958-1300R69), mais aucun service voiture.
+# Rien ne remplace un essai sur le véhicule.
+EMU_CAR_AVD = "mg4tasker-car"
+EMU_CAR_IMAGE = "system-images;android-33;android-automotive;x86_64"
+EMU_SCREEN_AVD = "mg4tasker-screen"
+EMU_SCREEN_IMAGE = "system-images;android-28;google_apis;x86_64"
+EMU_WIDTH = "1920"
+EMU_HEIGHT = "1080"
+EMU_DENSITY = "160"
+
+
+COMPILE_SDK = "36"
+BUILD_TOOLS = "36.0.0"
 
 # -Dorg.gradle.java.home : sans ça, Gradle réutilise un daemon lancé par l'extension Java
 # de VS Code, dont le JRE n'a pas jlink — le build échoue alors sur JdkImageTransform,
@@ -40,7 +56,7 @@ exit 1
 
 [tasks.build]
 description = "Compile l'APK debug"
-run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME assembleDebug'
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME assembleStableDebug'
 
 [tasks.test]
 description = "Tests unitaires JVM"
@@ -60,3 +76,81 @@ run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME assembleStableRelease'
 
 [tasks.clean]
 run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME clean'
+
+[tasks.emulator-setup]
+description = "Installe l'émulateur + les images système et crée les deux AVD"
+run = '''
+set -e
+SDK="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+AVDM="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
+if [ ! -e /dev/kvm ]; then
+  echo "ERREUR : /dev/kvm absent — pas d'accélération, émulateur inutilisable." >&2
+  exit 1
+fi
+if ! id -nG | tr ' ' '\n' | grep -qx kvm; then
+  echo "ATTENTION : utilisateur absent du groupe kvm : sudo usermod -aG kvm $USER (puis reconnexion)" >&2
+fi
+yes | "$SDK" --sdk_root="$ANDROID_HOME" --licenses > /dev/null
+"$SDK" --sdk_root="$ANDROID_HOME" "emulator" "platform-tools" "$EMU_CAR_IMAGE" "$EMU_SCREEN_IMAGE"
+create_avd() {
+  name="$1"; image="$2"; device="$3"
+  if "$AVDM" list avd 2>/dev/null | grep -q "Name: $name"; then
+    echo "AVD $name déjà présent"
+  else
+    echo no | "$AVDM" create avd -n "$name" -k "$image" -d "$device" --force
+  fi
+  cfg="$HOME/.android/avd/$name.avd/config.ini"
+  sed -i '/^hw.lcd/d;/^disk.dataPartition.size/d' "$cfg"
+  {
+    echo "hw.lcd.width=$EMU_WIDTH"
+    echo "hw.lcd.height=$EMU_HEIGHT"
+    echo "hw.lcd.density=$EMU_DENSITY"
+    echo "disk.dataPartition.size=4G"
+  } >> "$cfg"
+  echo "AVD $name : ${EMU_WIDTH}x${EMU_HEIGHT} @ ${EMU_DENSITY}dpi"
+}
+create_avd "$EMU_CAR_AVD" "$EMU_CAR_IMAGE" "automotive_1024p_landscape"
+create_avd "$EMU_SCREEN_AVD" "$EMU_SCREEN_IMAGE" "pixel_c"
+'''
+
+[tasks.emulator-car]
+description = "Lance l'émulateur Automotive (API 33 — a un CarPropertyManager)"
+run = '''
+set -e
+"$ANDROID_HOME/emulator/emulator" -avd "$EMU_CAR_AVD" -gpu swiftshader_indirect -no-snapshot-save -no-boot-anim &
+"$ANDROID_HOME/platform-tools/adb" wait-for-device
+echo "Émulateur voiture prêt."
+'''
+
+[tasks.emulator-screen]
+description = "Lance l'émulateur écran MG4 (API 28, 1920x1080 @ 160dpi — pas de service voiture)"
+run = '''
+set -e
+"$ANDROID_HOME/emulator/emulator" -avd "$EMU_SCREEN_AVD" -gpu swiftshader_indirect -no-snapshot-save -no-boot-anim &
+"$ANDROID_HOME/platform-tools/adb" wait-for-device
+echo "Émulateur écran prêt."
+'''
+
+[tasks.emulator-stop]
+description = "Arrête l'émulateur en cours"
+run = '"$ANDROID_HOME/platform-tools/adb" emu kill || true'
+
+[tasks.run]
+description = "Compile, installe et lance l'APK sur l'émulateur ou le véhicule connecté"
+depends = ["build"]
+run = '''
+set -e
+ADB="$ANDROID_HOME/platform-tools/adb"
+if [ -z "$($ADB devices | sed '1d' | grep -w device || true)" ]; then
+  echo "Aucun appareil. Lancer 'mise run emulator-car'/'emulator-screen' ou brancher le véhicule." >&2
+  exit 1
+fi
+# Les builds debug retirent sharedUserId (overlay src/debug/AndroidManifest.xml), donc la
+# clé debug suffit pour installer sur un émulateur. La release garde sharedUserId + signature
+# plateforme pour le véhicule.
+APK=$(ls -t app/build/outputs/apk/stable/debug/*.apk | head -1)
+echo "Installation de $APK"
+$ADB install -r -g "$APK"
+$ADB shell am start -n "com.mg4.tasker/com.mg4.tasker.ui.MainActivity"
+echo "Lancé."
+'''
