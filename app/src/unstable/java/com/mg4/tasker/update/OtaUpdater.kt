@@ -67,6 +67,14 @@ object OtaUpdater {
         }.toIntArray()
     }
 
+    /**
+     * Version carried by an unstable asset name: "MG4Tasker-unstable-1.0.0.42.apk" → "1.0.0.42".
+     * The release tag is the fixed string "unstable" (one rolling pre-release), so the asset
+     * name is what identifies a build. Null when the name carries no version.
+     */
+    fun versionFromAssetName(assetName: String): String? =
+        Regex("-(\\d[0-9.]*?)\\.apk$", RegexOption.IGNORE_CASE).find(assetName)?.groupValues?.get(1)
+
     /** True if [remote] is a strictly higher version than [current]. */
     fun isNewer(remote: String, current: String): Boolean {
         val r = segments(remote); val c = segments(current)
@@ -98,26 +106,29 @@ object OtaUpdater {
 
             // Keep the HIGHEST version, not the first that beats the installed build: the
             // API orders by creation date, and a re-published release would otherwise win.
+            // The version comes from the asset name, not the tag: the unstable channel is a
+            // single rolling pre-release tagged "unstable", overwritten on every build.
             // Stable releases are skipped — this channel tracks pre-releases only, and a
             // stable APK could not update a .unstable install anyway.
             var best: Update? = null
             for (i in 0 until releases.length()) {
                 val release = releases.getJSONObject(i)
                 if (!release.optBoolean("prerelease", false)) continue
-                val tag = release.optString("tag_name", "")
-                if (!isNewer(tag, currentVersion)) continue
-                if (best != null && !isNewer(tag, best.versionName)) continue
 
                 val assets = release.optJSONArray("assets") ?: continue
                 for (a in 0 until assets.length()) {
                     val asset = assets.getJSONObject(a)
-                    val name = asset.optString("name", "").lowercase(Locale.US)
-                    if (!name.endsWith(".apk") || !name.contains("unstable")) continue
+                    val name = asset.optString("name", "")
+                    val lower = name.lowercase(Locale.US)
+                    if (!lower.endsWith(".apk") || !lower.contains("unstable")) continue
+                    val version = versionFromAssetName(name) ?: continue
+                    if (!isNewer(version, currentVersion)) continue
+                    if (best != null && !isNewer(version, best.versionName)) continue
                     val url = asset.optString("browser_download_url", "")
                     if (!isAllowedUrl(url)) {
                         Log.w(TAG, "Rejected update URL from an unexpected host: $url"); continue
                     }
-                    best = Update(tag, url); break
+                    best = Update(version, url); break
                 }
             }
             best
@@ -129,8 +140,8 @@ object OtaUpdater {
     }
 
     /**
-     * Name the downloaded APK gets in public Downloads. The version comes from a remote tag,
-     * so it is reduced to a safe character set before it reaches a path. Callers looking for
+     * Name the downloaded APK gets in public Downloads. The version comes from a remote asset
+     * name, so it is reduced to a safe character set before it reaches a path. Callers looking for
      * an already-downloaded update must use this same name.
      */
     fun downloadFileName(versionName: String?): String {

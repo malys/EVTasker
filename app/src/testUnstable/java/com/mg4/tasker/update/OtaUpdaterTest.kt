@@ -1,7 +1,9 @@
 package com.mg4.tasker.update
 
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -59,6 +61,19 @@ class OtaUpdaterTest {
 
     @Test fun `unstable suffix does not affect comparison`() {
         assertTrue(OtaUpdater.isNewer("v1.0.0.43-unstable", "1.0.0.42-unstable"))
+    }
+
+    // ---- version from asset name ----
+
+    @Test fun `version is read from the asset name`() {
+        // The release tag is the constant "unstable", so the asset name carries the build.
+        assertEquals("1.0.0.42", OtaUpdater.versionFromAssetName("MG4Tasker-unstable-1.0.0.42.apk"))
+        assertEquals("1.0.0.100", OtaUpdater.versionFromAssetName("MG4Tasker-unstable-1.0.0.100.APK"))
+    }
+
+    @Test fun `asset name without a version is ignored`() {
+        assertNull(OtaUpdater.versionFromAssetName("MG4Tasker-unstable.apk"))
+        assertNull(OtaUpdater.versionFromAssetName("unstable"))
     }
 
     // ---- download file name ----

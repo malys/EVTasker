@@ -26,6 +26,7 @@ profile* — becomes available.
 
 ## Contents
 
+- [Screenshots](#screenshots)
 - [How it works](#how-it-works)
 - [Requirements](#requirements)
 - [MG4Control (optional)](#mg4control-optional)
@@ -35,6 +36,20 @@ profile* — becomes available.
 - [Climate and windows (read-only for now)](#climate-and-windows-read-only-for-now)
 - [Building](#building)
 - [Security](#security)
+
+---
+
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/mg4Tasker_rules1.png" width="200" alt="MG4Tasker rules screenshot 1">
+  <img src="screenshots/mg4Tasker_rules2.png" width="200" alt="MG4Tasker rules screenshot 2">
+  <img src="screenshots/mg4Tasker_rules3.png" width="200" alt="MG4Tasker rules screenshot 3">
+  <img src="screenshots/mg4Tasker_rules4.png" width="200" alt="MG4Tasker rules screenshot 4">
+</p>
+<p align="center">
+  <img src="screenshots/mg4Tasker_diagnostics.png" width="200" alt="MG4Tasker diagnostics screenshot">
+</p>
 
 ---
 

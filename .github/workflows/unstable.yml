@@ -60,22 +60,36 @@ jobs:
       - name: Collect APK
         run: |
           mkdir -p dist
-          # Keep a stable filename with "unstable" in it: the updater matches release assets
-          # by ".apk" + "unstable", and the file name is the identity across builds.
-          find app/build/outputs/apk -name "app-unstable-release.apk" -exec cp {} dist/MG4Tasker-unstable.apk \;
+          # The release tag is the fixed string "unstable", so the version lives in the asset
+          # name: the updater matches ".apk" + "unstable" and reads the version from it.
+          find app/build/outputs/apk -name "app-unstable-release.apk" \
+            -exec cp {} "dist/MG4Tasker-unstable-${{ steps.version.outputs.value }}.apk" \;
           ls -la dist/
+
+      - name: Build timestamp
+        id: date
+        run: echo "value=$(date -u +'%Y-%m-%d %H:%M UTC')" >> "$GITHUB_OUTPUT"
+
+      # One rolling pre-release: drop the previous release and its tag so the new one is
+      # published at this commit instead of leaving the tag behind on the old sha.
+      - name: Reset rolling unstable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete unstable --cleanup-tag --yes || true
 
       - name: Publish pre-release
         uses: softprops/action-gh-release@v2
         with:
-          # The in-app updater compares this tag against the installed version, so it must
-          # stay parseable as a version (e.g. v1.0.0.42).
-          tag_name: v${{ steps.version.outputs.value }}
-          name: Unstable ${{ steps.version.outputs.value }}
+          # Fixed tag, overwritten on every build. The in-app updater no longer reads a
+          # version from here — it reads it from the APK asset name.
+          tag_name: unstable
+          name: Unstable
           prerelease: true
           files: dist/*.apk
           body: |
-            ## Unstable build ${{ github.run_number }}
+            ## Unstable build ${{ steps.date.outputs.value }}
+
+            Version `${{ steps.version.outputs.value }}` (run ${{ github.run_number }}).
 
             Automated build from `master`. **Not tested on a vehicle.**
 

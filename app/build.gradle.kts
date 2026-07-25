@@ -97,8 +97,9 @@ kotlin {
     }
 }
 
-// Prints the unstable versionName so the release workflow can name the pre-release
-// numerically comparable ("1.0.0.42"), not "unstable-42".
+// Prints the unstable versionName so the release workflow can name the APK asset
+// numerically comparable ("MG4Tasker-unstable-1.0.0.42.apk"). The pre-release itself is
+// always tagged "unstable" and overwritten, so the asset name is what the updater reads.
 tasks.register("printUnstableVersion") {
     doLast {
         println("${android.defaultConfig.versionName}.${project.findProperty("unstableBuild") ?: "0"}")
