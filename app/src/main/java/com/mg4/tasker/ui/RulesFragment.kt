@@ -14,8 +14,11 @@ import com.mg4.tasker.model.Rule
 import com.mg4.tasker.service.TaskerRunService
 import com.mg4.tasker.store.AppState
 import com.mg4.tasker.store.LanguageStore
+import com.mg4.tasker.store.RuleFiles
 import com.mg4.tasker.store.RuleStore
+import com.mg4.tasker.store.RuleTransfer
 import com.mg4.tasker.util.BtDevices
+import java.io.File
 
 class RulesFragment : Fragment() {
 
@@ -59,6 +62,8 @@ class RulesFragment : Fragment() {
         binding.editButton.setOnClickListener {
             selected?.let { startActivity(RuleEditorActivity.intentForEdit(requireContext(), it.id)) }
         }
+        binding.exportButton.setOnClickListener { exportRules() }
+        binding.importButton.setOnClickListener { importRules() }
         binding.deleteButton.setOnClickListener { confirmDelete() }
         binding.runNowButton.setOnClickListener {
             // The test reuses the run service: testing a rule must take exactly the
@@ -122,6 +127,77 @@ class RulesFragment : Fragment() {
             .show()
     }
 
+    // ---------- Import / export ----------
+
+    private fun exportRules() {
+        val rules = store.getAll()
+        if (rules.isEmpty()) {
+            toast(getString(R.string.rules_export_none))
+            return
+        }
+        val file = RuleFiles.export(requireContext(), rules)
+        toastLong(
+            if (file == null) getString(R.string.rules_export_failed)
+            else getString(R.string.rules_export_ok, file.absolutePath)
+        )
+    }
+
+    private fun importRules() {
+        val found = RuleFiles.scan(requireContext())
+        val usable = found.mapNotNull { (file, result) ->
+            (result as? RuleTransfer.Result.Ok)?.let { file to it.rules }
+        }
+        when {
+            usable.size == 1 -> confirmImport(usable[0].first, usable[0].second)
+            usable.size > 1 -> pickFile(usable)
+            // A refused file means the user did put one there: say why, rather than
+            // "nothing found", which would send them looking for a path that is fine.
+            else -> toastLong(
+                found.firstOrNull()?.let { (file, result) -> rejectionMessage(file, result) }
+                    ?: getString(R.string.rules_import_none, RuleFiles.hint(requireContext()))
+            )
+        }
+    }
+
+    private fun pickFile(files: List<Pair<File, List<Rule>>>) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.rules_import_pick)
+            .setItems(files.map { it.first.name }.toTypedArray()) { _, which ->
+                confirmImport(files[which].first, files[which].second)
+            }
+            .setNegativeButton(R.string.editor_cancel, null)
+            .show()
+    }
+
+    /** Import replaces the whole set, so it is confirmed the same way a delete is. */
+    private fun confirmImport(file: File, rules: List<Rule>) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.rules_import_title)
+            .setMessage(getString(R.string.rules_import_confirm, file.name))
+            .setNegativeButton(R.string.editor_cancel, null)
+            .setPositiveButton(R.string.rules_import) { _, _ ->
+                store.replaceAll(rules)
+                selected = null
+                refresh()
+                toast(getString(R.string.rules_import_ok))
+            }
+            .show()
+    }
+
+    private fun rejectionMessage(file: File, result: RuleTransfer.Result): String {
+        val invalid = result as? RuleTransfer.Result.Invalid
+            ?: return getString(R.string.rules_import_err_malformed, file.name)
+        return when (invalid.reason) {
+            RuleTransfer.Reason.VERSION -> getString(R.string.rules_import_err_version, file.name)
+            RuleTransfer.Reason.UNKNOWN_ENTRY ->
+                getString(R.string.rules_import_err_unknown, file.name, invalid.detail)
+            RuleTransfer.Reason.TOO_MANY ->
+                getString(R.string.rules_import_err_too_many, file.name, RuleStore.MAX_RULES)
+            RuleTransfer.Reason.EMPTY -> getString(R.string.rules_import_err_empty, file.name)
+            RuleTransfer.Reason.MALFORMED -> getString(R.string.rules_import_err_malformed, file.name)
+        }
+    }
+
     private fun confirmDelete() {
         val rule = selected ?: return
         MaterialAlertDialogBuilder(requireContext())
@@ -137,6 +213,10 @@ class RulesFragment : Fragment() {
 
     private fun toast(message: String) =
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+
+    /** Storage paths and import refusals need reading time; a short toast is gone too soon. */
+    private fun toastLong(message: String) =
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
 
     override fun onDestroyView() {
         super.onDestroyView()

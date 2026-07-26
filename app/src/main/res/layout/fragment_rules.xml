@@ -35,6 +35,30 @@
             android:text="@string/rules_new"
             android:layout_marginBottom="@dimen/spacing_md" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/spacing_md">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/exportButton"
+                style="@style/Widget.MG4.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="@string/rules_export" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/importButton"
+                style="@style/Widget.MG4.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:text="@string/rules_import" />
+        </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rulesList"
             android:layout_width="match_parent"

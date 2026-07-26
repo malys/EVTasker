@@ -34,6 +34,7 @@ profile* — becomes available.
 - [Conditions and actions](#conditions-and-actions)
 - [Firmware compatibility](#firmware-compatibility)
 - [Climate and windows (read-only for now)](#climate-and-windows-read-only-for-now)
+- [Import and export (USB stick)](#import-and-export-usb-stick)
 - [Building](#building)
 - [Security](#security)
 
@@ -188,6 +189,64 @@ deferred. Confirm the reads on the Diagnostic tab, and the write actions can fol
 
 ---
 
+## Import and export (USB stick)
+
+**Export** and **Import** on the Rules screen move the whole rule set to and from a JSON
+file — a backup before a reinstall, or the same rules on a second car, without retyping
+anything on the on-screen keyboard.
+
+**Where the file lives.** The MG4 head unit ships **no document picker** — the Storage Access
+Framework answers *"FileManagement is not supported on this device"* — so there is nothing to
+pick from. Instead both directions use the app's own folder on each mounted volume, which
+needs no storage permission at any API level:
+
+```
+<USB stick>/Android/data/com.mg4.tasker/files/     ← used when a stick is mounted
+<internal>/Android/data/com.mg4.tasker/files/      ← fallback when it is not
+```
+
+- **Export** writes `mg4tasker-rules-<yyyyMMdd-HHmmss>.json` there and shows the full path.
+  The name is timestamped: an export is a backup, and overwriting the previous one loses it.
+  The write is temp-file-then-rename, so a stick pulled mid-write leaves a `.tmp`, never a
+  truncated rules file.
+- **Import** scans those folders for `.json` files, newest first. One match imports directly,
+  several offer a chooser. Import **replaces the whole rule set** and is confirmed first.
+
+**Refusals are explicit.** A file off a USB stick is untrusted input, and an accepted file is
+applied to a car — so a rules file is either taken whole or refused with the reason named:
+
+| Refusal | Meaning |
+|---|---|
+| written by a newer version | `version` above the one this build understands |
+| unknown condition or action | a catalogue entry this build cannot perform — never silently dropped |
+| not a readable rules file | malformed, blank name, no condition, no action, duplicate ids, non-finite threshold, weekday outside 1–7 |
+| more than 20 rules | above `RuleStore.MAX_RULES` |
+| no rules | a valid envelope with an empty list |
+
+JSON that is not a rules file at all is skipped silently — other apps write to that folder
+too. Files over 256 KB are not read.
+
+**Format.** A versioned envelope, with enum values carried as their names:
+
+```json
+{
+  "format": "mg4tasker-rules",
+  "version": 1,
+  "rules": [
+    {
+      "id": "1f2e…", "name": "Cold morning", "enabled": true, "match": "ALL",
+      "conditions": [{ "type": "OUTSIDE_TEMP", "op": "LT", "number": 5.0 }],
+      "actions":    [{ "type": "SET_STEERING_HEAT", "number": 2 }]
+    }
+  ]
+}
+```
+
+Renaming a `ConditionType` / `ActionType` constant therefore invalidates older files — the
+import reports the unknown entry rather than guessing.
+
+---
+
 ## Installing on the MG4
 
 The MG4 head unit has no visible way to open Settings or install an APK. The known route
@@ -234,7 +293,7 @@ app/src/main/java/com/mg4/tasker/
   vehicle/   direct MG4Hardware access, executor, snapshot reader, profile bridge
   model/     Rule, Condition, Action, catalogues, @SupportedOn, FirmwareMatrix
   engine/    condition and rule evaluation — no Android dependency
-  store/     JSON persistence of rules and history
+  store/     JSON persistence of rules and history, USB import/export
   ui/        list, generic editor, history, diagnostic, console
   service/   run cycle (foreground service)
   receiver/  ignition wake-up
@@ -282,21 +341,6 @@ See [SECURITY.md](SECURITY.md) for reporting and scope. Three structural decisio
    `protectionLevel="signature"` — only apps signed with the same platform key can bind.
 
 See also [DISCLAIMER.md](DISCLAIMER.md) — this software runs on a vehicle.
-
-## The MG4 app suite
-
-Part of a small set of projects for the SAIC MG4 (AAOS 9, MT2712), all sharing the
-**MG4Hardware** vehicle layer:
-
-| Project | Role |
-|---|---|
-| [MG4Hardware](https://github.com/malys/MG4Hardware) | Shared vehicle-access layer: reflection hardware layer, 0 km/h safety gate, driving models, condition/action catalogue + firmware matrix |
-| [MG4Control](https://github.com/malys/MG4Control) | Drive-profile manager; applies settings at startup; owns the signature-protected TaskerBridge |
-| [MG4Tasker](https://github.com/malys/MG4Tasker) | Independent rule engine — *when* conditions *then* actions — writes the car directly via MG4Hardware |
-| [MG4AbrpTelemetry](https://github.com/malys/MG4AbrpTelemetry) | Live telemetry uploader to A Better Route Planner |
-
-Common toolchain: **AGP 9.1.1 / Gradle 9.3.1 / compileSdk 36 / JDK 17**. Each app consumes
-MG4Hardware as a git submodule (`MG4Hardware/lib` as the `:mg4hardware` subproject).
 
 ## License
 

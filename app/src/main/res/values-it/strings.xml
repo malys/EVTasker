@@ -25,6 +25,23 @@
     <string name="rules_then">ALLORA</string>
     <string name="rules_running">Prova in corso…</string>
 
+    <!-- Importazione / esportazione -->
+    <string name="rules_export">Esporta</string>
+    <string name="rules_import">Importa</string>
+    <string name="rules_export_ok">Regole esportate in %1$s</string>
+    <string name="rules_export_none">Nessuna regola da esportare</string>
+    <string name="rules_export_failed">Impossibile scrivere il file delle regole nella memoria</string>
+    <string name="rules_import_none">Nessun file di regole trovato. Copiane uno in %1$s</string>
+    <string name="rules_import_pick">Scegli un file di regole</string>
+    <string name="rules_import_title">Importa regole</string>
+    <string name="rules_import_confirm">Sostituire tutte le regole attuali con quelle di «%1$s»?</string>
+    <string name="rules_import_ok">Regole importate</string>
+    <string name="rules_import_err_version">«%1$s» è stato scritto da una versione più recente di MG4Tasker</string>
+    <string name="rules_import_err_unknown">«%1$s» usa una condizione o un\'azione sconosciuta a questa versione (%2$s)</string>
+    <string name="rules_import_err_malformed">«%1$s» non è un file di regole leggibile</string>
+    <string name="rules_import_err_too_many">«%1$s» contiene più di %2$d regole</string>
+    <string name="rules_import_err_empty">«%1$s» non contiene alcuna regola</string>
+
     <plurals name="rule_summary_conditions">
         <item quantity="one">%d condizione</item>
         <item quantity="other">%d condizioni</item>

@@ -53,6 +53,15 @@ class RuleStore(context: Context) {
         true
     }
 
+    /**
+     * Import: the file becomes the whole rule set. The quota is enforced by
+     * [RuleTransfer.decode], which refuses an oversized file with a message the user can act
+     * on — checking it again here could only produce a silent truncation.
+     */
+    fun replaceAll(rules: List<Rule>) = synchronized(MUTATION_LOCK) {
+        persist(rules)
+    }
+
     fun delete(ruleId: String) = synchronized(MUTATION_LOCK) {
         persist(getAll().filterNot { it.id == ruleId })
     }

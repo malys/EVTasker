@@ -42,6 +42,23 @@
     <string name="rules_then">ALORS</string>
     <string name="rules_running">Test en cours…</string>
 
+    <!-- Import / export -->
+    <string name="rules_export">Exporter</string>
+    <string name="rules_import">Importer</string>
+    <string name="rules_export_ok">Règles exportées vers %1$s</string>
+    <string name="rules_export_none">Aucune règle à exporter</string>
+    <string name="rules_export_failed">Impossible d’écrire le fichier de règles sur le stockage</string>
+    <string name="rules_import_none">Aucun fichier de règles trouvé. Copiez-en un dans %1$s</string>
+    <string name="rules_import_pick">Choisir un fichier de règles</string>
+    <string name="rules_import_title">Importer des règles</string>
+    <string name="rules_import_confirm">Remplacer toutes les règles actuelles par celles de « %1$s » ?</string>
+    <string name="rules_import_ok">Règles importées</string>
+    <string name="rules_import_err_version">« %1$s » a été écrit par une version plus récente de MG4Tasker</string>
+    <string name="rules_import_err_unknown">« %1$s » utilise une condition ou une action inconnue de cette version (%2$s)</string>
+    <string name="rules_import_err_malformed">« %1$s » n’est pas un fichier de règles lisible</string>
+    <string name="rules_import_err_too_many">« %1$s » contient plus de %2$d règles</string>
+    <string name="rules_import_err_empty">« %1$s » ne contient aucune règle</string>
+
     <plurals name="rule_summary_conditions">
         <item quantity="one">%d condition</item>
         <item quantity="other">%d conditions</item>
