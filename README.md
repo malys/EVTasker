@@ -195,25 +195,36 @@ deferred. Confirm the reads on the Diagnostic tab, and the write actions can fol
 file — a backup before a reinstall, or the same rules on a second car, without retyping
 anything on the on-screen keyboard.
 
-**Where the file lives.** The MG4 head unit ships **no document picker** — the Storage Access
-Framework answers *"FileManagement is not supported on this device"* — so there is nothing to
-pick from. Instead both directions use the app's own folder on each mounted volume, which
-needs no storage permission at any API level:
+**The app browses storage itself.** The MG4 head unit ships **no document picker** — the
+Storage Access Framework answers *"FileManagement is not supported on this device"* — so there
+is nothing to delegate to. Both buttons open a built-in browser instead: a chain of plain
+dialogs, one per directory, sized for a one-finger tap on a car screen.
 
 ```
-<USB stick>/Android/data/com.mg4.tasker/files/     ← used when a stick is mounted
-<internal>/Android/data/com.mg4.tasker/files/      ← fallback when it is not
+┌ Choose a rules file ─────────────┐   ┌ /storage/1A2B-3C4D ────────────┐
+│ USB storage                      │   │ ⬆ Up one level                 │
+│ /storage/1A2B-3C4D               │ → │ Android/                       │
+│ Internal storage                 │   │ backup/                        │
+│ /storage/emulated/0              │   │ mg4tasker-rules-20260727.json  │
+└──────────────────── Cancel ──────┘   └──────────── Cancel ────────────┘
 ```
 
-- **Export** writes `mg4tasker-rules-<yyyyMMdd-HHmmss>.json` there and shows the full path.
-  The name is timestamped: an export is a backup, and overwriting the previous one loses it.
-  The write is temp-file-then-rename, so a stick pulled mid-write leaves a `.tmp`, never a
-  truncated rules file.
-- **Import** scans those folders for `.json` files, newest first. One match imports directly,
-  several offer a chooser. Import **replaces the whole rule set** and is confirmed first.
+Release builds run as `android.uid.system` (see [`AndroidManifest.xml`](app/src/main/AndroidManifest.xml)),
+which is what makes the **whole stick** browsable rather than only the app's own folder. On a
+build without the platform signature the volume root is not listable, so the browser falls back
+to `Android/data/com.mg4.tasker/files/` — readable on every build at every API level with no
+storage permission. A single volume opens directly; several offer the list above.
+
+- **Export** asks for a folder ("Save here"), writes `mg4tasker-rules-<yyyyMMdd-HHmmss>.json`
+  into it and shows the full path. The name is timestamped: an export is a backup, and
+  overwriting the previous one loses it. The write is temp-file-then-rename, so a stick pulled
+  mid-write leaves a `.tmp`, never a truncated rules file.
+- **Import** lists directories plus `.json` files only, then **replaces the whole rule set**
+  after a confirmation.
 
 **Refusals are explicit.** A file off a USB stick is untrusted input, and an accepted file is
-applied to a car — so a rules file is either taken whole or refused with the reason named:
+applied to a car — so a rules file is either taken whole or refused with the reason named
+against the path the user picked:
 
 | Refusal | Meaning |
 |---|---|
@@ -223,8 +234,8 @@ applied to a car — so a rules file is either taken whole or refused with the r
 | more than 20 rules | above `RuleStore.MAX_RULES` |
 | no rules | a valid envelope with an empty list |
 
-JSON that is not a rules file at all is skipped silently — other apps write to that folder
-too. Files over 256 KB are not read.
+Picking JSON that belongs to another app reports "not a readable rules file". Files over 256 KB
+are refused on their length, before anything is read into memory.
 
 **Format.** A versioned envelope, with enum values carried as their names:
 
@@ -293,8 +304,8 @@ app/src/main/java/com/mg4/tasker/
   vehicle/   direct MG4Hardware access, executor, snapshot reader, profile bridge
   model/     Rule, Condition, Action, catalogues, @SupportedOn, FirmwareMatrix
   engine/    condition and rule evaluation — no Android dependency
-  store/     JSON persistence of rules and history, USB import/export
-  ui/        list, generic editor, history, diagnostic, console
+  store/     JSON persistence of rules and history, rules file format, storage browsing
+  ui/        list, generic editor, history, diagnostic, console, file browser
   service/   run cycle (foreground service)
   receiver/  ignition wake-up
   debug/     AppLogger ring buffer + CrashLogger

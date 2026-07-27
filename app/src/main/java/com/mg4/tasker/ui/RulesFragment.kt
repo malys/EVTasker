@@ -135,38 +135,27 @@ class RulesFragment : Fragment() {
             toast(getString(R.string.rules_export_none))
             return
         }
-        val file = RuleFiles.export(requireContext(), rules)
-        toastLong(
-            if (file == null) getString(R.string.rules_export_failed)
-            else getString(R.string.rules_export_ok, file.absolutePath)
-        )
-    }
-
-    private fun importRules() {
-        val found = RuleFiles.scan(requireContext())
-        val usable = found.mapNotNull { (file, result) ->
-            (result as? RuleTransfer.Result.Ok)?.let { file to it.rules }
-        }
-        when {
-            usable.size == 1 -> confirmImport(usable[0].first, usable[0].second)
-            usable.size > 1 -> pickFile(usable)
-            // A refused file means the user did put one there: say why, rather than
-            // "nothing found", which would send them looking for a path that is fine.
-            else -> toastLong(
-                found.firstOrNull()?.let { (file, result) -> rejectionMessage(file, result) }
-                    ?: getString(R.string.rules_import_none, RuleFiles.hint(requireContext()))
+        StorageBrowserDialog.pickFolder(requireContext(), R.string.rules_export_pick) { dir ->
+            val file = RuleFiles.export(rules, dir)
+            toastLong(
+                if (file == null) getString(R.string.rules_export_failed)
+                else getString(R.string.rules_export_ok, file.absolutePath)
             )
         }
     }
 
-    private fun pickFile(files: List<Pair<File, List<Rule>>>) {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.rules_import_pick)
-            .setItems(files.map { it.first.name }.toTypedArray()) { _, which ->
-                confirmImport(files[which].first, files[which].second)
+    private fun importRules() {
+        StorageBrowserDialog.pickFile(
+            requireContext(),
+            RuleTransfer.FILE_EXTENSION,
+            R.string.rules_import_pick
+        ) { file ->
+            when (val result = RuleFiles.read(file)) {
+                is RuleTransfer.Result.Ok -> confirmImport(file, result.rules)
+                // The user pointed at this exact file, so name what is wrong with it.
+                else -> toastLong(rejectionMessage(file, result))
             }
-            .setNegativeButton(R.string.editor_cancel, null)
-            .show()
+        }
     }
 
     /** Import replaces the whole set, so it is confirmed the same way a delete is. */

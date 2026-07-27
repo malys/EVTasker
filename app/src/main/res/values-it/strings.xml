@@ -31,8 +31,13 @@
     <string name="rules_export_ok">Regole esportate in %1$s</string>
     <string name="rules_export_none">Nessuna regola da esportare</string>
     <string name="rules_export_failed">Impossibile scrivere il file delle regole nella memoria</string>
-    <string name="rules_import_none">Nessun file di regole trovato. Copiane uno in %1$s</string>
     <string name="rules_import_pick">Scegli un file di regole</string>
+    <string name="rules_export_pick">Scegli una cartella</string>
+    <string name="browser_up">⬆ Cartella superiore</string>
+    <string name="browser_use_folder">Salva qui</string>
+    <string name="browser_internal">Memoria interna</string>
+    <string name="browser_usb">Memoria USB</string>
+    <string name="browser_no_storage">Nessun volume di memoria disponibile</string>
     <string name="rules_import_title">Importa regole</string>
     <string name="rules_import_confirm">Sostituire tutte le regole attuali con quelle di «%1$s»?</string>
     <string name="rules_import_ok">Regole importate</string>

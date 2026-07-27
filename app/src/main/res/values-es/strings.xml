@@ -31,8 +31,13 @@
     <string name="rules_export_ok">Reglas exportadas a %1$s</string>
     <string name="rules_export_none">No hay reglas que exportar</string>
     <string name="rules_export_failed">No se pudo escribir el archivo de reglas en el almacenamiento</string>
-    <string name="rules_import_none">No se encontró ningún archivo de reglas. Copie uno en %1$s</string>
     <string name="rules_import_pick">Elegir un archivo de reglas</string>
+    <string name="rules_export_pick">Elegir una carpeta</string>
+    <string name="browser_up">⬆ Subir un nivel</string>
+    <string name="browser_use_folder">Guardar aquí</string>
+    <string name="browser_internal">Almacenamiento interno</string>
+    <string name="browser_usb">Almacenamiento USB</string>
+    <string name="browser_no_storage">Ningún volumen de almacenamiento disponible</string>
     <string name="rules_import_title">Importar reglas</string>
     <string name="rules_import_confirm">¿Reemplazar todas las reglas actuales por las de «%1$s»?</string>
     <string name="rules_import_ok">Reglas importadas</string>

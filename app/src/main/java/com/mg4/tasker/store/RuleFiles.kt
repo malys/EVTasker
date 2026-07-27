@@ -1,7 +1,5 @@
 package com.mg4.tasker.store
 
-import android.content.Context
-import android.os.Environment
 import com.mg4.tasker.model.Rule
 import java.io.File
 import java.io.IOException
@@ -10,34 +8,17 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Rules files on removable storage.
+ * Reading and writing a rules file, once the user has browsed to one.
  *
- * The MG4 head unit ships no document picker — SAF answers "FileManagement is not supported
- * on this device" — so files are found by scanning instead of being picked. `getExternalFilesDirs()`
- * returns this app's own folder on internal storage *and* on every mounted volume including a
- * USB stick, and those need no storage permission at any API level. Same approach as
- * ABRP_Uploader's config import, for the same reason.
+ * Finding the file is [StorageBrowser]'s job — nothing here searches storage. The user picks an
+ * exact path, so an unusable file is reported against that path instead of being skipped.
  */
 object RuleFiles {
 
     private const val NAME_PREFIX = "mg4tasker-rules-"
 
-    /**
-     * Where an export goes: a removable volume when one is mounted, internal storage otherwise.
-     * Also the folder the "no file found" message points the user at.
-     */
-    fun exportTarget(context: Context): File? {
-        val dirs = context.getExternalFilesDirs(null).filterNotNull()
-        val target = dirs.firstOrNull { isRemovable(it) } ?: dirs.firstOrNull() ?: return null
-        return target.takeIf { it.isDirectory || it.mkdirs() }
-    }
-
-    /** Absolute path of [exportTarget], or "" when no volume is usable. */
-    fun hint(context: Context): String = exportTarget(context)?.absolutePath ?: ""
-
-    /** @return the file written, or null when no volume was writable. */
-    fun export(context: Context, rules: List<Rule>): File? {
-        val dir = exportTarget(context) ?: return null
+    /** @return the file written, or null when [dir] was not writable. */
+    fun export(rules: List<Rule>, dir: File): File? {
         val target = File(dir, fileName())
         val temp = File(dir, target.name + ".tmp")
         return try {
@@ -53,21 +34,14 @@ object RuleFiles {
     }
 
     /**
-     * Every `.json` in an app-specific folder that claims to be a rules file, decoded — newest
-     * first, so the most recent backup leads the chooser. [RuleTransfer.Result.NotARulesFile]
-     * entries are dropped: unrelated JSON on the stick is not something to report.
+     * A file the user pointed at. Unreadable or oversized reads as
+     * [RuleTransfer.Reason.MALFORMED]: they chose this path, so "cannot use it" is the answer
+     * they need, not silence.
      */
-    fun scan(context: Context): List<Pair<File, RuleTransfer.Result>> {
-        val found = mutableListOf<Pair<File, RuleTransfer.Result>>()
-        for (dir in context.getExternalFilesDirs(null).filterNotNull()) {
-            val files = dir.listFiles() ?: continue
-            for (file in files.sortedByDescending { it.lastModified() }) {
-                val text = readCapped(file) ?: continue
-                val result = RuleTransfer.decode(text)
-                if (result != RuleTransfer.Result.NotARulesFile) found += file to result
-            }
-        }
-        return found
+    fun read(file: File): RuleTransfer.Result {
+        val text = readCapped(file)
+            ?: return RuleTransfer.Result.Invalid(RuleTransfer.Reason.MALFORMED)
+        return RuleTransfer.decode(text)
     }
 
     /** Timestamped: an export is a backup, and overwriting the previous one loses it. */
@@ -78,23 +52,15 @@ object RuleFiles {
 
     /**
      * File text, or null when it cannot be a rules file. The length is checked before reading so
-     * a wrong file — a huge binary sitting on the stick — is never slurped into memory.
+     * a wrong pick — a huge binary sitting on the stick — is never slurped into memory.
      */
     private fun readCapped(file: File): String? {
         if (!file.isFile || !file.canRead()) return null
-        if (!file.name.endsWith(".${RuleTransfer.FILE_EXTENSION}", ignoreCase = true)) return null
         if (file.length() == 0L || file.length() > RuleTransfer.MAX_BYTES) return null
         return try {
             file.readText()
         } catch (_: IOException) {
             null
         }
-    }
-
-    /** A dir on an unmounted or odd volume makes this throw; treat that as "not removable". */
-    private fun isRemovable(dir: File): Boolean = try {
-        Environment.isExternalStorageRemovable(dir)
-    } catch (_: IllegalArgumentException) {
-        false
     }
 }

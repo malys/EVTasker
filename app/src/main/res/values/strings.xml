@@ -48,8 +48,13 @@
     <string name="rules_export_ok">Rules exported to %1$s</string>
     <string name="rules_export_none">No rules to export</string>
     <string name="rules_export_failed">Could not write the rules file to storage</string>
-    <string name="rules_import_none">No rules file found. Copy one to %1$s</string>
     <string name="rules_import_pick">Choose a rules file</string>
+    <string name="rules_export_pick">Choose a folder</string>
+    <string name="browser_up">⬆ Up one level</string>
+    <string name="browser_use_folder">Save here</string>
+    <string name="browser_internal">Internal storage</string>
+    <string name="browser_usb">USB storage</string>
+    <string name="browser_no_storage">No storage volume available</string>
     <string name="rules_import_title">Import rules</string>
     <string name="rules_import_confirm">Replace all current rules with those from “%1$s”?</string>
     <string name="rules_import_ok">Rules imported</string>

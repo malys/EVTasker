@@ -31,8 +31,13 @@
     <string name="rules_export_ok">Regeln nach %1$s exportiert</string>
     <string name="rules_export_none">Keine Regeln zum Exportieren</string>
     <string name="rules_export_failed">Regeldatei konnte nicht auf den Speicher geschrieben werden</string>
-    <string name="rules_import_none">Keine Regeldatei gefunden. Kopieren Sie eine nach %1$s</string>
     <string name="rules_import_pick">Regeldatei auswählen</string>
+    <string name="rules_export_pick">Ordner auswählen</string>
+    <string name="browser_up">⬆ Eine Ebene höher</string>
+    <string name="browser_use_folder">Hier speichern</string>
+    <string name="browser_internal">Interner Speicher</string>
+    <string name="browser_usb">USB-Speicher</string>
+    <string name="browser_no_storage">Kein Speichervolume verfügbar</string>
     <string name="rules_import_title">Regeln importieren</string>
     <string name="rules_import_confirm">Alle aktuellen Regeln durch die aus „%1$s“ ersetzen?</string>
     <string name="rules_import_ok">Regeln importiert</string>
