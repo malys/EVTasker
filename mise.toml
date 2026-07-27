@@ -113,11 +113,15 @@ create_avd "$EMU_CAR_AVD" "$EMU_CAR_IMAGE" "automotive_1024p_landscape"
 create_avd "$EMU_SCREEN_AVD" "$EMU_SCREEN_IMAGE" "pixel_c"
 '''
 
+# swiftshader_indirect, pas « host » : WSL2 n'expose aucun GPU réel (uniquement Mesa
+# llvmpipe). Avec -gpu host l'émulateur meurt au démarrage sur « Your GPU cannot be used
+# for hardware rendering », avant qu'aucune fenêtre n'apparaisse — d'où l'icône de tray
+# sans émulateur visible. Le rendu logiciel est plus lent, mais il démarre.
 [tasks.emulator-car]
 description = "Lance l'émulateur Automotive (API 33 — a un CarPropertyManager)"
 run = '''
 set -e
-"$ANDROID_HOME/emulator/emulator" -avd "$EMU_CAR_AVD" -gpu host -no-snapshot-save -no-boot-anim &
+"$ANDROID_HOME/emulator/emulator" -avd "$EMU_CAR_AVD" -gpu swiftshader_indirect -no-snapshot-save -no-boot-anim &
 "$ANDROID_HOME/platform-tools/adb" wait-for-device
 echo "Émulateur voiture prêt."
 '''
@@ -126,7 +130,7 @@ echo "Émulateur voiture prêt."
 description = "Lance l'émulateur écran MG4 (API 28, 1920x1080 @ 160dpi — pas de service voiture)"
 run = '''
 set -e
-"$ANDROID_HOME/emulator/emulator" -avd "$EMU_SCREEN_AVD" -gpu host -no-snapshot-save -no-boot-anim &
+"$ANDROID_HOME/emulator/emulator" -avd "$EMU_SCREEN_AVD" -gpu swiftshader_indirect -no-snapshot-save -no-boot-anim &
 "$ANDROID_HOME/platform-tools/adb" wait-for-device
 echo "Émulateur écran prêt."
 '''
