@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_selected="true">
+        <layer-list>
+            <item>
+                <color android:color="@color/mg4_surface_raised" />
+            </item>
+            <item
+                android:width="6dp"
+                android:gravity="start|fill_vertical">
+                <color android:color="@color/mg4_accent" />
+            </item>
+        </layer-list>
+    </item>
+
+    <item>
+        <color android:color="@android:color/transparent" />
+    </item>
+</selector>

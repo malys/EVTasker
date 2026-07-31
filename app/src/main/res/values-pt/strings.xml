@@ -74,6 +74,7 @@
     <string name="editor_gated_explain">Esta definição altera o comportamento do veículo: o MG4Control recusa-a enquanto o carro está em movimento.</string>
     <string name="editor_pick_condition">Escolha uma condição</string>
     <string name="editor_pick_action">Escolha uma ação</string>
+    <string name="picker_empty">Nada disto é suportado por este veículo.</string>
 
     <!-- Value editor -->
     <string name="value_enabled">Ligado</string>

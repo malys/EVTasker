@@ -19,4 +19,18 @@
     <!-- Largeur du volet gauche en paysage. Assez pour lire un nom de règle complet,
          assez étroit pour que le détail reste la zone principale. -->
     <dimen name="pane_list_width">380dp</dimen>
+
+    <!-- Rail des groupes du sélecteur. Plus étroit que pane_list_width : il ne porte que
+         des libellés de groupe, et chaque dp pris ici est un dp de moins pour la grille. -->
+    <dimen name="pane_rail_width">300dp</dimen>
+
+    <!-- Tuile du sélecteur : deux fois la cible tactile minimale, pour qu'un libellé sur
+         trois lignes plus la mention « à l'arrêt uniquement » tiennent sans repousser
+         la ligne suivante. -->
+    <dimen name="catalog_tile_height">128dp</dimen>
+    <dimen name="catalog_tile_radius">12dp</dimen>
+
+    <!-- Largeur minimale d'une tuile, utilisée pour calculer le nombre de colonnes. En
+         dessous, un libellé comme « Régulateur de vitesse adaptatif » se coupe. -->
+    <dimen name="catalog_tile_min_width">240dp</dimen>
 </resources>

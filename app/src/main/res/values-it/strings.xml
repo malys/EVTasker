@@ -74,6 +74,7 @@
     <string name="editor_gated_explain">Questa impostazione modifica il comportamento del veicolo: MG4Control la rifiuta mentre l\'auto è in movimento.</string>
     <string name="editor_pick_condition">Scegli una condizione</string>
     <string name="editor_pick_action">Scegli un\'azione</string>
+    <string name="picker_empty">Questo veicolo non supporta nulla di tutto ciò.</string>
 
     <!-- Value editor -->
     <string name="value_enabled">Attivo</string>

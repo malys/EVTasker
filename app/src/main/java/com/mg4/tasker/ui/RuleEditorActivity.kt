@@ -76,7 +76,7 @@ class RuleEditorActivity : AppCompatActivity() {
         )
 
         binding.addConditionButton.setOnClickListener {
-            CatalogSheet.pickCondition(this, firmware) { type ->
+            CatalogPicker.pickCondition(this, firmware) { type ->
                 val fresh = Condition(type = type)
                 ValueEditorDialog.editCondition(this, fresh, mediaVolumeMax) { configured ->
                     conditions += configured
@@ -85,7 +85,7 @@ class RuleEditorActivity : AppCompatActivity() {
             }
         }
         binding.addActionButton.setOnClickListener {
-            CatalogSheet.pickAction(this, firmware) { type ->
+            CatalogPicker.pickAction(this, firmware) { type ->
                 val fresh = Action(type = type)
                 if (type.spec.kind == ValueKind.NONE) {
                     actions += fresh

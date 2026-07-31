@@ -91,6 +91,7 @@
     <string name="editor_gated_explain">This setting changes vehicle behaviour: MG4Control refuses it while the car is moving.</string>
     <string name="editor_pick_condition">Choose a condition</string>
     <string name="editor_pick_action">Choose an action</string>
+    <string name="picker_empty">Nothing here is supported by this vehicle.</string>
 
     <!-- Value editor -->
     <string name="value_enabled">On</string>

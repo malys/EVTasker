@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ripple masqué sur la forme arrondie : sans le masque, l'onde déborde les coins. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+
+    <item android:id="@android:id/mask">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/catalog_tile_radius" />
+            <solid android:color="@android:color/white" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/catalog_tile_radius" />
+            <solid android:color="@color/mg4_surface_raised" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/mg4_outline" />
+        </shape>
+    </item>
+</ripple>

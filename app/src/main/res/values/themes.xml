@@ -24,6 +24,16 @@
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.MG4.Dialog</item>
     </style>
 
+    <!-- Sélecteur de condition / action : une boîte de dialogue qui occupe tout l'écran.
+         L'ancien bandeau inférieur ne laissait qu'un tiers de la hauteur en paysage, donc
+         une seule colonne et un défilement dès la cinquième entrée. Ici il n'y a rien
+         derrière qui mérite d'être vu, donc la fenêtre ne flotte pas et n'assombrit rien. -->
+    <style name="Theme.MG4.Picker" parent="Theme.MG4Tasker">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@color/mg4_background</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
     <style name="ThemeOverlay.MG4.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="colorSurface">@color/mg4_surface_raised</item>
         <item name="colorOnSurface">@color/mg4_text</item>

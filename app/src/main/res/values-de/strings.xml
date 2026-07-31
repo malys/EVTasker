@@ -74,6 +74,7 @@
     <string name="editor_gated_explain">Diese Einstellung ändert das Fahrverhalten: MG4Control verweigert sie während der Fahrt.</string>
     <string name="editor_pick_condition">Bedingung wählen</string>
     <string name="editor_pick_action">Aktion wählen</string>
+    <string name="picker_empty">Nichts davon wird von diesem Fahrzeug unterstützt.</string>
 
     <!-- Value editor -->
     <string name="value_enabled">Ein</string>

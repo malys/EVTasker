@@ -1,26 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Une tuile de la grille. Hauteur plancher fixe pour que toutes les tuiles d'une même
+     ligne offrent la même cible, quel que soit le nombre de lignes du libellé. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="@dimen/spacing_sm"
     android:orientation="vertical"
-    android:minHeight="@dimen/touch_target"
     android:gravity="center_vertical"
-    android:paddingHorizontal="@dimen/spacing_md"
-    android:paddingVertical="@dimen/spacing_sm"
+    android:minHeight="@dimen/catalog_tile_height"
+    android:padding="@dimen/spacing_md"
+    android:background="@drawable/bg_catalog_tile"
     android:focusable="true"
-    android:clickable="true"
-    android:background="?attr/selectableItemBackground">
+    android:clickable="true">
 
     <TextView
         android:id="@+id/entryLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:maxLines="3"
+        android:ellipsize="end"
         android:textAppearance="@style/Text.MG4.Body" />
 
     <TextView
         android:id="@+id/entryNote"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:maxLines="1"
+        android:ellipsize="end"
         android:textAppearance="@style/Text.MG4.Secondary"
         android:textColor="@color/mg4_refused"
         android:visibility="gone" />

@@ -91,6 +91,7 @@
     <string name="editor_gated_explain">Ce réglage modifie le comportement du véhicule : MG4Control le refuse si la voiture roule.</string>
     <string name="editor_pick_condition">Choisir une condition</string>
     <string name="editor_pick_action">Choisir une action</string>
+    <string name="picker_empty">Rien ici n\'est pris en charge par ce véhicule.</string>
 
     <!-- Éditeur de valeur -->
     <string name="value_enabled">Activé</string>
