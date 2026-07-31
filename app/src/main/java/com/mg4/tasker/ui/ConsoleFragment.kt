@@ -2,15 +2,21 @@ package com.mg4.tasker.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mg4.tasker.R
 import com.mg4.tasker.databinding.FragmentConsoleBinding
 import com.mg4.hardware.AppLogger
 import com.mg4.tasker.debug.CrashLogger
+import com.mg4.tasker.debug.DebugReport
+import com.mg4.tasker.debug.DiagnosticProbe
+import kotlin.concurrent.thread
 
 /**
  * In-app log console.
@@ -30,6 +36,7 @@ class ConsoleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.clearButton.setOnClickListener { AppLogger.clear(); render() }
+        binding.exportButton.setOnClickListener { export() }
         binding.shareButton.setOnClickListener { share() }
         binding.crashShowButton.setOnClickListener { showCrashReport() }
         binding.crashDismissButton.setOnClickListener {
@@ -62,6 +69,30 @@ class ConsoleFragment : Fragment() {
             .setMessage(report)
             .setPositiveButton(android.R.string.ok, null)
             .show()
+    }
+
+    /**
+     * Writes the same file the Diagnostic screen exports — log, crash, rules, history and the
+     * diagnostic verdicts. Splitting them would mean receiving half a picture: a log line is
+     * rarely enough without knowing what the car could do at the time.
+     */
+    private fun export() {
+        StorageBrowserDialog.pickFolder(requireContext(), R.string.rules_export_pick) { dir ->
+            val appCtx = requireContext().applicationContext
+            // The probe binds to MG4Control and reads system properties: never on the main thread.
+            thread(name = "mg4-tasker-log-export") {
+                val file = DebugReport.export(appCtx, DiagnosticProbe.run(appCtx), dir)
+                Handler(Looper.getMainLooper()).post {
+                    if (_binding == null) return@post
+                    Toast.makeText(
+                        requireContext(),
+                        if (file == null) getString(R.string.diag_export_failed)
+                        else getString(R.string.diag_export_ok, file.absolutePath),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
     }
 
     private fun share() {

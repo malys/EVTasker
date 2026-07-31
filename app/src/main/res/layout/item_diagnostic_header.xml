@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Section separator inside the diagnostic list. A header row rather than three separate
+     RecyclerViews: the three sections are read top to bottom as one report, and nested
+     scrolling on a head unit is a fight for the finger. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/diagHeader"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="@dimen/spacing_lg"
+    android:paddingBottom="@dimen/spacing_xs"
+    android:textAppearance="@style/Text.MG4.SectionHeader" />

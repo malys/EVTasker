@@ -32,6 +32,18 @@ class TaskerVehicleService : Service() {
 
     companion object {
         private const val TAG = "MG4Tasker.Vehicle"
+
+        /**
+         * Whether the ignition listener is live, for the diagnostic screen.
+         *
+         * Read from a flag rather than from ActivityManager: since API 26 the running-service
+         * list only ever contains our own services anyway, and a flag set in the lifecycle
+         * callbacks cannot report a service the system has already torn down.
+         */
+        @Volatile
+        var isRunning: Boolean = false
+            private set
+
         fun start(context: Context) {
             context.startForegroundService(Intent(context, TaskerVehicleService::class.java))
         }
@@ -58,12 +70,14 @@ class TaskerVehicleService : Service() {
         registerBtReceiver()
         registerIgnitionListener()
         warnIfMG4ControlPresent()
+        isRunning = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
 
     override fun onDestroy() {
         super.onDestroy()
+        isRunning = false
         ignitionListener?.let { MG4Hardware.unregisterVehicleConditionListener(it) }
         btReceiver?.let { runCatching { unregisterReceiver(it) } }
     }

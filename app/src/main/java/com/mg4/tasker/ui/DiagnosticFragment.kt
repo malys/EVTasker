@@ -6,34 +6,47 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.mg4.hardware.MG4Hardware
+import com.mg4.hardware.catalog.ActionType
+import com.mg4.hardware.catalog.ConditionType
+import com.mg4.hardware.catalog.ValueKind
 import com.mg4.tasker.R
+import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.databinding.FragmentDiagnosticBinding
 import com.mg4.tasker.databinding.ItemDiagnosticBinding
-import com.mg4.hardware.catalog.ConditionType
-import com.mg4.tasker.model.Snapshot
+import com.mg4.tasker.databinding.ItemDiagnosticHeaderBinding
+import com.mg4.tasker.debug.DebugReport
+import com.mg4.tasker.debug.DiagnosticProbe
+import com.mg4.tasker.debug.Diagnostics
 import com.mg4.tasker.store.SupportChecker
 import com.mg4.tasker.store.SupportStore
-import com.mg4.hardware.catalog.ValueKind
-import com.mg4.tasker.vehicle.BtTracker
-import com.mg4.tasker.vehicle.VehicleReader
+import java.text.DateFormatSymbols
 import kotlin.concurrent.thread
 
 /**
- * What MG4Tasker can actually read on THIS vehicle — read directly through MG4Hardware.
+ * What MG4Tasker can actually do on THIS vehicle, right now.
  *
- * Rationale: the condition catalogue is wider than what every firmware exposes. Outside
- * temperature in particular has not been verified on a vehicle. This screen lets you see
- * that a signal is unreadable BEFORE writing a rule that will never fire — without it,
- * the only symptom would be "my rule does not work".
+ * The catalogue is wider than any single firmware, and several things outside the catalogue
+ * also stop a rule: the vehicle service not running, notifications silenced, no speech
+ * engine, the standstill gate closed because speed is unreadable. Every one of those used to
+ * surface only as "my rule does not work".
+ *
+ * So the screen reports one verdict per condition and per action, produced by [Diagnostics]
+ * from the same evaluator and the same pre-write checks the engine uses — an entry marked OK
+ * here is one the engine will not refuse. The whole picture, plus the rules, the history, the
+ * log and any crash, exports to a file for debugging off the car.
  */
 class DiagnosticFragment : Fragment() {
 
     private var _binding: FragmentDiagnosticBinding? = null
     private val binding get() = _binding!!
+
+    /** Kept so Export writes the picture the user is looking at, not a second, different one. */
+    private var report: DiagnosticProbe.Report? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, saved: Bundle?): View {
         _binding = FragmentDiagnosticBinding.inflate(inflater, container, false)
@@ -43,6 +56,7 @@ class DiagnosticFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.diagList.layoutManager = LinearLayoutManager(requireContext())
         binding.refreshButton.setOnClickListener { load() }
+        binding.exportButton.setOnClickListener { export() }
         binding.checkSupportButton.setOnClickListener { checkSupport() }
         load()
         showSupport()
@@ -68,88 +82,239 @@ class DiagnosticFragment : Fragment() {
         val appCtx = requireContext().applicationContext
         thread(name = "mg4-tasker-support-check") {
             SupportChecker.refresh(appCtx)
-            Handler(Looper.getMainLooper()).post { if (_binding != null) showSupport() }
+            // The cache is one of the things the diagnostic judges, so the whole probe is
+            // re-run: leaving the screen contradicting the cache it just rewrote is exactly
+            // the kind of mismatch this screen exists to remove.
+            val fresh = DiagnosticProbe.run(appCtx)
+            Handler(Looper.getMainLooper()).post {
+                if (_binding != null) { showSupport(); render(fresh) }
+            }
         }
     }
 
     private fun load() {
-        binding.bridgeStatus.setText(R.string.diag_reading)
+        binding.summaryStatus.setText(R.string.diag_reading)
         binding.bridgeHint.visibility = View.GONE
+        binding.exportButton.isEnabled = false
 
-        // MG4Hardware reflection reads are blocking: never on the main thread.
+        // The probe blocks: reflection, system properties, and a bind to MG4Control with a
+        // timeout. Never on the main thread.
+        val appCtx = requireContext().applicationContext
         thread(name = "mg4-tasker-diag") {
-            MG4Hardware.init(requireContext().applicationContext)   // idempotent
-            val snapshot = VehicleReader.read(BtTracker.snapshot())
-            Handler(Looper.getMainLooper()).post {
-                if (_binding != null) render(snapshot)
-            }
+            val fresh = DiagnosticProbe.run(appCtx)
+            Handler(Looper.getMainLooper()).post { if (_binding != null) render(fresh) }
         }
     }
 
-    private fun render(snapshot: Snapshot) {
-        binding.bridgeStatus.setText(
-            if (snapshot.bridgeAvailable) R.string.diag_bridge_ok else R.string.diag_bridge_ko
-        )
-        binding.bridgeHint.visibility = if (snapshot.bridgeAvailable) View.GONE else View.VISIBLE
+    private fun render(fresh: DiagnosticProbe.Report) {
+        report = fresh
+        binding.exportButton.isEnabled = true
 
-        // The diagnostic walks the catalogue, not a hand-written list: a condition added
-        // to the catalogue shows up here with no change.
-        val rows = ConditionType.entries
-            .filter { it.snapshotKey != null }
-            .map { type -> Row(getString(type.labelRes), formatValue(type, snapshot)) }
+        val blocked = fresh.blockedConditions + fresh.blockedActions
+        binding.summaryStatus.text =
+            if (blocked == 0) getString(R.string.diag_summary_ok)
+            else getString(R.string.diag_summary_blocked, fresh.blockedConditions, fresh.blockedActions)
+        binding.summaryStatus.setTextColor(color(blocked == 0))
 
+        binding.bridgeHint.visibility =
+            if (fresh.capabilities.vehicleLayerReady) View.GONE else View.VISIBLE
+
+        val rows = buildList {
+            add(Row.Header(getString(R.string.diag_section_env)))
+            fresh.environment.forEach { add(Row.Item(envLabel(it.id), envValue(it), it.ok)) }
+
+            add(Row.Header(getString(R.string.diag_section_conditions)))
+            fresh.conditions.forEach { entry ->
+                val type = ConditionType.valueOf(entry.name)
+                add(Row.Item(getString(type.labelRes), conditionValue(type, entry), entry.ok))
+            }
+
+            add(Row.Header(getString(R.string.diag_section_actions)))
+            fresh.actions.forEach { entry ->
+                val type = ActionType.valueOf(entry.name)
+                add(Row.Item(getString(type.labelRes), actionValue(entry), entry.ok))
+            }
+        }
         binding.diagList.adapter = Adapter(rows)
     }
 
-    private fun formatValue(type: ConditionType, snapshot: Snapshot): String {
-        val key = type.snapshotKey ?: return getString(R.string.diag_unavailable)
+    // -------------------------------------------------------------------------
+    // Export
+    // -------------------------------------------------------------------------
 
-        return when (type.spec.kind) {
-            ValueKind.BOOL -> snapshot.bool(key)
-                ?.let { getString(if (it) R.string.value_enabled else R.string.value_disabled) }
-                ?: getString(R.string.diag_unavailable)
-
-            ValueKind.NUMBER -> snapshot.number(key)?.let { value ->
-                val unit = type.spec.unitRes.takeIf { it != 0 }?.let { " " + getString(it) } ?: ""
-                "$value$unit"
-            } ?: getString(R.string.diag_unavailable)
-
-            ValueKind.ENUM -> {
-                snapshot.string(key)
-                    ?: snapshot.int(key)?.let { raw ->
-                        val label = type.spec.options.firstOrNull { it.value == raw }
-                            ?.let { getString(it.labelRes) }
-                        // Raw value kept next to the label: an unexpected integer is the
-                        // sign of a firmware that does not use the same codes.
-                        if (label != null) "$label ($raw)" else raw.toString()
-                    }
-                    ?: getString(R.string.diag_unavailable)
+    private fun export() {
+        val shown = report ?: return
+        StorageBrowserDialog.pickFolder(requireContext(), R.string.rules_export_pick) { dir ->
+            val appCtx = requireContext().applicationContext
+            // Rules, history and the log are all read while building the file: keep the
+            // whole thing off the main thread.
+            thread(name = "mg4-tasker-diag-export") {
+                val file = DebugReport.export(appCtx, shown, dir)
+                Handler(Looper.getMainLooper()).post {
+                    if (_binding == null) return@post
+                    Toast.makeText(
+                        requireContext(),
+                        if (file == null) getString(R.string.diag_export_failed)
+                        else getString(R.string.diag_export_ok, file.absolutePath),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
-
-            else -> getString(R.string.diag_unavailable)
         }
     }
+
+    // -------------------------------------------------------------------------
+    // Rendering
+    // -------------------------------------------------------------------------
+
+    private val Diagnostics.Entry.ok get() = status == Diagnostics.Status.OK
+
+    private fun envLabel(id: DiagnosticProbe.Env): String = getString(
+        when (id) {
+            DiagnosticProbe.Env.VEHICLE_LAYER -> R.string.diag_env_layer
+            DiagnosticProbe.Env.VEHICLE_SERVICE -> R.string.diag_env_service
+            DiagnosticProbe.Env.AUTOMATION -> R.string.diag_env_automation
+            DiagnosticProbe.Env.NOTIFICATIONS -> R.string.diag_env_notifications
+            DiagnosticProbe.Env.STANDSTILL_GATE -> R.string.diag_env_gate
+            DiagnosticProbe.Env.SUPPORT_CACHE -> R.string.diag_env_cache
+            DiagnosticProbe.Env.MG4CONTROL -> R.string.diag_env_mg4control
+        }
+    )
+
+    private fun envValue(check: DiagnosticProbe.EnvCheck): String = getString(
+        when (check.id) {
+            DiagnosticProbe.Env.VEHICLE_LAYER ->
+                if (check.ok) R.string.diag_state_ready else R.string.diag_state_not_ready
+            DiagnosticProbe.Env.VEHICLE_SERVICE ->
+                if (check.ok) R.string.diag_state_running else R.string.diag_state_stopped
+            DiagnosticProbe.Env.AUTOMATION, DiagnosticProbe.Env.NOTIFICATIONS ->
+                if (check.ok) R.string.value_enabled else R.string.value_disabled
+            DiagnosticProbe.Env.STANDSTILL_GATE -> gateLabel(check.detail)
+            DiagnosticProbe.Env.SUPPORT_CACHE ->
+                if (check.ok) R.string.diag_cache_ok else R.string.diag_cache_stale
+            // MG4Control is reported, never judged: absent is the normal, supported case.
+            DiagnosticProbe.Env.MG4CONTROL ->
+                if (check.detail == DiagnosticProbe.MG4CONTROL_INSTALLED) R.string.diag_installed
+                else R.string.diag_absent
+        }
+    )
+
+    private fun gateLabel(verdict: String) = when (verdict) {
+        BridgeContract.VERDICT_ALLOWED -> R.string.verdict_allowed
+        BridgeContract.VERDICT_MOVING -> R.string.verdict_moving
+        else -> R.string.verdict_unknown_speed
+    }
+
+    private fun conditionValue(type: ConditionType, entry: Diagnostics.Entry): String {
+        if (!entry.ok) return reason(entry)
+        val raw = entry.value ?: return getString(R.string.diag_state_ready)
+        val text = when {
+            type == ConditionType.TIME_OF_DAY ->
+                (raw as? Int)?.let { "%02d:%02d".format(it / 60, it % 60) }
+            type == ConditionType.DAY_OF_WEEK ->
+                (raw as? Int)?.let { DateFormatSymbols().weekdays.getOrNull(it) }
+            type == ConditionType.ANY_BT_CONNECTED ->
+                getString(if (raw == true) R.string.diag_value_yes else R.string.diag_value_no)
+            type == ConditionType.BT_DEVICE_CONNECTED ->
+                (raw as? String)?.ifBlank { getString(R.string.diag_value_none) }
+            type.spec.kind == ValueKind.BOOL ->
+                getString(if (raw == true) R.string.value_enabled else R.string.value_disabled)
+            type.spec.kind == ValueKind.NUMBER -> {
+                val unit = type.spec.unitRes.takeIf { it != 0 }?.let { " " + getString(it) } ?: ""
+                "$raw$unit"
+            }
+            type.spec.kind == ValueKind.ENUM -> enumLabel(type, raw)
+            else -> raw.toString()
+        } ?: raw.toString()
+        return text + hiddenSuffix(entry)
+    }
+
+    /**
+     * The raw code is kept next to the label: an unexpected integer is the sign of a firmware
+     * that does not use the same values, which is exactly what someone comes here to find.
+     */
+    private fun enumLabel(type: ConditionType, raw: Any): String? {
+        if (raw is String) return raw
+        val value = raw as? Int ?: return null
+        val label = type.spec.options.firstOrNull { it.value == value }?.let { getString(it.labelRes) }
+        return if (label != null) "$label ($value)" else value.toString()
+    }
+
+    private fun actionValue(entry: Diagnostics.Entry): String =
+        if (entry.ok) getString(R.string.diag_action_ready) + hiddenSuffix(entry) else reason(entry)
+
+    /** Usable but not offered in the editor: only an imported rule can still reach it. */
+    private fun hiddenSuffix(entry: Diagnostics.Entry): String =
+        if (entry.hidden) " · " + getString(R.string.diag_hidden) else ""
+
+    private fun reason(entry: Diagnostics.Entry): String = getString(
+        when (entry.reason) {
+            Diagnostics.Reason.NOT_READABLE -> R.string.diag_reason_not_readable
+            Diagnostics.Reason.LAYER_NOT_READY -> R.string.diag_reason_layer
+            Diagnostics.Reason.GATE_MOVING -> R.string.verdict_moving
+            Diagnostics.Reason.GATE_UNKNOWN_SPEED -> R.string.verdict_unknown_speed
+            Diagnostics.Reason.UNSUPPORTED_FIRMWARE -> R.string.diag_reason_firmware
+            Diagnostics.Reason.NO_MG4CONTROL -> R.string.diag_reason_no_mg4control
+            Diagnostics.Reason.MG4CONTROL_UNREACHABLE -> R.string.verdict_no_bridge
+            Diagnostics.Reason.NO_TTS_ENGINE -> R.string.diag_reason_no_tts
+            Diagnostics.Reason.NOTIFICATIONS_OFF -> R.string.diag_reason_notifications
+            Diagnostics.Reason.NONE -> R.string.diag_action_ready
+        }
+    )
+
+    private fun color(ok: Boolean) =
+        ContextCompat.getColor(requireContext(), if (ok) R.color.mg4_ok else R.color.mg4_error)
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
-    private data class Row(val label: String, val value: String)
+    // -------------------------------------------------------------------------
 
-    private class Adapter(private val rows: List<Row>) : RecyclerView.Adapter<Adapter.Holder>() {
+    private sealed interface Row {
+        data class Header(val title: String) : Row
+        data class Item(val label: String, val value: String, val ok: Boolean) : Row
+    }
 
-        class Holder(val binding: ItemDiagnosticBinding) : RecyclerView.ViewHolder(binding.root)
+    private inner class Adapter(private val rows: List<Row>) :
+        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+        inner class HeaderHolder(val binding: ItemDiagnosticHeaderBinding) :
+            RecyclerView.ViewHolder(binding.root)
+
+        inner class ItemHolder(val binding: ItemDiagnosticBinding) :
+            RecyclerView.ViewHolder(binding.root)
 
         override fun getItemCount() = rows.size
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = Holder(
-            ItemDiagnosticBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        )
+        override fun getItemViewType(position: Int) =
+            if (rows[position] is Row.Header) TYPE_HEADER else TYPE_ITEM
 
-        override fun onBindViewHolder(holder: Holder, position: Int) {
-            holder.binding.diagLabel.text = rows[position].label
-            holder.binding.diagValue.text = rows[position].value
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            val inflater = LayoutInflater.from(parent.context)
+            return if (viewType == TYPE_HEADER) {
+                HeaderHolder(ItemDiagnosticHeaderBinding.inflate(inflater, parent, false))
+            } else {
+                ItemHolder(ItemDiagnosticBinding.inflate(inflater, parent, false))
+            }
         }
+
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            when (val row = rows[position]) {
+                is Row.Header -> (holder as HeaderHolder).binding.diagHeader.text = row.title
+                is Row.Item -> (holder as ItemHolder).binding.let {
+                    it.diagLabel.text = row.label
+                    it.diagValue.text = row.value
+                    // Colour is never the only carrier: the value text always says what happened.
+                    it.diagValue.setTextColor(color(row.ok))
+                }
+            }
+        }
+    }
+
+    private companion object {
+        const val TYPE_HEADER = 0
+        const val TYPE_ITEM = 1
     }
 }

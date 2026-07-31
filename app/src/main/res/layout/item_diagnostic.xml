@@ -14,11 +14,15 @@
         android:layout_height="wrap_content"
         android:textAppearance="@style/Text.MG4.Body" />
 
+    <!-- Weighted, not wrap_content: the value now carries refusal reasons ("refused — speed
+         unreadable"), which must wrap instead of pushing the label off screen. -->
     <TextView
         android:id="@+id/diagValue"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_md"
+        android:gravity="end"
         android:textAppearance="@style/Text.MG4.Body"
         android:fontFamily="monospace" />
 </LinearLayout>

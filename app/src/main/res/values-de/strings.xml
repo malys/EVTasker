@@ -124,12 +124,48 @@
     <string name="verdict_no_bridge">MG4Control nicht erreichbar</string>
 
     <!-- Diagnostic -->
-    <string name="diag_title">Von MG4Control gelesener Zustand</string>
+    <string name="diag_title">Ausführungsdiagnose</string>
     <string name="diag_refresh">Aktualisieren</string>
-    <string name="diag_reading">Wird gelesen…</string>
-    <string name="diag_unavailable">unlesbar</string>
-    <string name="diag_bridge_ok">Fahrzeugebene: bereit</string>
-    <string name="diag_bridge_ko">Fahrzeugebene: nicht bereit</string>
+    <string name="diag_export">Exportieren</string>
+    <string name="diag_reading">Diagnose läuft…</string>
+    <string name="diag_summary_ok">Alles, was die Regel-Engine braucht, ist bereit</string>
+    <string name="diag_summary_blocked">%1$d Bedingungen und %2$d Aktionen sind derzeit nicht ausführbar</string>
+    <string name="diag_export_ok">Diagnose exportiert nach %1$s</string>
+    <string name="diag_export_failed">Diagnosebericht konnte nicht auf den Speicher geschrieben werden</string>
+
+    <string name="diag_section_env">Ausführungskontext</string>
+    <string name="diag_section_conditions">Bedingungen</string>
+    <string name="diag_section_actions">Aktionen</string>
+
+    <string name="diag_env_layer">Fahrzeugebene</string>
+    <string name="diag_env_service">Fahrzeugdienst</string>
+    <string name="diag_env_automation">Automatisierung</string>
+    <string name="diag_env_notifications">Benachrichtigungen</string>
+    <string name="diag_env_gate">Stillstandssperre</string>
+    <string name="diag_env_cache">Cache unterstützter Funktionen</string>
+    <string name="diag_env_mg4control">MG4Control</string>
+
+    <string name="diag_state_ready">bereit</string>
+    <string name="diag_state_not_ready">nicht bereit</string>
+    <string name="diag_state_running">läuft</string>
+    <string name="diag_state_stopped">gestoppt</string>
+    <string name="diag_cache_ok">aktuell</string>
+    <string name="diag_cache_stale">veraltet — „Unterstützung prüfen“ drücken</string>
+    <string name="diag_installed">installiert</string>
+    <string name="diag_absent">nicht installiert</string>
+
+    <string name="diag_action_ready">ausführbar</string>
+    <string name="diag_hidden">im Editor ausgeblendet</string>
+    <string name="diag_value_yes">ja</string>
+    <string name="diag_value_no">nein</string>
+    <string name="diag_value_none">keine</string>
+
+    <string name="diag_reason_not_readable">in diesem Fahrzeug nicht lesbar</string>
+    <string name="diag_reason_layer">Fahrzeugebene nicht bereit</string>
+    <string name="diag_reason_firmware">von dieser Firmware nicht unterstützt</string>
+    <string name="diag_reason_no_mg4control">MG4Control nicht installiert</string>
+    <string name="diag_reason_no_tts">keine Sprachausgabe verfügbar</string>
+    <string name="diag_reason_notifications">Benachrichtigungen deaktiviert</string>
     <string name="diag_bridge_ko_hint">Öffnen Sie MG4Tasker im Fahrzeug, damit sein Fahrzeugdienst starten kann. Er benötigt die Plattformsignatur und Systemberechtigungen.</string>
     <string name="diag_temp_note">Die Außentemperatur wird nicht von jeder MG4-Firmware bereitgestellt. Bleibt sie hier unlesbar, werden Regeln, die sie verwenden, nie ausgelöst.</string>
     <string name="diag_check_support">Unterstützung prüfen</string>

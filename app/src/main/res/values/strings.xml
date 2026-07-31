@@ -141,12 +141,48 @@
     <string name="verdict_no_bridge">MG4Control unreachable</string>
 
     <!-- Diagnostic -->
-    <string name="diag_title">State read from MG4Control</string>
+    <string name="diag_title">Execution diagnostic</string>
     <string name="diag_refresh">Refresh</string>
-    <string name="diag_reading">Reading…</string>
-    <string name="diag_unavailable">unreadable</string>
-    <string name="diag_bridge_ok">Vehicle layer: ready</string>
-    <string name="diag_bridge_ko">Vehicle layer: not ready</string>
+    <string name="diag_export">Export</string>
+    <string name="diag_reading">Running the diagnostic…</string>
+    <string name="diag_summary_ok">Everything the rule engine needs is ready</string>
+    <string name="diag_summary_blocked">%1$d conditions and %2$d actions cannot run right now</string>
+    <string name="diag_export_ok">Diagnostic exported to %1$s</string>
+    <string name="diag_export_failed">Could not write the diagnostic report to storage</string>
+
+    <string name="diag_section_env">Execution context</string>
+    <string name="diag_section_conditions">Conditions</string>
+    <string name="diag_section_actions">Actions</string>
+
+    <string name="diag_env_layer">Vehicle layer</string>
+    <string name="diag_env_service">Vehicle service</string>
+    <string name="diag_env_automation">Automation</string>
+    <string name="diag_env_notifications">Notifications</string>
+    <string name="diag_env_gate">Standstill gate</string>
+    <string name="diag_env_cache">Supported-feature cache</string>
+    <string name="diag_env_mg4control">MG4Control</string>
+
+    <string name="diag_state_ready">ready</string>
+    <string name="diag_state_not_ready">not ready</string>
+    <string name="diag_state_running">running</string>
+    <string name="diag_state_stopped">stopped</string>
+    <string name="diag_cache_ok">up to date</string>
+    <string name="diag_cache_stale">out of date — press “Check support”</string>
+    <string name="diag_installed">installed</string>
+    <string name="diag_absent">not installed</string>
+
+    <string name="diag_action_ready">can run</string>
+    <string name="diag_hidden">hidden in the editor</string>
+    <string name="diag_value_yes">yes</string>
+    <string name="diag_value_no">no</string>
+    <string name="diag_value_none">none</string>
+
+    <string name="diag_reason_not_readable">not readable on this car</string>
+    <string name="diag_reason_layer">vehicle layer not ready</string>
+    <string name="diag_reason_firmware">not supported by this firmware</string>
+    <string name="diag_reason_no_mg4control">MG4Control not installed</string>
+    <string name="diag_reason_no_tts">no speech engine</string>
+    <string name="diag_reason_notifications">notifications turned off</string>
     <string name="diag_bridge_ko_hint">Open MG4Tasker on the car so its vehicle service can start. It needs the platform signature and system permissions.</string>
     <string name="diag_temp_note">Outside temperature is not exposed by every MG4 firmware. If it stays unreadable here, rules using it will never fire.</string>
     <string name="diag_check_support">Check support</string>

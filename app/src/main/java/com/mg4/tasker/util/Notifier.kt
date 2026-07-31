@@ -28,6 +28,22 @@ object Notifier {
         )
     }
 
+    /**
+     * True when a "notify" action would actually reach the driver.
+     *
+     * Both switches matter and they are independent: the user can silence the whole app, or
+     * only this channel. Either way the action succeeds silently today — the diagnostic is
+     * what makes that visible before a rule relies on it.
+     */
+    fun canNotify(context: Context): Boolean {
+        ensureChannel(context)
+        val manager = ContextCompat.getSystemService(context, NotificationManager::class.java)
+            ?: return false
+        if (!manager.areNotificationsEnabled()) return false
+        val channel = manager.getNotificationChannel(CHANNEL_ID) ?: return false
+        return channel.importance != NotificationManager.IMPORTANCE_NONE
+    }
+
     fun buildForegroundNotification(context: Context): Notification {
         ensureChannel(context)
         return Notification.Builder(context, CHANNEL_ID)

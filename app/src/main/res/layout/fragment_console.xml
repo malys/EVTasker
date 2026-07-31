@@ -19,11 +19,21 @@
             android:text="@string/tab_console"
             android:textAppearance="@style/Text.MG4.Title" />
 
+        <!-- Export before Share: the head unit rarely has an app to share text to, so
+             writing the file to storage is the path that actually works on the car. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/exportButton"
+            style="@style/Widget.MG4.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/diag_export" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/shareButton"
             style="@style/Widget.MG4.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
             android:text="@string/console_share" />
 
         <com.google.android.material.button.MaterialButton

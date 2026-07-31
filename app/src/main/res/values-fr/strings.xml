@@ -141,12 +141,48 @@
     <string name="verdict_no_bridge">MG4Control injoignable</string>
 
     <!-- Diagnostic -->
-    <string name="diag_title">État lu depuis MG4Control</string>
+    <string name="diag_title">Diagnostic d\'exécution</string>
     <string name="diag_refresh">Actualiser</string>
-    <string name="diag_reading">Lecture en cours…</string>
-    <string name="diag_unavailable">illisible</string>
-    <string name="diag_bridge_ok">Couche véhicule : prête</string>
-    <string name="diag_bridge_ko">Couche véhicule : indisponible</string>
+    <string name="diag_export">Exporter</string>
+    <string name="diag_reading">Diagnostic en cours…</string>
+    <string name="diag_summary_ok">Tout ce dont le moteur de règles a besoin est prêt</string>
+    <string name="diag_summary_blocked">%1$d conditions et %2$d actions ne peuvent pas s\'exécuter actuellement</string>
+    <string name="diag_export_ok">Diagnostic exporté vers %1$s</string>
+    <string name="diag_export_failed">Impossible d\'écrire le rapport de diagnostic sur le stockage</string>
+
+    <string name="diag_section_env">Contexte d\'exécution</string>
+    <string name="diag_section_conditions">Conditions</string>
+    <string name="diag_section_actions">Actions</string>
+
+    <string name="diag_env_layer">Couche véhicule</string>
+    <string name="diag_env_service">Service véhicule</string>
+    <string name="diag_env_automation">Automatisation</string>
+    <string name="diag_env_notifications">Notifications</string>
+    <string name="diag_env_gate">Verrou à l\'arrêt</string>
+    <string name="diag_env_cache">Cache des fonctions supportées</string>
+    <string name="diag_env_mg4control">MG4Control</string>
+
+    <string name="diag_state_ready">prête</string>
+    <string name="diag_state_not_ready">indisponible</string>
+    <string name="diag_state_running">actif</string>
+    <string name="diag_state_stopped">arrêté</string>
+    <string name="diag_cache_ok">à jour</string>
+    <string name="diag_cache_stale">périmé — appuyez sur « Vérifier le support »</string>
+    <string name="diag_installed">installé</string>
+    <string name="diag_absent">absent</string>
+
+    <string name="diag_action_ready">exécutable</string>
+    <string name="diag_hidden">masquée dans l\'éditeur</string>
+    <string name="diag_value_yes">oui</string>
+    <string name="diag_value_no">non</string>
+    <string name="diag_value_none">aucun</string>
+
+    <string name="diag_reason_not_readable">illisible sur cette voiture</string>
+    <string name="diag_reason_layer">couche véhicule indisponible</string>
+    <string name="diag_reason_firmware">non supportée par ce firmware</string>
+    <string name="diag_reason_no_mg4control">MG4Control non installé</string>
+    <string name="diag_reason_no_tts">aucun moteur de synthèse vocale</string>
+    <string name="diag_reason_notifications">notifications désactivées</string>
     <string name="diag_bridge_ko_hint">Ouvrez MG4Tasker sur la voiture pour démarrer son service véhicule. Il requiert la signature plateforme et les permissions système.</string>
     <string name="diag_temp_note">La température extérieure n\'est pas exposée par tous les firmwares MG4. Si elle reste illisible ici, les règles qui l\'utilisent ne se déclencheront jamais.</string>
     <string name="diag_check_support">Vérifier le support</string>

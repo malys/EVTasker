@@ -24,10 +24,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/diag_refresh" />
+
+        <!-- Export writes the diagnostic, the rules, the history, the log and any crash to
+             storage: the car has no cable and no crash reporter, so this is the only way the
+             whole picture leaves the vehicle. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/exportButton"
+            style="@style/Widget.MG4.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:text="@string/diag_export" />
     </LinearLayout>
 
     <TextView
-        android:id="@+id/bridgeStatus"
+        android:id="@+id/summaryStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_sm"

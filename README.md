@@ -34,6 +34,7 @@ profile* — becomes available.
 - [Conditions and actions](#conditions-and-actions)
 - [Firmware compatibility](#firmware-compatibility)
 - [Climate and windows (read-only for now)](#climate-and-windows-read-only-for-now)
+- [Diagnostic](#diagnostic)
 - [Import and export (USB stick)](#import-and-export-usb-stick)
 - [Building](#building)
 - [Security](#security)
@@ -191,6 +192,50 @@ deferred. Confirm the reads on the Diagnostic tab, and the write actions can fol
 
 ---
 
+## Diagnostic
+
+The Diagnostic tab answers one question: **would a rule using this entry work on this car,
+right now?** An entry marked OK is one the rule engine will not refuse.
+
+That guarantee is kept by reusing the engine's own code rather than a parallel
+implementation. A condition is called readable only when `ConditionEvaluator` — the object
+the engine calls — returns something other than `UNAVAILABLE` on the same snapshot the cycle
+would evaluate. An action is called runnable only after every check `DirectExecutor` performs
+before it writes has passed: the firmware matrix, the 0 km/h standstill gate, a real bind to
+MG4Control's bridge for the profile action, a speech engine for the spoken action, a live
+notification channel for the notify action.
+
+The one step it cannot take is the write itself — applying a drive mode to see whether it
+sticks would change the car under the driver. So for vehicle writes, OK means "everything
+checked before writing passes", and the history reports what the write did afterwards.
+
+Three sections:
+
+- **Execution context** — the prerequisites that decide whether rules run at all: vehicle
+  layer, the ignition-listening service, the automation master switch, notifications, the
+  standstill gate as it stands now, whether the cached supported-feature set is stale, and
+  whether MG4Control is installed alongside.
+- **Conditions** — the value read for each one, or why it cannot be read.
+- **Actions** — runnable, or the exact check that blocks it.
+
+An entry can read fine and still be marked *hidden in the editor*: the firmware matrix does
+not list this generation, so the picker will not offer it, but an imported rule can still
+reach it.
+
+### Exporting the diagnostic and the logs
+
+**Export**, on the Diagnostic tab and on the Console tab, writes one text file to storage:
+the diagnostic verdicts, the current rules (in the import format, so they can be replayed on
+another car), the run history, the in-app log and the last crash report.
+
+The head unit has no cable, no logcat and no crash reporter, and the "Share" button needs an
+app the car usually does not have. Writing `mg4tasker-diagnostic-<yyyyMMdd-HHmmss>.txt` to
+the USB stick already used for rules is the path that works on the vehicle itself. The folder
+is chosen with the same browser as the rules export, and the file is written to a `.tmp` then
+renamed, so a stick pulled mid-write never leaves a half-report that reads as complete.
+
+---
+
 ## Import and export (USB stick)
 
 **Export** and **Import** on the Rules screen move the whole rule set to and from a JSON
@@ -310,7 +355,7 @@ app/src/main/java/com/mg4/tasker/
   ui/        list, generic editor, history, diagnostic, console, file browser
   service/   run cycle (foreground service)
   receiver/  ignition wake-up
-  debug/     AppLogger ring buffer + CrashLogger
+  debug/     AppLogger ring buffer, CrashLogger, diagnostic verdicts + report export
 ```
 
 The engine (`engine/`) imports nothing from Android: all decision behaviour — including
