@@ -53,7 +53,7 @@ R69 sources name, but not confirmed on any MG4. They exist so the Diagnostic tab
 a signal is readable before any write path is added. Do not add climate/window writes
 until the reads are confirmed on a vehicle.
 
-## Reference patterns (inherited from MG4Control / ABRP_Uploader)
+## Reference patterns (inherited from MG4Control / MG4ABRPUploader)
 
 - **Signing**: keystore path + passwords from env vars (CI) or `gradle.properties`
   (local); `signingConfig` created only if the file exists. Never a literal secret in a
