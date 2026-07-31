@@ -86,6 +86,7 @@
     <string name="editor_cancel">Annuler</string>
     <string name="editor_name_required">Donnez un nom à la règle</string>
     <string name="editor_incomplete">Il faut au moins une condition et une action</string>
+    <string name="editor_save_failed">Échec de l\'enregistrement : la règle n\'a pas pu être écrite. Voir l\'onglet Console.</string>
     <string name="editor_remove">Retirer</string>
     <string name="editor_gated_hint">À l\'arrêt uniquement</string>
     <string name="editor_gated_explain">Ce réglage modifie le comportement du véhicule : MG4Control le refuse si la voiture roule.</string>

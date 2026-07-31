@@ -147,7 +147,7 @@ class RulesFragment : Fragment() {
             return
         }
         StorageBrowserDialog.pickFolder(requireContext(), R.string.rules_export_pick) { dir ->
-            val file = RuleFiles.export(rules, dir)
+            val file = RuleFiles.export(requireContext(), rules, dir)
             toastLong(
                 if (file == null) getString(R.string.rules_export_failed)
                 else getString(R.string.rules_export_ok, file.absolutePath)

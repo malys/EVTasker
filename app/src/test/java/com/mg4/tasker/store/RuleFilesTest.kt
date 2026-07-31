@@ -10,13 +10,24 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import androidx.test.core.app.ApplicationProvider
 import java.io.File
 
 /**
  * The file layer around [RuleTransfer]: what lands on the stick, and what a user's pick reads
  * back as. Storage discovery is [StorageBrowser]'s and is covered separately.
+ *
+ * Robolectric only for the Context the export needs to reach the app-specific folder when a
+ * volume root refuses writes; nothing here touches the vehicle.
  */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class RuleFilesTest {
+
+    private fun context() = ApplicationProvider.getApplicationContext<android.content.Context>()
 
     // Qualified: an `org.junit.Rule` import would collide with the model's Rule.
     @get:org.junit.Rule
@@ -33,7 +44,7 @@ class RuleFilesTest {
 
     @Test
     fun `export writes a file the import path reads back`() {
-        val file = RuleFiles.export(rules, folder.root)
+        val file = RuleFiles.export(context(), rules, folder.root)
 
         assertNotNull(file)
         assertEquals(RuleTransfer.Result.Ok(rules), RuleFiles.read(file!!))
@@ -41,7 +52,7 @@ class RuleFilesTest {
 
     @Test
     fun `exported name is timestamped so a second export keeps the first`() {
-        val file = RuleFiles.export(rules, folder.root)!!
+        val file = RuleFiles.export(context(), rules, folder.root)!!
 
         assertTrue(
             file.name,
@@ -51,7 +62,7 @@ class RuleFilesTest {
 
     @Test
     fun `export leaves no temp file behind`() {
-        RuleFiles.export(rules, folder.root)
+        RuleFiles.export(context(), rules, folder.root)
 
         assertEquals(emptyList<String>(), folder.root.list()!!.filter { it.endsWith(".tmp") })
     }
@@ -60,7 +71,7 @@ class RuleFilesTest {
     fun `export into a missing directory fails instead of throwing`() {
         val missing = File(folder.root, "not-there")
 
-        assertEquals(null, RuleFiles.export(rules, missing))
+        assertEquals(null, RuleFiles.export(context(), rules, missing))
     }
 
     @Test

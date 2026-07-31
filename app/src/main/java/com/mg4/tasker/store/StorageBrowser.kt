@@ -1,7 +1,10 @@
 package com.mg4.tasker.store
 
 import android.content.Context
+import android.os.Build
 import android.os.Environment
+import android.os.storage.StorageManager
+import android.os.storage.StorageVolume
 import java.io.File
 
 /**
@@ -22,19 +25,61 @@ object StorageBrowser {
     data class Root(val dir: File, val removable: Boolean)
 
     /**
+     * Mount points the head unit uses for a USB stick. The car does not register the stick
+     * as an app-visible external volume, so `getExternalFilesDirs()` never reports it and no
+     * `Android/data` tree is ever created on it — the stick is simply mounted here. Each
+     * listable child of these directories is a volume.
+     */
+    private val VOLUME_PARENTS = listOf("/storage", "/mnt/media_rw", "/mnt/usb")
+
+    /** Sticks mounted straight onto a fixed path rather than under a parent directory. */
+    private val VOLUME_PATHS = listOf("/mnt/usbotg", "/mnt/udisk", "/udisk", "/mnt/external_sd")
+
+    /** Never volumes: emulated primary storage is already reported, the rest are plumbing. */
+    private val NOT_VOLUMES = setOf("emulated", "self", "container", "enc_emulated", "knox-emulated")
+
+    /**
      * One entry per mounted volume, removable first — the USB stick is what the user came for.
      *
-     * Roots are derived by walking up from `getExternalFilesDirs()` rather than read from
-     * StorageManager: `StorageVolume.getDirectory()` is API 30 and minSdk here is 28, and the
-     * walk-up needs no branch per API level.
+     * Three sources, in order of trust, deduplicated by path:
+     *  1. `getExternalFilesDirs()` walked up to its volume — always right when the platform
+     *     reports the volume at all.
+     *  2. [StorageManager]'s volume list — catches a stick the platform mounted but never gave
+     *     this app an `Android/data` directory on.
+     *  3. The raw mount points above — catches the MG4 head unit, which does neither.
+     *
+     * Anything unreadable is dropped rather than offered: a root the browser cannot list is a
+     * dead end for the user.
      */
     fun roots(context: Context): List<Root> {
-        val roots = mutableListOf<Root>()
-        for (appDir in context.getExternalFilesDirs(null).filterNotNull()) {
-            val dir = volumeRoot(appDir) ?: appDir
-            if (roots.none { it.dir == dir }) roots += Root(dir, isRemovable(appDir))
+        val roots = LinkedHashMap<String, Root>()
+
+        fun add(dir: File, removable: Boolean) {
+            if (!dir.isDirectory || dir.listFiles() == null) return
+            // First source wins: it also carries the more trustworthy "removable" answer.
+            roots.getOrPut(canonical(dir)) { Root(dir, removable) }
         }
-        return roots.sortedByDescending { it.removable }
+
+        for (appDir in context.getExternalFilesDirs(null).filterNotNull()) {
+            val removable = isRemovable(appDir)
+            // The volume root is the useful place to start; when it cannot be listed, the
+            // app-specific folder still can, and on a stick that folder is on the stick.
+            val volume = volumeRoot(appDir)
+            if (volume != null) add(volume, removable) else add(appDir, removable)
+        }
+
+        for (volume in storageManagerVolumes(context)) add(volume.dir, volume.removable)
+
+        for (parent in VOLUME_PARENTS) {
+            val children = File(parent).listFiles() ?: continue
+            for (child in children) {
+                if (child.name in NOT_VOLUMES || child.isHidden) continue
+                add(child, removable = true)
+            }
+        }
+        for (path in VOLUME_PATHS) add(File(path), removable = true)
+
+        return roots.values.sortedByDescending { it.removable }
     }
 
     /**
@@ -50,6 +95,67 @@ object StorageBrowser {
             .filter { it.isDirectory || extension == null || it.name.endsWith(".$extension", ignoreCase = true) }
             .sortedWith(compareByDescending<File> { it.isDirectory }.thenBy { it.name.lowercase() })
     }
+
+    /**
+     * A directory an export can actually be written to, starting from the one the user picked.
+     *
+     * A stick is often mounted so that its root refuses writes while the app-specific folder on
+     * the same volume accepts them. Falling back there keeps the file on the stick the user
+     * chose — which is the whole point — instead of failing with nothing to show for it.
+     * Null when nothing on that volume is writable.
+     */
+    fun writableTarget(context: Context, dir: File): File? {
+        if (canWriteInto(dir)) return dir
+        val picked = canonical(dir)
+        for (appDir in context.getExternalFilesDirs(null).filterNotNull()) {
+            val volume = volumeRoot(appDir) ?: continue
+            if (!picked.startsWith(canonical(volume))) continue
+            appDir.mkdirs()
+            if (canWriteInto(appDir)) return appDir
+        }
+        return null
+    }
+
+    /**
+     * `File.canWrite()` answers from the permission bits, which lie on a FAT stick and on a
+     * platform-signed build. Creating a file is the only answer that counts.
+     */
+    private fun canWriteInto(dir: File): Boolean {
+        if (!dir.isDirectory) return false
+        val probe = File(dir, ".mg4tasker-write-probe")
+        return try {
+            probe.createNewFile()
+        } catch (_: Exception) {
+            false
+        } finally {
+            runCatching { probe.delete() }
+        }
+    }
+
+    private fun canonical(dir: File): String =
+        runCatching { dir.canonicalPath }.getOrDefault(dir.absolutePath)
+
+    /**
+     * Volumes as the platform knows them. `StorageVolume.getDirectory()` is API 30; below that
+     * the path is only reachable by reflection, which a platform-signed system app is exempt
+     * from the hidden-API restrictions on. Any failure means "this source found nothing".
+     */
+    private fun storageManagerVolumes(context: Context): List<Root> = runCatching {
+        val manager = context.getSystemService(Context.STORAGE_SERVICE) as? StorageManager
+            ?: return emptyList()
+        manager.storageVolumes.mapNotNull { volume ->
+            volumeDirectory(volume)?.let { Root(it, volume.isRemovable) }
+        }
+    }.getOrDefault(emptyList())
+
+    private fun volumeDirectory(volume: StorageVolume): File? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            volume.directory
+        } else {
+            runCatching {
+                StorageVolume::class.java.getMethod("getPath").invoke(volume) as? String
+            }.getOrNull()?.let(::File)
+        }
 
     /**
      * `/storage/XXXX-XXXX/Android/data/com.mg4.tasker/files` → `/storage/XXXX-XXXX`, or null

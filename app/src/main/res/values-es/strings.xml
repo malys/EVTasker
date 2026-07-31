@@ -69,6 +69,7 @@
     <string name="editor_cancel">Cancelar</string>
     <string name="editor_name_required">Da un nombre a la regla</string>
     <string name="editor_incomplete">Se requiere al menos una condición y una acción</string>
+    <string name="editor_save_failed">Error al guardar: no se pudo escribir la regla. Consulta la pestaña Consola.</string>
     <string name="editor_remove">Quitar</string>
     <string name="editor_gated_hint">Solo detenido</string>
     <string name="editor_gated_explain">Este ajuste cambia el comportamiento del vehículo: MG4Control lo rechaza mientras el coche está en movimiento.</string>

@@ -35,6 +35,7 @@ profile* — becomes available.
 - [Firmware compatibility](#firmware-compatibility)
 - [Climate and windows (read-only for now)](#climate-and-windows-read-only-for-now)
 - [Diagnostic](#diagnostic)
+  - [When a rule will not save](#when-a-rule-will-not-save)
 - [Import and export (USB stick)](#import-and-export-usb-stick)
 - [Building](#building)
 - [Security](#security)
@@ -234,6 +235,20 @@ the USB stick already used for rules is the path that works on the vehicle itsel
 is chosen with the same browser as the rules export, and the file is written to a `.tmp` then
 renamed, so a stick pulled mid-write never leaves a half-report that reads as complete.
 
+The report also carries a **Storage** section — every path `getExternalFilesDirs()` returns,
+every root the browser offers, and where each one is actually writable. When an export cannot
+reach a stick, that section is what says why.
+
+### When a rule will not save
+
+Saving reports which step failed instead of closing the editor as if it had worked. The store
+writes with `commit()`, checks the return value, then **reads the rule back**; only a
+successful read-back closes the editor. A quota refusal, a write the storage layer rejected,
+and a write that committed but did not survive the read-back are three different messages, and
+the last two are also written to the Console tab with the underlying exception. Reading the
+rule set back as unparseable is logged too rather than passing silently for "no rules" — that
+emptiness would otherwise be persisted over the real rules by the next save.
+
 ---
 
 ## Import and export (USB stick)
@@ -261,6 +276,18 @@ which is what makes the **whole stick** browsable rather than only the app's own
 build without the platform signature the volume root is not listable, so the browser falls back
 to `Android/data/com.mg4.tasker/files/` — readable on every build at every API level with no
 storage permission. A single volume opens directly; several offer the list above.
+
+**Finding the stick takes three sources, not one.** `getExternalFilesDirs()` alone is what an
+emulator answers with, and it is why the stick was invisible on the car: the head unit mounts
+it without registering it as an app-visible external volume, so the platform never reports it
+and never creates an `Android/data` tree on it. The browser therefore also reads
+`StorageManager`'s volume list, and finally scans the mount points the head unit actually uses
+(`/storage/*`, `/mnt/media_rw/*`, `/mnt/usb*`, `/mnt/usbotg`, `/mnt/udisk`). Roots are
+deduplicated by canonical path and any root that cannot be listed is dropped rather than
+offered as a dead end. If the chosen folder refuses writes, the export falls back to the
+app-specific folder **on that same volume**, so the file still lands on the stick the user
+picked. The **Storage** section of the diagnostic report prints all of this, which is the way
+to see what a given car actually exposes.
 
 - **Export** asks for a folder ("Save here"), writes `mg4tasker-rules-<yyyyMMdd-HHmmss>.json`
   into it and shows the full path. The name is timestamped: an export is a backup, and

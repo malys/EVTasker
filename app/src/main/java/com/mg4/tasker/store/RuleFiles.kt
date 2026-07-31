@@ -1,5 +1,6 @@
 package com.mg4.tasker.store
 
+import android.content.Context
 import com.mg4.tasker.model.Rule
 import java.io.File
 import java.io.IOException
@@ -17,10 +18,16 @@ object RuleFiles {
 
     private const val NAME_PREFIX = "mg4tasker-rules-"
 
-    /** @return the file written, or null when [dir] was not writable. */
-    fun export(rules: List<Rule>, dir: File): File? {
-        val target = File(dir, fileName())
-        val temp = File(dir, target.name + ".tmp")
+    /**
+     * @return the file written, or null when nothing on that volume was writable.
+     *
+     * A stick whose root refuses writes still takes the app-specific folder on the same
+     * volume ([StorageBrowser.writableTarget]), so the file lands on the stick either way.
+     */
+    fun export(context: Context, rules: List<Rule>, dir: File): File? {
+        val into = StorageBrowser.writableTarget(context, dir) ?: return null
+        val target = File(into, fileName())
+        val temp = File(into, target.name + ".tmp")
         return try {
             // Temp then rename: a stick pulled mid-write leaves the .tmp, never a truncated
             // rules file that would later import as garbage.

@@ -69,6 +69,7 @@
     <string name="editor_cancel">Abbrechen</string>
     <string name="editor_name_required">Geben Sie der Regel einen Namen</string>
     <string name="editor_incomplete">Mindestens eine Bedingung und eine Aktion sind erforderlich</string>
+    <string name="editor_save_failed">Speichern fehlgeschlagen: Die Regel konnte nicht geschrieben werden. Siehe Konsole.</string>
     <string name="editor_remove">Entfernen</string>
     <string name="editor_gated_hint">Nur im Stand</string>
     <string name="editor_gated_explain">Diese Einstellung ändert das Fahrverhalten: MG4Control verweigert sie während der Fahrt.</string>

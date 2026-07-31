@@ -6,6 +6,7 @@ import com.mg4.hardware.AppLogger
 import com.mg4.tasker.store.HistoryStore
 import com.mg4.tasker.store.RuleStore
 import com.mg4.tasker.store.RuleTransfer
+import com.mg4.tasker.store.StorageBrowser
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -39,8 +40,11 @@ object DebugReport {
 
     /** @return the file written, or null when [dir] was not writable. */
     fun export(context: Context, report: DiagnosticProbe.Report, dir: File): File? {
-        val target = File(dir, fileName())
-        val temp = File(dir, target.name + ".tmp")
+        // A stick whose root refuses writes still takes the app-specific folder on the same
+        // volume: the file lands on the stick the user chose either way.
+        val into = StorageBrowser.writableTarget(context, dir) ?: return null
+        val target = File(into, fileName())
+        val temp = File(into, target.name + ".tmp")
         return try {
             // Temp then rename, like the rules export: a stick pulled mid-write leaves the
             // .tmp behind rather than a half-written report that reads as complete.
@@ -82,6 +86,21 @@ object DebugReport {
         appendLine(RuleStore(context).getAll().let { rules ->
             if (rules.isEmpty()) "(none)" else RuleTransfer.encode(rules)
         })
+        appendLine()
+
+        section("Storage")
+        // What the browser offered and where the app may write. A stick the car mounts
+        // somewhere the app never looks is invisible from the UI but obvious here.
+        context.getExternalFilesDirs(null).forEachIndexed { index, dir ->
+            appendLine("externalFilesDir[$index] = ${dir?.absolutePath ?: "(null)"}")
+        }
+        StorageBrowser.roots(context).forEach { root ->
+            appendLine(
+                "root ${root.dir.absolutePath} removable=${root.removable} " +
+                    "entries=${root.dir.listFiles()?.size ?: -1} " +
+                    "writableTarget=${StorageBrowser.writableTarget(context, root.dir)?.absolutePath ?: "(none)"}"
+            )
+        }
         appendLine()
 
         section("History")

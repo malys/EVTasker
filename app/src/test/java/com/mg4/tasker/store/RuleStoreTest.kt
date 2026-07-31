@@ -7,7 +7,6 @@ import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.Condition
 import com.mg4.tasker.model.Rule
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -30,7 +29,7 @@ class RuleStoreTest {
         val store = RuleStore(context())
         val rule = sampleRule()
 
-        assertTrue(store.save(rule))
+        assertEquals(RuleStore.SaveResult.OK, store.save(rule))
 
         val all = store.getAll()
         assertEquals(1, all.size)
@@ -46,5 +45,23 @@ class RuleStoreTest {
         RuleStore(context()).save(rule)
 
         assertEquals(1, RuleStore(context()).getAll().size)
+    }
+
+    @Test
+    fun `the quota is reported as its own outcome, not as a write failure`() {
+        val store = RuleStore(context())
+        repeat(RuleStore.MAX_RULES) { assertEquals(RuleStore.SaveResult.OK, store.save(sampleRule("r$it"))) }
+
+        assertEquals(RuleStore.SaveResult.QUOTA_REACHED, store.save(sampleRule("one too many")))
+    }
+
+    @Test
+    fun `editing an existing rule is not refused once the quota is full`() {
+        val store = RuleStore(context())
+        val rules = (0 until RuleStore.MAX_RULES).map { sampleRule("r$it") }
+        rules.forEach { store.save(it) }
+
+        assertEquals(RuleStore.SaveResult.OK, store.save(rules.first().copy(name = "renamed")))
+        assertEquals("renamed", store.getById(rules.first().id)?.name)
     }
 }

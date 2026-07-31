@@ -69,6 +69,7 @@
     <string name="editor_cancel">Annulla</string>
     <string name="editor_name_required">Dai un nome alla regola</string>
     <string name="editor_incomplete">Sono richieste almeno una condizione e un\'azione</string>
+    <string name="editor_save_failed">Salvataggio non riuscito: impossibile scrivere la regola. Vedi la scheda Console.</string>
     <string name="editor_remove">Rimuovi</string>
     <string name="editor_gated_hint">Solo da fermo</string>
     <string name="editor_gated_explain">Questa impostazione modifica il comportamento del veicolo: MG4Control la rifiuta mentre l\'auto è in movimento.</string>

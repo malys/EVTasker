@@ -69,6 +69,7 @@
     <string name="editor_cancel">Cancelar</string>
     <string name="editor_name_required">Dê um nome à regra</string>
     <string name="editor_incomplete">São necessárias pelo menos uma condição e uma ação</string>
+    <string name="editor_save_failed">Falha ao guardar: não foi possível escrever a regra. Ver o separador Consola.</string>
     <string name="editor_remove">Remover</string>
     <string name="editor_gated_hint">Apenas parado</string>
     <string name="editor_gated_explain">Esta definição altera o comportamento do veículo: o MG4Control recusa-a enquanto o carro está em movimento.</string>

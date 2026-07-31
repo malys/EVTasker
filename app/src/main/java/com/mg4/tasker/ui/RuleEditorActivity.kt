@@ -212,11 +212,18 @@ class RuleEditorActivity : AppCompatActivity() {
         if (!rule.isComplete()) {
             toast(getString(R.string.editor_incomplete)); return
         }
-        if (!store.save(rule)) {
-            toast(getString(R.string.rules_quota_reached)); return
+        // A write that does not reach disk must say so on screen. Closing the editor on a
+        // failed save is what made the rule look like it had been accepted and then lost.
+        when (store.save(rule)) {
+            RuleStore.SaveResult.OK -> finish()
+            RuleStore.SaveResult.QUOTA_REACHED -> toast(getString(R.string.rules_quota_reached))
+            RuleStore.SaveResult.WRITE_FAILED,
+            RuleStore.SaveResult.NOT_READ_BACK -> toastLong(getString(R.string.editor_save_failed))
         }
-        finish()
     }
 
     private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+
+    /** A save failure is the one message here worth reading time. */
+    private fun toastLong(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 }
