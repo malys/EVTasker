@@ -28,6 +28,7 @@
     <string name="rules_automation_switch">Automatisation activée</string>
     <string name="rules_language">Langue : %1$s</string>
     <string name="rules_language_title">Langue</string>
+    <string name="rules_language_auto">Auto</string>
     <string name="lang_system">Langue du système</string>
     <string name="rules_empty_title">Aucune règle</string>
     <string name="rules_empty_body">Une règle applique des réglages au démarrage du véhicule quand ses conditions sont remplies.</string>

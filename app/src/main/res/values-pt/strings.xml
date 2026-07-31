@@ -11,6 +11,7 @@
     <string name="rules_automation_switch">Automação ativada</string>
     <string name="rules_language">Idioma: %1$s</string>
     <string name="rules_language_title">Idioma</string>
+    <string name="rules_language_auto">Auto</string>
     <string name="lang_system">Predefinição do sistema</string>
     <string name="rules_empty_title">Ainda sem regras</string>
     <string name="rules_empty_body">Uma regra aplica definições ao arrancar o veículo, se as suas condições forem cumpridas.</string>

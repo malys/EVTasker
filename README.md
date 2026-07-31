@@ -98,7 +98,8 @@ That's it. MG4Control is **not** required.
 If [MG4Control](https://github.com/malys/MG4Control) is installed (and signed with the same
 key), one extra action appears: **apply an MG4Control profile**. It reaches MG4Control's
 `applyProfile` over the signature-protected bridge. It is the *only* MG4Control-dependent
-capability; without MG4Control the action shows "not installed" and everything else works.
+capability; when MG4Control is absent the action is **not offered at all** — an action that
+can only ever fail has no business in the picker — and everything else works.
 
 > ⚠️ With both apps installed, **two apps can write the vehicle**. Each gates writes at
 > 0 km/h independently, but a concurrent profile application and rule run can interleave
@@ -137,7 +138,8 @@ saving), **climate** (A/C, AUTO, recirculation, fan speed, set temperature, wind
 (AEB, ELK, ACC/TJA, limiter, TSR, overspeed, speed-limit tone, ADAS sound).
 
 Actions cover **profile** application, **driving**, **comfort**, **audio**, **driver
-assistance**, and **system** (launch an app, show a notification). ADAS state — AEB, ELK,
+assistance**, and **system** (launch an app, show a notification, speak a message through
+the head unit's text-to-speech engine). ADAS state — AEB, ELK,
 ACC/TJA, TSR, overspeed and so on — is fully covered as gated actions.
 
 The exact per-entry list and its firmware support is generated, not hand-written — see

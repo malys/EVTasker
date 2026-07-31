@@ -39,6 +39,11 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
         <package android:name="com.mg4.control" />
+        <!-- API 30+: without this the TTS engine is invisible and the "speak" action
+             would report "no speech engine" on a car that has one installed. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
     </queries>
 
     <application

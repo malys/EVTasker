@@ -6,15 +6,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.mg4.tasker.R
 import com.mg4.tasker.databinding.ItemCatalogEntryBinding
 import com.mg4.tasker.databinding.SheetCatalogBinding
 import com.mg4.hardware.catalog.ActionType
 import com.mg4.hardware.catalog.ConditionType
+import com.mg4.hardware.catalog.ValueKind
 import com.mg4.hardware.FirmwareGen
 import com.mg4.hardware.FirmwareSupport
 import com.mg4.tasker.store.SupportStore
+import com.mg4.tasker.vehicle.ProfileBridge
 
 /**
  * Condition or action picker, grouped by theme.
@@ -44,9 +47,14 @@ object CatalogSheet {
 
     fun pickAction(context: Context, firmware: FirmwareGen?, onPick: (ActionType) -> Unit) {
         val allowed = SupportStore.supportedActions(context)
+        // Applying a profile is the one action that cannot work without MG4Control. Offering
+        // it with an empty profile list only produces a rule that fails at ignition.
+        val hasProfiles = ProfileBridge.isMG4ControlInstalled(context)
         val entries = mutableListOf<Entry>()
         ActionType.byGroup().forEach { (group, types) ->
-            val supported = types.filter { allow(allowed, it.name) { FirmwareSupport.isSupported(it, firmware) } }
+            val supported = types
+                .filter { hasProfiles || it.spec.kind != ValueKind.PROFILE }
+                .filter { allow(allowed, it.name) { FirmwareSupport.isSupported(it, firmware) } }
             if (supported.isEmpty()) return@forEach
             entries += Entry.Header(context.getString(group.labelRes))
             supported.forEach { type ->
@@ -78,6 +86,24 @@ object CatalogSheet {
         binding.catalogList.layoutManager = LinearLayoutManager(context)
         binding.catalogList.adapter = Adapter(entries) { dialog.dismiss() }
         dialog.setContentView(binding.root)
+
+        // The app is locked to landscape, and a bottom sheet in landscape opens COLLAPSED
+        // at a peek height computed from the screen ratio — on the vehicle screen that is a
+        // 64 dp strip showing the title and none of the list. The picker then looks broken
+        // and no condition can be chosen, which makes the rule unsaveable.
+        // Opening expanded (and full height) is the only usable state here; there is
+        // nothing behind the sheet worth peeking at.
+        dialog.setOnShowListener {
+            val sheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+                ?: return@setOnShowListener
+            sheet.layoutParams = sheet.layoutParams.apply {
+                height = ViewGroup.LayoutParams.MATCH_PARENT
+            }
+            dialog.behavior.apply {
+                skipCollapsed = true
+                state = BottomSheetBehavior.STATE_EXPANDED
+            }
+        }
         dialog.show()
     }
 

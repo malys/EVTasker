@@ -13,6 +13,7 @@ import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.ActionResult
 import com.mg4.hardware.catalog.ActionType
 import com.mg4.tasker.util.Notifier
+import com.mg4.tasker.util.Speaker
 
 /**
  * Executes actions by calling MG4Hardware **directly** — MG4Tasker's own vehicle access,
@@ -33,6 +34,7 @@ class DirectExecutor(
         ActionType.APPLY_PROFILE     -> applyProfile(action)
         ActionType.LAUNCH_APP        -> launchApp(action)
         ActionType.SHOW_NOTIFICATION -> notify(action)
+        ActionType.SPEAK_TEXT        -> speak(action)
         else                         -> applyVehicle(action)
     }
 
@@ -126,5 +128,21 @@ class DirectExecutor(
     private fun notify(a: Action): ActionResult {
         Notifier.showRuleMessage(context, a.text)
         return ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
+    }
+
+    /**
+     * A vehicle without a TTS engine (or without the voice data for the current language)
+     * is a real case: it is reported as a failure with a reason rather than as a silent
+     * success, otherwise the history would claim the driver was told something.
+     */
+    private fun speak(a: Action): ActionResult {
+        if (a.text.isBlank()) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no message")
+        }
+        return if (Speaker.speak(context, a.text)) {
+            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
+        } else {
+            ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, "no speech engine")
+        }
     }
 }
