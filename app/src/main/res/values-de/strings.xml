@@ -70,6 +70,7 @@
     <string name="editor_name_required">Geben Sie der Regel einen Namen</string>
     <string name="editor_incomplete">Mindestens eine Bedingung und eine Aktion sind erforderlich</string>
     <string name="editor_save_failed">Speichern fehlgeschlagen: Die Regel konnte nicht geschrieben werden. Siehe Konsole.</string>
+    <string name="editor_store_unreadable">Die gespeicherten Regeln sind unlesbar; Speichern würde sie überschreiben. Importieren Sie eine Regeldatei.</string>
     <string name="editor_remove">Entfernen</string>
     <string name="editor_gated_hint">Nur im Stand</string>
     <string name="editor_gated_explain">Diese Einstellung ändert das Fahrverhalten: MG4Control verweigert sie während der Fahrt.</string>
@@ -145,6 +146,7 @@
     <string name="diag_env_gate">Stillstandssperre</string>
     <string name="diag_env_cache">Cache unterstützter Funktionen</string>
     <string name="diag_env_mg4control">MG4Control</string>
+    <string name="diag_env_tts">Sprachausgabe</string>
 
     <string name="diag_state_ready">bereit</string>
     <string name="diag_state_not_ready">nicht bereit</string>

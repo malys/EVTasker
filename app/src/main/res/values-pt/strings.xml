@@ -70,6 +70,7 @@
     <string name="editor_name_required">Dê um nome à regra</string>
     <string name="editor_incomplete">São necessárias pelo menos uma condição e uma ação</string>
     <string name="editor_save_failed">Falha ao guardar: não foi possível escrever a regra. Ver o separador Consola.</string>
+    <string name="editor_store_unreadable">As regras guardadas não podem ser lidas; guardar iria substituí-las. Importe um ficheiro de regras.</string>
     <string name="editor_remove">Remover</string>
     <string name="editor_gated_hint">Apenas parado</string>
     <string name="editor_gated_explain">Esta definição altera o comportamento do veículo: o MG4Control recusa-a enquanto o carro está em movimento.</string>
@@ -145,6 +146,7 @@
     <string name="diag_env_gate">Bloqueio em paragem</string>
     <string name="diag_env_cache">Cache de funções suportadas</string>
     <string name="diag_env_mg4control">MG4Control</string>
+    <string name="diag_env_tts">Motor de voz</string>
 
     <string name="diag_state_ready">pronta</string>
     <string name="diag_state_not_ready">não pronta</string>

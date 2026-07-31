@@ -178,6 +178,7 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.STANDSTILL_GATE -> R.string.diag_env_gate
             DiagnosticProbe.Env.SUPPORT_CACHE -> R.string.diag_env_cache
             DiagnosticProbe.Env.MG4CONTROL -> R.string.diag_env_mg4control
+            DiagnosticProbe.Env.TTS -> R.string.diag_env_tts
         }
     )
 
@@ -196,6 +197,8 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.MG4CONTROL ->
                 if (check.detail == DiagnosticProbe.MG4CONTROL_INSTALLED) R.string.diag_installed
                 else R.string.diag_absent
+            DiagnosticProbe.Env.TTS ->
+                if (check.ok) R.string.diag_installed else R.string.diag_absent
         }
     )
 

@@ -2,7 +2,6 @@ package com.mg4.tasker.store
 
 import android.content.Context
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.mg4.hardware.AppLogger
 import com.mg4.tasker.model.Rule
 
@@ -28,24 +27,39 @@ class RuleStore(context: Context) {
     private val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     private val gson = Gson()
 
-    fun getAll(): List<Rule> {
-        val json = prefs.getString(KEY_RULES, null) ?: return emptyList()
+    /** What the stored blob turned out to be. Unreadable is NOT the same as "no rules". */
+    private sealed interface Stored {
+        @JvmInline value class Rules(val rules: List<Rule>) : Stored
+        object Unreadable : Stored
+    }
+
+    /**
+     * Deserialises as an ARRAY, not via `TypeToken<List<Rule>>`.
+     *
+     * The anonymous-TypeToken idiom needs the class's generic signature to survive the
+     * shrinker, and it did not: R8 dropped the anonymous subclass outright, so every release
+     * build threw "TypeToken must be created with a type argument" and read back zero rules —
+     * a rule saved on the car then vanished from the list. `Array<Rule>::class.java` is a
+     * plain Class carrying no generics at all, so no keep rule can undo it. The JSON is
+     * identical either way, so blobs written by earlier builds still load.
+     */
+    private fun read(): Stored {
+        val json = prefs.getString(KEY_RULES, null) ?: return Stored.Rules(emptyList())
         return try {
-            val type = object : TypeToken<List<Rule>>() {}.type
-            gson.fromJson<List<Rule>>(json, type) ?: emptyList()
+            Stored.Rules(gson.fromJson(json, Array<Rule>::class.java)?.toList() ?: emptyList())
         } catch (e: Exception) {
-            // Corrupt JSON: zero rules beats crashing at vehicle start. Logged, because
-            // silently reading zero rules is indistinguishable from having none — and the
-            // next save would then persist that emptiness over the user's real rules.
             AppLogger.w(TAG, "getAll unreadable (${json.length} chars): ${e.javaClass.simpleName}: ${e.message}")
-            emptyList()
+            Stored.Unreadable
         }
     }
+
+    /** Unreadable storage reads as zero rules: that beats crashing at vehicle start. */
+    fun getAll(): List<Rule> = (read() as? Stored.Rules)?.rules ?: emptyList()
 
     fun getById(id: String): Rule? = getAll().firstOrNull { it.id == id }
 
     /** Why [save] refused. [OK] is the only outcome that leaves the rule on disk. */
-    enum class SaveResult { OK, QUOTA_REACHED, WRITE_FAILED, NOT_READ_BACK }
+    enum class SaveResult { OK, QUOTA_REACHED, WRITE_FAILED, NOT_READ_BACK, STORE_UNREADABLE }
 
     /**
      * Writes the rule and checks it is actually there afterwards.
@@ -56,7 +70,16 @@ class RuleStore(context: Context) {
      * actionable — a silent "nothing happened" is what left the previous report unfixable.
      */
     fun save(rule: Rule): SaveResult = synchronized(MUTATION_LOCK) {
-        val rules = getAll().toMutableList()
+        // Never write on top of a blob that could not be read: every mutation here is a
+        // read-modify-write, so saving over an unreadable set silently replaces the user's
+        // rules with just this one. That is how the reported bug destroyed a rule. Import
+        // ([replaceAll]) stays the deliberate way to overwrite.
+        val current = read()
+        if (current !is Stored.Rules) {
+            AppLogger.w(TAG, "save('${rule.name}') → refused: stored rules are unreadable")
+            return SaveResult.STORE_UNREADABLE
+        }
+        val rules = current.rules.toMutableList()
         val index = rules.indexOfFirst { it.id == rule.id }
         if (index >= 0) {
             rules[index] = rule
@@ -85,12 +108,21 @@ class RuleStore(context: Context) {
         persist(rules)
     }
 
+    // Both are read-modify-write like [save], so both refuse an unreadable blob for the same
+    // reason: rewriting it would throw away rules that are still on disk and merely unparsed.
+
     fun delete(ruleId: String) = synchronized(MUTATION_LOCK) {
-        persist(getAll().filterNot { it.id == ruleId })
+        val current = read()
+        if (current is Stored.Rules) persist(current.rules.filterNot { it.id == ruleId })
+        Unit
     }
 
     fun setEnabled(ruleId: String, enabled: Boolean) = synchronized(MUTATION_LOCK) {
-        persist(getAll().map { if (it.id == ruleId) it.copy(enabled = enabled) else it })
+        val current = read()
+        if (current is Stored.Rules) {
+            persist(current.rules.map { if (it.id == ruleId) it.copy(enabled = enabled) else it })
+        }
+        Unit
     }
 
     /** @return whether the write reached disk. commit(), not apply(): the next mutation

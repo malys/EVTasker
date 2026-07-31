@@ -244,10 +244,23 @@ reach a stick, that section is what says why.
 Saving reports which step failed instead of closing the editor as if it had worked. The store
 writes with `commit()`, checks the return value, then **reads the rule back**; only a
 successful read-back closes the editor. A quota refusal, a write the storage layer rejected,
-and a write that committed but did not survive the read-back are three different messages, and
-the last two are also written to the Console tab with the underlying exception. Reading the
-rule set back as unparseable is logged too rather than passing silently for "no rules" — that
-emptiness would otherwise be persisted over the real rules by the next save.
+and a write that committed but did not survive the read-back are different messages, and all
+are written to the Console tab with the underlying exception.
+
+That instrumentation found the actual cause, which was **release-only** and therefore invisible
+on an emulator: `object : TypeToken<List<Rule>>() {}` needs its generic signature to survive
+the shrinker, and R8 dropped the anonymous subclass outright — `-keepattributes Signature` and
+`-keep class * extends TypeToken` did **not** prevent it. Every minified build threw
+*"TypeToken must be created with a type argument"*, read back zero rules, and then persisted
+that emptiness over the real ones on the next save. Both stores now deserialise with
+`Array<T>::class.java`, a plain `Class` carrying no generics, so no keep rule can undo it;
+`ShrinkerSafeGsonTest` fails the build if the idiom comes back. `RuleTransfer`'s DTOs are kept
+explicitly for the same family of reason — their **field names are the JSON keys** written to
+the stick, and R8 was free to rename them.
+
+A read-modify-write is also never performed on top of a blob that failed to parse: save,
+delete and enable/disable refuse rather than overwrite rules that are on disk and merely
+unparsed. Import stays the deliberate way to replace the set.
 
 ---
 

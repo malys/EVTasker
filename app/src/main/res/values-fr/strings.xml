@@ -87,6 +87,7 @@
     <string name="editor_name_required">Donnez un nom à la règle</string>
     <string name="editor_incomplete">Il faut au moins une condition et une action</string>
     <string name="editor_save_failed">Échec de l\'enregistrement : la règle n\'a pas pu être écrite. Voir l\'onglet Console.</string>
+    <string name="editor_store_unreadable">Les règles enregistrées sont illisibles : sauvegarder les écraserait. Importez un fichier de règles pour les restaurer.</string>
     <string name="editor_remove">Retirer</string>
     <string name="editor_gated_hint">À l\'arrêt uniquement</string>
     <string name="editor_gated_explain">Ce réglage modifie le comportement du véhicule : MG4Control le refuse si la voiture roule.</string>
@@ -162,6 +163,7 @@
     <string name="diag_env_gate">Verrou à l\'arrêt</string>
     <string name="diag_env_cache">Cache des fonctions supportées</string>
     <string name="diag_env_mg4control">MG4Control</string>
+    <string name="diag_env_tts">Moteur de synthèse vocale</string>
 
     <string name="diag_state_ready">prête</string>
     <string name="diag_state_not_ready">indisponible</string>

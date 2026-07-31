@@ -3,12 +3,23 @@
 -keep interface com.mg4.control.api.IProfileControl { *; }
 -keep class com.mg4.control.api.IProfileControl$* { *; }
 
-# Gson (règles + historique). Sans Signature, le type générique de
-# TypeToken<List<Rule>> est effacé et la désérialisation rend des LinkedTreeMap :
-# les règles disparaîtraient silencieusement au premier lancement d'une release minifiée.
+# Gson (règles + historique).
+#
+# ATTENTION : ces règles ne suffisent PAS à elles seules, et l'ont prouvé sur la voiture.
+# R8 a supprimé purement et simplement les sous-classes anonymes de TypeToken malgré le
+# -keep ci-dessous ; chaque release lançait alors « TypeToken must be created with a type
+# argument » et relisait zéro règle. La parade est dans le code : RuleStore et HistoryStore
+# désérialisent en Array<T>::class.java, qui ne porte aucun générique. Ne pas réintroduire
+# `object : TypeToken<List<X>>() {}` en comptant sur ces lignes.
 -keepattributes Signature, InnerClasses, EnclosingMethod
 -keepattributes *Annotation*
+-keep class com.google.gson.reflect.TypeToken { *; }
 -keep class * extends com.google.gson.reflect.TypeToken
+
+# Le format d'échange des règles : les NOMS DE CHAMPS de ces DTO sont les clés JSON du
+# fichier écrit sur la clé USB. Sans cette règle R8 les renomme en a/b/c, et une release
+# exporte un fichier qu'aucune version ne peut relire.
+-keep class com.mg4.tasker.store.RuleTransfer$* { <fields>; <init>(...); }
 
 # Les modèles sérialisés sont lus par réflexion : ne pas renommer leurs champs.
 # Les enums en particulier sont persistés par NOM — les obfusquer rendrait illisible

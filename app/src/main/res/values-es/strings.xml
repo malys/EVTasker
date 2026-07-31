@@ -70,6 +70,7 @@
     <string name="editor_name_required">Da un nombre a la regla</string>
     <string name="editor_incomplete">Se requiere al menos una condición y una acción</string>
     <string name="editor_save_failed">Error al guardar: no se pudo escribir la regla. Consulta la pestaña Consola.</string>
+    <string name="editor_store_unreadable">Las reglas guardadas no se pueden leer; guardar las sobrescribiría. Importa un archivo de reglas.</string>
     <string name="editor_remove">Quitar</string>
     <string name="editor_gated_hint">Solo detenido</string>
     <string name="editor_gated_explain">Este ajuste cambia el comportamiento del vehículo: MG4Control lo rechaza mientras el coche está en movimiento.</string>
@@ -145,6 +146,7 @@
     <string name="diag_env_gate">Bloqueo en parado</string>
     <string name="diag_env_cache">Caché de funciones compatibles</string>
     <string name="diag_env_mg4control">MG4Control</string>
+    <string name="diag_env_tts">Motor de voz</string>
 
     <string name="diag_state_ready">lista</string>
     <string name="diag_state_not_ready">no lista</string>

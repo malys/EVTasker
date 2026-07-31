@@ -219,6 +219,8 @@ class RuleEditorActivity : AppCompatActivity() {
             RuleStore.SaveResult.QUOTA_REACHED -> toast(getString(R.string.rules_quota_reached))
             RuleStore.SaveResult.WRITE_FAILED,
             RuleStore.SaveResult.NOT_READ_BACK -> toastLong(getString(R.string.editor_save_failed))
+            // Saving would overwrite rules that are on disk but unparsed. Import is the way out.
+            RuleStore.SaveResult.STORE_UNREADABLE -> toastLong(getString(R.string.editor_store_unreadable))
         }
     }
 

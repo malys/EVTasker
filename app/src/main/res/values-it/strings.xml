@@ -70,6 +70,7 @@
     <string name="editor_name_required">Dai un nome alla regola</string>
     <string name="editor_incomplete">Sono richieste almeno una condizione e un\'azione</string>
     <string name="editor_save_failed">Salvataggio non riuscito: impossibile scrivere la regola. Vedi la scheda Console.</string>
+    <string name="editor_store_unreadable">Le regole salvate non sono leggibili: salvare le sovrascriverebbe. Importa un file di regole.</string>
     <string name="editor_remove">Rimuovi</string>
     <string name="editor_gated_hint">Solo da fermo</string>
     <string name="editor_gated_explain">Questa impostazione modifica il comportamento del veicolo: MG4Control la rifiuta mentre l\'auto è in movimento.</string>
@@ -145,6 +146,7 @@
     <string name="diag_env_gate">Blocco da fermo</string>
     <string name="diag_env_cache">Cache delle funzioni supportate</string>
     <string name="diag_env_mg4control">MG4Control</string>
+    <string name="diag_env_tts">Motore vocale</string>
 
     <string name="diag_state_ready">pronto</string>
     <string name="diag_state_not_ready">non pronto</string>

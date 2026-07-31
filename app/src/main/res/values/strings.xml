@@ -87,6 +87,7 @@
     <string name="editor_name_required">Give the rule a name</string>
     <string name="editor_incomplete">At least one condition and one action are required</string>
     <string name="editor_save_failed">Save failed: the rule could not be written to storage. See the Console tab.</string>
+    <string name="editor_store_unreadable">The stored rules cannot be read, so saving would overwrite them. Import a rules file to restore them.</string>
     <string name="editor_remove">Remove</string>
     <string name="editor_gated_hint">When stopped only</string>
     <string name="editor_gated_explain">This setting changes vehicle behaviour: MG4Control refuses it while the car is moving.</string>
@@ -162,6 +163,7 @@
     <string name="diag_env_gate">Standstill gate</string>
     <string name="diag_env_cache">Supported-feature cache</string>
     <string name="diag_env_mg4control">MG4Control</string>
+    <string name="diag_env_tts">Speech engine</string>
 
     <string name="diag_state_ready">ready</string>
     <string name="diag_state_not_ready">not ready</string>

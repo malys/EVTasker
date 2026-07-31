@@ -2,7 +2,6 @@ package com.mg4.tasker.store
 
 import android.content.Context
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.mg4.tasker.model.EngineRun
 
 /**
@@ -31,8 +30,10 @@ class HistoryStore(context: Context) {
     fun getAll(): List<EngineRun> {
         val json = prefs.getString(KEY_RUNS, null) ?: return emptyList()
         return try {
-            val type = object : TypeToken<List<EngineRun>>() {}.type
-            gson.fromJson<List<EngineRun>>(json, type) ?: emptyList()
+            // An ARRAY, not TypeToken<List<EngineRun>>: the anonymous-TypeToken idiom needs a
+            // generic signature that R8 dropped, which made every release build read back an
+            // empty history. See RuleStore.read().
+            gson.fromJson(json, Array<EngineRun>::class.java)?.toList() ?: emptyList()
         } catch (_: Exception) {
             emptyList()
         }
