@@ -42,7 +42,11 @@ class RulesFragment : Fragment() {
             AppState.setAutomationEnabled(requireContext(), checked)
         }
 
-        binding.languageButton.text = getString(R.string.rules_language, currentLanguageName())
+        // The button sits in a third of the list pane: only a code fits without being
+        // truncated. The full "Language: X" wording stays as the accessibility label.
+        binding.languageButton.text = currentLanguageCode()
+        binding.languageButton.contentDescription =
+            getString(R.string.rules_language, currentLanguageName())
         binding.languageButton.setOnClickListener { pickLanguage() }
 
         adapter = RuleAdapter(
@@ -109,6 +113,13 @@ class RulesFragment : Fragment() {
         val names = resources.getStringArray(R.array.language_names)
         val index = tags.indexOf(LanguageStore.getTag(requireContext())).takeIf { it >= 0 } ?: 0
         return names[index]
+    }
+
+    /** Two-letter code for the button ("FR"), or the localized "auto" for "follow the OS". */
+    private fun currentLanguageCode(): String {
+        val tag = LanguageStore.getTag(requireContext())
+        return if (tag == LanguageStore.SYSTEM) getString(R.string.rules_language_auto)
+        else tag.uppercase()
     }
 
     private fun pickLanguage() {

@@ -11,6 +11,34 @@
         <item name="android:colorBackground">@color/mg4_background</item>
         <item name="colorError">@color/mg4_error</item>
         <item name="android:statusBarColor">@color/mg4_background</item>
+        <!-- Material3 Dark propose un « on surface » gris-mauve (#E6E1E5) confortable en
+             intérieur et trop faible en plein soleil : on impose un blanc franc. -->
+        <item name="colorOnSurface">@color/mg4_text</item>
+        <item name="colorOnSurfaceVariant">@color/mg4_text_secondary</item>
+        <item name="colorOnBackground">@color/mg4_text</item>
+        <item name="colorOutline">@color/mg4_outline</item>
+        <item name="android:textColorPrimary">@color/mg4_text</item>
+        <item name="android:textColorSecondary">@color/mg4_text_secondary</item>
+        <!-- Les boîtes de dialogue (choix de valeur, confirmations) héritent du même
+             contraste : sans ça elles retombent sur la palette Material par défaut. -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MG4.Dialog</item>
+    </style>
+
+    <style name="ThemeOverlay.MG4.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/mg4_surface_raised</item>
+        <item name="colorOnSurface">@color/mg4_text</item>
+        <item name="colorOnSurfaceVariant">@color/mg4_text_secondary</item>
+        <item name="android:textColorPrimary">@color/mg4_text</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.MG4.DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.MG4.DialogButton</item>
+    </style>
+
+    <!-- Les boutons d'une boîte de dialogue sont les plus petits de l'application : ils
+         sont ramenés à la même cible tactile que le reste. -->
+    <style name="Widget.MG4.DialogButton" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="android:minWidth">140dp</item>
+        <item name="android:textSize">@dimen/text_body</item>
     </style>
 
     <!-- Cible tactile de 64 dp : le doigt vise mal sur route, et l'écran est loin.

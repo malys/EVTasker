@@ -7,6 +7,8 @@
     android:layout_marginBottom="@dimen/spacing_sm"
     app:cardBackgroundColor="@color/mg4_surface_raised"
     app:cardCornerRadius="12dp"
+    app:strokeColor="@color/mg4_outline"
+    app:strokeWidth="1dp"
     android:checkable="true"
     android:focusable="true">
 
