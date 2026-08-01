@@ -1,55 +1,183 @@
-name: Bug report
-description: A rule misbehaves on the car
-labels: ["bug"]
+name: 🐛 Bug Report
+description: Report a bug or incorrect rule execution
+title: "[BUG] "
+labels: [bug, needs-review]
+assignees: []
+
 body:
   - type: markdown
     attributes:
       value: |
-        Please do not report security issues here — see
-        [SECURITY.md](../blob/main/SECURITY.md) for private reporting.
-  - type: textarea
-    id: what
+        # Bug Report
+
+        Thank you for helping improve this project! Please provide as much detail as possible.
+
+        **⚠️ AUTOMATION SAFETY:** If this bug affects task sequencing, state management, or atomicity, it may cause unintended vehicle actions.
+
+  - type: checkboxes
+    id: checks
     attributes:
-      label: What happened
-      description: What the rule did, and what you expected instead.
-    validations:
-      required: true
+      label: "Pre-submission checks"
+      description: "Ensure you've done these before submitting"
+      options:
+        - label: I've searched existing issues and found no duplicate
+          required: true
+        - label: I'm using the latest version
+          required: true
+        - label: I've tested this on MG4 or emulator
+          required: false
+        - label: This bug affects task sequencing or state management
+          required: false
+
   - type: input
-    id: version
+    id: title
     attributes:
-      label: App version
-      description: From the GitHub release you installed, e.g. v1.0.0.
+      label: "Bug Summary"
+      description: "One-line summary of the bug"
+      placeholder: "Rule triggers twice when condition met once"
     validations:
       required: true
-  - type: input
-    id: firmware
-    attributes:
-      label: Car firmware
-      description: "MG4 infotainment version, e.g. SWI68. The Diagnostic tab shows what MG4Control reports."
-  - type: dropdown
-    id: bridge
-    attributes:
-      label: MG4Control bridge
-      description: What the Diagnostic tab shows at the top.
-      options: ["Connected", "Unreachable", "Not sure"]
-    validations:
-      required: true
-  - type: dropdown
-    id: moving
-    attributes:
-      label: Was the car moving?
-      options: ["Parked", "Driving", "Charging", "Not sure"]
+
   - type: textarea
-    id: rule
+    id: description
     attributes:
-      label: The rule and the history entry
+      label: "Description"
+      description: |
+        Detailed description of the bug. Include:
+        - What you expected to happen
+        - What actually happened
+        - Why this is a problem
+      placeholder: |
+        Expected: Rule should execute exactly once when trigger fires
+        Actual: Rule executes twice, causing double state changes
+        Impact: Vehicle profile applied twice, wasting execution time and potentially causing conflicts
+      rows: 6
+    validations:
+      required: true
+
+  - type: textarea
+    id: rule_definition
+    attributes:
+      label: "Rule Definition"
       description: >
-        The rule's conditions and actions, and the matching line from the History tab
-        (Applied / Conditions not met / Cannot be evaluated, and any verdict).
-      render: text
+        Share the rule that misbehaves (JSON or YAML format), plus the matching line from
+        the History tab (Applied / Conditions not met / Cannot be evaluated, and any verdict).
+      placeholder: |
+        {
+          "name": "speed-profile-change",
+          "triggers": [{"type": "speed", "value": 50}],
+          "conditions": [{"type": "time", "between": "09:00-18:00"}],
+          "actions": [{"type": "apply-profile", "profile": "sport"}]
+        }
+      rows: 8
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to Reproduce"
+      description: "Exact sequence to reproduce the bug"
+      placeholder: |
+        1. Create rule: speed > 50 km/h → apply Sport profile
+        2. Set vehicle speed to 60 km/h
+        3. Observe: Sport profile applied twice
+        4. Check logs: two consecutive apply-profile actions
+      rows: 5
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environment"
+      description: "Device and software details"
+      placeholder: |
+        - Vehicle: MG4 EV
+        - Firmware: SWI133
+        - Android Automotive: v9
+        - App Version: 1.0.0
+        - MG4Control: Connected/Version X.Y.Z
+        - Number of rules: 5
+        - Active triggers: speed, time, location
+      rows: 5
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logs or Screenshots"
+      description: |
+        Attach:
+        - Logcat output (from ADB: `adb logcat | grep -i mg4`)
+        - Rule execution log from app diagnostic screen
+        - Screenshots showing unexpected behavior
+      placeholder: "Paste logcat or logs here"
+      rows: 8
+
   - type: textarea
     id: console
     attributes:
-      label: Console log
+      label: "Console log"
       description: "The Console tab has a Share button. Paste the relevant lines here."
       render: text
+
+  - type: dropdown
+    id: vehicle_state
+    attributes:
+      label: "Vehicle state when it happened"
+      options:
+        - "Parked"
+        - "Driving"
+        - "Charging"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "Severity"
+      description: "How critical is this bug?"
+      options:
+        - "Critical (unintended vehicle action / safety risk)"
+        - "High (rule executes incorrectly / wrong state)"
+        - "Medium (workaround available / intermittent)"
+        - "Low (cosmetic / very rare)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: automation_impact
+    attributes:
+      label: "Automation Impact"
+      description: "Does this affect task execution?"
+      options:
+        - "No — display/UI only"
+        - "Yes — task skipped or delayed"
+        - "Yes — task executed multiple times"
+        - "Yes — wrong task executed"
+        - "Unknown — unclear"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mg4control_bridge
+    attributes:
+      label: "MG4Control Bridge"
+      description: "Connection status shown in Diagnostic tab"
+      options:
+        - "Connected"
+        - "Unreachable"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: "Consent"
+      options:
+        - label: I understand this project is not affiliated with SAIC/MG Motor and carries no warranty (see DISCLAIMER.md)
+          required: true
