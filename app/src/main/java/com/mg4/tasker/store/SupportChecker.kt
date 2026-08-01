@@ -7,7 +7,6 @@ import com.mg4.hardware.FirmwareSupport
 import com.mg4.hardware.MG4Hardware
 import com.mg4.hardware.catalog.ActionType
 import com.mg4.hardware.catalog.ConditionType
-import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.util.SpeechEngines
 
 /**
@@ -51,7 +50,6 @@ object SupportChecker {
      */
     private fun unavailableLocalActions(context: Context): Set<String> = buildSet {
         if (!SpeechEngines.any(context)) add(ActionType.SPEAK_TEXT.name)
-        if (!Notifier.canNotify(context)) add(ActionType.SHOW_NOTIFICATION.name)
     }
 
     // Pure — no Android, no hardware state. Split out so the matrix filter is unit-testable.

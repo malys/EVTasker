@@ -24,6 +24,13 @@ data class Snapshot(
     val minutesOfDay: Int = 0,
     /** Current day, java.util.Calendar.MONDAY…SUNDAY values. */
     val dayOfWeek: Int = 0,
+    /**
+     * Last known position, null when there is no fix. Like every vehicle signal, absent
+     * means "cannot tell", so a location rule does not fire on a car that has not yet
+     * acquired GPS rather than firing as if it were somewhere else.
+     */
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     /** false when MG4Control did not answer: everything is unreadable, nothing fires. */
     val bridgeAvailable: Boolean = true
 ) {

@@ -16,6 +16,7 @@ import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.vehicle.BtTracker
 import com.mg4.tasker.vehicle.ProfileBridge
 import com.mg4.tasker.vehicle.RuleCycle
+import com.mg4.tasker.vehicle.VendorServices
 import kotlin.concurrent.thread
 
 /**
@@ -72,6 +73,12 @@ class TaskerVehicleService : Service() {
         // simply never requested here, which is why those six actions had never once worked
         // from a rule. A no-op on firmware that has no such helper.
         MG4Hardware.initAudio(applicationContext)
+        // The vendor climate/charging/radio/telephony services, bound here so the first
+        // ignition cycle already has them.
+        VendorServices.connect(applicationContext)
+        // The gate resets to standstill-only on every process start; hand it back the
+        // threshold the user chose before any rule can be evaluated.
+        AppState.applyWriteThreshold(this)
         registerBtReceiver()
         registerIgnitionListener()
         warnIfMG4ControlPresent()

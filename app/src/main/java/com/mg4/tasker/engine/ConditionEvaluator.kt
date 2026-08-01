@@ -8,6 +8,11 @@ import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.Snapshot
 import com.mg4.hardware.catalog.ValueKind
 import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * Pure evaluation of one condition against a snapshot. No Android dependency: all the
@@ -25,6 +30,7 @@ object ConditionEvaluator {
     fun evaluate(condition: Condition, snapshot: Snapshot): ConditionOutcome =
         when (condition.type.spec.kind) {
             ValueKind.BT_DEVICE  -> evaluateBtDevice(condition, snapshot)
+            ValueKind.LOCATION   -> evaluateLocation(condition, snapshot)
             ValueKind.TIME_RANGE -> evaluateTimeRange(condition, snapshot)
             ValueKind.DAYS       -> evaluateDays(condition, snapshot)
             ValueKind.BOOL       -> evaluateBool(condition, snapshot)
@@ -44,6 +50,47 @@ object ConditionEvaluator {
         if (c.text.isBlank()) return ConditionOutcome.UNAVAILABLE
         val connected = s.btMacs.any { it.equals(c.text, ignoreCase = true) }
         return match(connected == c.flag)
+    }
+
+    /**
+     * Inside a radius of a saved point.
+     *
+     * No fix means UNAVAILABLE, not "somewhere else": a car that has just woken up and has
+     * not seen a satellite yet would otherwise make every "when I am NOT at home" rule fire
+     * on the driveway.
+     */
+    private fun evaluateLocation(c: Condition, s: Snapshot): ConditionOutcome {
+        val here = s.latitude ?: return ConditionOutcome.UNAVAILABLE
+        val hereLon = s.longitude ?: return ConditionOutcome.UNAVAILABLE
+        val target = parsePoint(c.text) ?: return ConditionOutcome.UNAVAILABLE
+        val inside = distanceMetres(here, hereLon, target.first, target.second) <= c.number
+        return match(inside == c.flag)
+    }
+
+    /** "latitude,longitude" in decimal degrees, as the value editor writes it. */
+    fun parsePoint(text: String): Pair<Double, Double>? {
+        val parts = text.split(',')
+        if (parts.size != 2) return null
+        val lat = parts[0].trim().toDoubleOrNull() ?: return null
+        val lon = parts[1].trim().toDoubleOrNull() ?: return null
+        if (lat !in -90.0..90.0 || lon !in -180.0..180.0) return null
+        return lat to lon
+    }
+
+    /**
+     * Great-circle distance in metres.
+     *
+     * Spelled out rather than `android.location.Location.distanceBetween` so the whole
+     * evaluator stays Android-free and testable on the JVM — the reason every other decision
+     * here is unit-tested without a vehicle.
+     */
+    fun distanceMetres(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val earthRadius = 6_371_000.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = sin(dLat / 2).pow(2) +
+            cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2)
+        return 2 * earthRadius * atan2(sqrt(a), sqrt(1 - a))
     }
 
     private fun evaluateTimeRange(c: Condition, s: Snapshot): ConditionOutcome {

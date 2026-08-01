@@ -200,4 +200,18 @@
     <!-- Notifications -->
     <string name="channel_name">MG4Tasker</string>
     <string name="notif_running_title">Aplicando reglas…</string>
+    <string name="value_location_hint">latitud, longitud</string>
+    <string name="rules_threshold_standstill">Aplicar solo en parado</string>
+    <string name="rules_threshold_value">Aplicar hasta %1$d km/h</string>
+    <string name="rules_threshold_title">Velocidad máxima de aplicación</string>
+    <string name="rules_threshold_explain">0 km/h: los ajustes solo se aplican con el coche parado. Por encima, MG4Tasker deja de rechazar, pero el vehículo sigue rechazando lo que rechaza por su cuenta.</string>
+    <string name="rules_result_title">Resultado de la prueba</string>
+    <string name="rules_result_none">No se evaluó ninguna regla.</string>
+    <string name="diag_env_vendor">Servicios del vehículo (SAIC)</string>
+    <string name="diag_env_location">Posición</string>
+    <string name="diag_env_threshold">Velocidad máxima de escritura</string>
+    <string name="diag_reason_vendor">servicio del vehículo no disponible en este coche</string>
+    <string name="diag_reason_no_navigation">ninguna aplicación de navegación</string>
+    <string name="diag_reason_no_location">ninguna posición disponible</string>
+    <string name="paste_header">**Contraseña:** `%1$s` · caduca una hora después del envío.\n\nAlojado gratuitamente por [April](https://www.april.org) en %2$s. Si esto te ha ahorrado un viaje al taller, [haz una donación](https://www.april.org/adherer).</string>
 </resources>

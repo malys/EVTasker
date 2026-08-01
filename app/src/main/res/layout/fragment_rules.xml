@@ -23,6 +23,16 @@
             android:textAppearance="@style/Text.MG4.Body"
             android:text="@string/rules_automation_switch" />
 
+        <!-- Standstill threshold. A button rather than an inline slider: the value is set
+             once and then forgotten, and the left pane is the rule list's space. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/thresholdButton"
+            style="@style/Widget.MG4.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target"
+            android:layout_marginBottom="@dimen/spacing_sm" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/newRuleButton"
             style="@style/Widget.MG4.Button"

@@ -2,13 +2,19 @@ package com.mg4.tasker.vehicle
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import com.mg4.hardware.MG4Hardware
 import com.mg4.hardware.VehicleWriteGate
 import com.mg4.hardware.model.DriveMode
 import com.mg4.hardware.model.RegenLevel
+import com.mg4.hardware.saic.SaicCharging
+import com.mg4.hardware.saic.SaicClimate
+import com.mg4.hardware.saic.SaicPhone
+import com.mg4.hardware.saic.SaicRadio
 import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.engine.ActionExecutor
+import com.mg4.tasker.engine.ConditionEvaluator
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.ActionResult
 import com.mg4.hardware.catalog.ActionType
@@ -35,6 +41,7 @@ class DirectExecutor(
         ActionType.LAUNCH_APP        -> launchApp(action)
         ActionType.SHOW_NOTIFICATION -> notify(action)
         ActionType.SPEAK_TEXT        -> speak(action)
+        ActionType.NAVIGATE_TO       -> navigate(action)
         else                         -> applyVehicle(action)
     }
 
@@ -98,12 +105,39 @@ class DirectExecutor(
             ActionType.SET_TSR              -> MG4Hardware.setTsrMode(b)
             ActionType.SET_ACC_TJA_MODE     -> MG4Hardware.setAccTjaMode(i)
             ActionType.SET_LIMITER_MODE     -> MG4Hardware.setSpeedLimiterMode(i)
+            // Climate — vendor service, not gated (see the catalogue).
+            ActionType.SET_CLIMATE_POWER    -> SaicClimate.setPower(b)
+            ActionType.SET_CABIN_TEMP       -> SaicClimate.setDriverTemp(i)
+            ActionType.SET_AC               -> SaicClimate.setAc(b)
+            ActionType.SET_CLIMATE_AUTO     -> SaicClimate.setAuto(b)
+            ActionType.SET_RECIRCULATION    -> SaicClimate.setRecirculation(b)
+            ActionType.SET_FAN_LEVEL        -> SaicClimate.setFanLevel(i)
+            ActionType.SET_FRONT_DEFROST    -> SaicClimate.setFrontDefrost(b)
+            ActionType.SET_REAR_DEFROST     -> SaicClimate.setRearDefrost(b)
+            // Energy — vendor charging service.
+            ActionType.SET_CHARGE_LIMIT      -> SaicCharging.setChargeLimitPercent(i)
+            ActionType.SET_CHARGING_ENABLED  -> SaicCharging.setChargingEnabled(b)
+            ActionType.SET_CHARGE_SCHEDULE   -> SaicCharging.setScheduleEnabled(b)
+            ActionType.SET_CHARGE_WINDOW     ->
+                SaicCharging.setScheduleStart(a.minutesFrom) && SaicCharging.setScheduleStop(a.minutesTo)
+            ActionType.SET_BATTERY_PREHEAT   -> SaicCharging.setBatteryPreheat(b)
+            // Media and telephony — vendor services too.
+            ActionType.PLAY_RADIO           -> SaicRadio.play()
+            ActionType.CALL_NUMBER          -> callNumber(a)
             // Not vehicle writes — handled by execute() before it ever gets here.
             ActionType.APPLY_PROFILE,
             ActionType.LAUNCH_APP,
             ActionType.SHOW_NOTIFICATION,
-            ActionType.SPEAK_TEXT -> null
+            ActionType.SPEAK_TEXT,
+            ActionType.NAVIGATE_TO -> null
         }
+    }
+
+    /** Digits, `+`, `*` and `#` only: anything else is not a number the car can dial. */
+    private fun callNumber(a: Action): Boolean {
+        val number = a.text.filter { it.isDigit() || it in "+*#" }
+        if (number.isBlank()) return false
+        return SaicPhone.placeCall(number)
     }
 
     private fun gateVerdict(): String = when (VehicleWriteGate.decide(MG4Hardware.getVehicleSpeedKmh())) {
@@ -147,6 +181,41 @@ class DirectExecutor(
      * ALLOWED there is how "the message action does not work" became invisible in the
      * history: the rule said applied, the driver saw nothing, and the two never met.
      */
+    /**
+     * Hands the destination to whatever navigation app the head unit has.
+     *
+     * `geo:` first — the standard every Android navigation app registers — then
+     * `google.navigation:`, which starts guidance rather than only showing the place. A car
+     * with neither is reported as unsupported with the destination in the detail, so the
+     * history says which rule found no navigator rather than just "failed".
+     */
+    private fun navigate(a: Action): ActionResult {
+        if (a.text.isBlank()) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no destination")
+        }
+        val point = ConditionEvaluator.parsePoint(a.text)
+        val encoded = Uri.encode(a.text)
+        val uris = if (point != null) {
+            val (lat, lon) = point
+            listOf("google.navigation:q=$lat,$lon", "geo:$lat,$lon?q=$lat,$lon")
+        } else {
+            listOf("google.navigation:q=$encoded", "geo:0,0?q=$encoded")
+        }
+        for (uri in uris) {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (intent.resolveActivity(context.packageManager) == null) continue
+            return try {
+                context.startActivity(intent)
+                ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, uri)
+            } catch (e: Exception) {
+                Log.w("MG4Tasker.Exec", "navigate($uri): ${e.message}")
+                ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, e.message)
+            }
+        }
+        return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no navigation app")
+    }
+
     private fun notify(a: Action): ActionResult {
         if (a.text.isBlank()) {
             return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no message")

@@ -200,4 +200,18 @@
     <!-- Notifications -->
     <string name="channel_name">MG4Tasker</string>
     <string name="notif_running_title">Regeln werden angewendet…</string>
+    <string name="value_location_hint">Breite, Länge</string>
+    <string name="rules_threshold_standstill">Nur im Stand anwenden</string>
+    <string name="rules_threshold_value">Bis %1$d km/h anwenden</string>
+    <string name="rules_threshold_title">Höchstgeschwindigkeit für Änderungen</string>
+    <string name="rules_threshold_explain">0 km/h: Einstellungen werden nur im Stand angewendet. Darüber verweigert MG4Tasker nichts mehr — das Fahrzeug verweigert aber weiterhin, was es von sich aus verweigert.</string>
+    <string name="rules_result_title">Testergebnis</string>
+    <string name="rules_result_none">Keine Regel wurde ausgewertet.</string>
+    <string name="diag_env_vendor">Fahrzeugdienste (SAIC)</string>
+    <string name="diag_env_location">Position</string>
+    <string name="diag_env_threshold">Höchstgeschwindigkeit für Änderungen</string>
+    <string name="diag_reason_vendor">Fahrzeugdienst auf diesem Fahrzeug nicht verfügbar</string>
+    <string name="diag_reason_no_navigation">keine Navigations-App</string>
+    <string name="diag_reason_no_location">keine Position verfügbar</string>
+    <string name="paste_header">**Passwort:** `%1$s` · verfällt eine Stunde nach dem Hochladen.\n\nKostenlos gehostet von [April](https://www.april.org) auf %2$s. Wenn Ihnen das einen Werkstattbesuch erspart hat, [spenden Sie etwas](https://www.april.org/adherer).</string>
 </resources>

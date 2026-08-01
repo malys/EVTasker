@@ -34,6 +34,13 @@ android.permission.BLUETOOTH_CONNECT
 # apply an MG4Control profile when MG4Control is installed.
 com.mg4.control.permission.CONTROL_PROFILES
 
+# --- Position ---
+# The "near a place" condition, and nothing else. Last known fix only (no live request), read
+# on the device, compared against a point stored in the rule; the coordinates never leave the
+# car. Refusing it disables that single condition.
+android.permission.ACCESS_FINE_LOCATION
+android.permission.ACCESS_COARSE_LOCATION
+
 # --- Network ---
 # Two uses, both explicit:
 #   • Console → Share uploads the diagnostic report to a PrivateBin paste

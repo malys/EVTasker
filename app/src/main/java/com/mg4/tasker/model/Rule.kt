@@ -40,8 +40,11 @@ data class Action(
     /** Numeric value or enum value, depending on [ActionType.spec]. */
     val number: Int = 0,
     val flag: Boolean = true,
-    /** Profile id, package name, or notification text. */
-    val text: String = ""
+    /** Profile id, package name, notification text, destination or phone number. */
+    val text: String = "",
+    /** [ActionType.SET_CHARGE_WINDOW] — minutes since midnight, start and end. */
+    val minutesFrom: Int = 0,
+    val minutesTo: Int = 0
 )
 
 /**

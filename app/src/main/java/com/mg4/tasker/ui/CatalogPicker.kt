@@ -18,7 +18,6 @@ import com.mg4.hardware.FirmwareGen
 import com.mg4.hardware.FirmwareSupport
 import com.mg4.tasker.store.SupportStore
 import com.mg4.tasker.util.BtDevices
-import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.util.SpeechEngines
 import com.mg4.tasker.vehicle.ProfileBridge
 import java.util.Locale
@@ -103,12 +102,14 @@ object CatalogPicker {
      *
      * Speech was the visible case: the Diagnostic tab reported "no speech engine" while the
      * editor kept offering the action, and picking it produced a rule that could only ever
-     * fail. Both now ask [SpeechEngines] and [Notifier] the same question. These are cheap
-     * (a package query, a channel lookup) — no vehicle read, nothing that blocks.
+     * fail. Both now ask [SpeechEngines] the same question — a package query, no vehicle
+     * read, nothing that blocks.
+     *
+     * The message action is not filtered: it shows on screen whatever the notification
+     * channel is doing, so it always has a way to reach the driver.
      */
     private fun runnableHere(context: Context, type: ActionType): Boolean = when (type) {
         ActionType.SPEAK_TEXT -> SpeechEngines.any(context)
-        ActionType.SHOW_NOTIFICATION -> Notifier.canNotify(context)
         else -> true
     }
 

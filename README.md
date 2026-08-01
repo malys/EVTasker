@@ -33,8 +33,9 @@ profile* — becomes available.
 - [The speed gate](#the-speed-gate)
 - [Conditions and actions](#conditions-and-actions)
 - [Firmware compatibility](#firmware-compatibility)
-- [Climate and windows (read-only for now)](#climate-and-windows-read-only-for-now)
+- [Vehicle services: climate, charging, radio, calls](#vehicle-services-climate-charging-radio-calls)
 - [Diagnostic](#diagnostic)
+  - [Testing a rule](#testing-a-rule)
   - [Exporting the diagnostic and the logs](#exporting-the-diagnostic-and-the-logs)
   - [Sharing the logs from the car](#sharing-the-logs-from-the-car)
   - [When a rule will not save](#when-a-rule-will-not-save)
@@ -119,11 +120,29 @@ and MG4Control enforce the identical rule.
 
 | | Speed-gated |
 |---|---|
-| Drive mode, regeneration, one-pedal, ADAS, AEB, ELK, ACC/TJA, limiter, whole profile | **Yes** — when stopped only |
-| Seat and steering heating, volume, brightness, audio, notifications | No |
+| Drive mode, regeneration, one-pedal, ADAS, AEB, ELK, ACC/TJA, limiter, whole profile | **Yes** |
+| Seat and steering heating, volume, brightness, audio, climate, charging, radio, messages | No |
 
 The editor shows "When stopped only" **at the moment you pick the action**, not after. When
 an action is refused, the history gives the exact reason instead of staying silent.
+
+### Raising the threshold
+
+The Rules screen lets you move the limit from 0 to 50 km/h. **0 — apply only when stopped —
+is the default**, and the value that needs no justification: a car creeping in a car park
+reads as moving, and a rule refused there is the most common false negative.
+
+Two things do not change when you raise it:
+
+- **An unreadable speed still refuses.** The gate fails closed whatever the threshold, and
+  that is the case it exists for.
+- **The vehicle still refuses whatever it refuses.** MG4 firmware declines several of these
+  settings while moving on its own. Raising the threshold does not make a drive-mode change
+  succeed at 40 km/h; it only stops MG4Tasker from being the one that declines first. The
+  history then shows the vehicle's refusal instead of the app's.
+
+The threshold in force is reported on the Diagnostic tab and in every exported report, so a
+report from a car that had it raised says so.
 
 `VEHICLE_POWER_OFF` is **deliberately absent** from the catalogue, and a unit test enforces
 that no catalogue entry can reach it. Cutting the vehicle stays an explicit human gesture.
@@ -135,16 +154,30 @@ that no catalogue entry can reach it. Cutting the vehicle stays an explicit huma
 An unreadable condition makes the rule **not evaluable** — it does not fire, and the
 history names the missing signal. Unreadable is never treated as false.
 
-Conditions span **context** (Bluetooth, time of day, day of week, firmware), **environment**
-(outside temperature), **driving** (ignition, park, speed, drive mode, regeneration, energy
-saving), **climate** (A/C, AUTO, recirculation, fan speed, set temperature, window open),
-**comfort** (seat/steering heating, media volume, brightness), and **driver assistance**
-(AEB, ELK, ACC/TJA, limiter, TSR, overspeed, speed-limit tone, ADAS sound).
+Conditions span **context** (Bluetooth, time of day, day of week, firmware, near a place),
+**environment** (outside temperature), **driving** (ignition, park, speed, drive mode,
+regeneration, energy saving), **energy** (battery level, charging, charge limit), **climate**
+(climate on, A/C, AUTO, recirculation, fan speed, set temperature, window open), **comfort**
+(seat/steering heating, media volume, brightness), and **driver assistance** (AEB, ELK,
+ACC/TJA, limiter, TSR, overspeed, speed-limit tone, ADAS sound).
 
-Actions cover **profile** application, **driving**, **comfort**, **audio**, **driver
-assistance**, and **system** (launch an app, show a notification, speak a message through
-the head unit's text-to-speech engine). ADAS state — AEB, ELK,
-ACC/TJA, TSR, overspeed and so on — is fully covered as gated actions.
+Actions cover **profile** application, **driving**, **comfort**, **climate** (on/off, target
+temperature, A/C, AUTO, recirculation, fan level, front and rear defrosters), **energy**
+(charge limit, allow charging, scheduled charging and its window, battery pre-heating),
+**audio** (volume, the fine controls, play the radio), **driver assistance**, and **system**
+(launch an app, show a message, speak through the head unit's text-to-speech engine,
+navigate to a destination, call a number). ADAS state — AEB, ELK, ACC/TJA, TSR, overspeed and
+so on — is fully covered as gated actions.
+
+**Near a place** compares the car's last known fix with a point stored in the rule and a
+radius in metres. The point is prefilled with where the car is when the condition is created,
+because nobody types coordinates on a head unit. No fix means the condition is *unavailable*,
+not "somewhere else" — otherwise every "when I am NOT at home" rule would fire on the
+driveway while the GPS was still acquiring. The coordinates never leave the car.
+
+Value controls open on **what the car reports right now** — the brightness slider starts where
+the screen already is, not at 5%. Reopening a saved action shows what the rule says instead,
+so editing a rule cannot quietly rewrite it.
 
 The exact per-entry list and its firmware support is generated, not hand-written — see
 below.
@@ -177,21 +210,47 @@ Highlights (see the generated matrix for the full grid):
 - **Overspeed alarm / speed-limit tone** — SWI133 and SWI132 only.
 - **ADAS sound warning** — every generation except SWI133.
 - **Lane-departure sound + vibration** — SWI132 only.
-- **Fine audio** (Bose, balance, fader, tone, 3D, speed volume) — SWI133 and SWI132.
+- **Fine audio** (Bose, balance, fader, tone, 3D, speed volume) — SWI69, SWI131, SWI132: the
+  SAIC `caradapter` audio helper these go through is bound on the A9 platform only.
+- **Climate, charging, radio and calls** — SWI68 and SWI165, the generations the decompiled
+  head-unit APKs in `apks/` come from. They run on SAIC vendor services rather than on
+  property ids, and whether a given car answers is a bind, not a table: the Diagnostic tab's
+  *Vehicle services* row reports which of the four responded, and the matrix widens once a
+  car outside that set reports one.
 
 ---
 
-## Climate and windows (read-only for now)
+## Vehicle services: climate, charging, radio, calls
 
-Air conditioning (A/C, AUTO, recirculation, fan speed, set temperature) and window state
-are available as **conditions** — read-only. They use standard AOSP HVAC/window property
-ids that the R69 OEM sources expose, but which are **not yet verified on any MG4
-generation**. MG4Hardware reads them null-safely; the Diagnostic tab shows whether each one
-is actually readable on your car.
+Climate and charging used to be read-only and unverified — standard AOSP property ids the
+R69 sources name, that no MG4 confirmed. Writing one of those would have been a guess, so
+there were no write actions.
 
-Climate/window **writes** are intentionally not in the catalogue. Adding them means a
-verified property map first — writing a wrong id to the vehicle is exactly the risk being
-deferred. Confirm the reads on the Diagnostic tab, and the write actions can follow.
+They now go through the **SAIC vendor services** instead: the same binder interfaces the
+car's own HVAC, charging, radio and hands-free apps use, read off the decompiled head-unit
+APKs in [`apks/`](../apks). One bound service (`com.saicmotor.service.vehicle`) exposes a hub
+that hands out `aircondition` and `vehiclecharging`; radio and telephony are their own
+services. What those calls do is not in doubt — they are what the car does to itself.
+
+That buys four things the property ids could not:
+
+- **Climate writes** — on/off, target temperature (17–33 °C, the ends being LO and HI as in
+  the stock UI), A/C, AUTO, recirculation, fan level, front and rear defrosters.
+- **Battery and charging** — charge limit in percent, allow/deny charging, the scheduled
+  charging window, and battery pre-heating.
+- **Radio** — resume the last station as the current audio source. It does not open the
+  radio screen: a rule firing at ignition wants the sound, not a screen in front of the
+  driver.
+- **Calls** — placed by the car's hands-free stack on the paired phone. The head unit has no
+  SIM and no dialer, so `ACTION_CALL` would find nothing to handle it.
+
+Climate **conditions** now read from the same service where it answers, falling back to the
+AOSP ids elsewhere — so what a rule tests and what an action writes are the same signal.
+
+Window **writes** stay absent: no vendor service exposes them.
+
+Navigation is the exception with no vendor API — `NAVIGATE_TO` uses the standard `geo:`
+intent, then `google.navigation:`, and reports honestly when the head unit has neither.
 
 ---
 
@@ -228,6 +287,15 @@ An entry can read fine and still be marked *hidden in the editor*: the firmware 
 not list this generation, so the picker will not offer it, but an imported rule can still
 reach it.
 
+### Testing a rule
+
+**Test now** on the Rules screen runs one full cycle — the exact ignition path, so a passing
+test proves the real thing — and then **shows what it decided**: one line per rule with its
+outcome (applied, conditions not met, cannot be evaluated, failed), the per-action verdict
+behind a failure, and the name of any signal that could not be read. It used to say "test
+running" and stop there, which answers nothing for a button whose whole purpose is to answer
+that question.
+
 ### Exporting the diagnostic and the logs
 
 **Export**, on the Diagnostic tab and on the Console tab, writes one text file to storage:
@@ -262,6 +330,10 @@ because the car has no share target worth the name.
   head unit has no clipboard worth using, so the paste URL and the password are written to
   the in-app log — the screen the user is already on, and one that survives into the next
   exported report.
+- **The paste says how to read it.** Its first block, in the app's language, gives the
+  password, the expiry, and credit to [April](https://www.april.org) — who run the instance
+  free of charge — with a donation link. Whoever receives the link needs none of that
+  explained to them separately.
 
 Read it back by opening the link and entering the password. The upload is the only network
 use of the stable build.

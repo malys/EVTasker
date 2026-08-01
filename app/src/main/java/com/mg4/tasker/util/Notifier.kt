@@ -4,6 +4,9 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.mg4.tasker.R
 
@@ -53,15 +56,31 @@ object Notifier {
             .build()
     }
 
+    /**
+     * Puts a rule's message in front of the driver.
+     *
+     * On screen *and* in the shade, not one or the other. A notification on a head unit is a
+     * small icon in a bar nobody looks at while driving, and the channel can be silenced
+     * without the app being told at the moment it posts — which is how "the message action
+     * does not work" happened. The toast is what the driver actually sees; the notification
+     * is what is still there a minute later.
+     *
+     * Safe from any thread: the toast is posted to the main looper.
+     */
     fun showRuleMessage(context: Context, message: String) {
-        ensureChannel(context)
-        val manager = ContextCompat.getSystemService(context, NotificationManager::class.java) ?: return
-        val notification = Notification.Builder(context, CHANNEL_ID)
-            .setContentTitle(context.getString(R.string.app_name))
+        val appContext = context.applicationContext
+        Handler(Looper.getMainLooper()).post {
+            runCatching { Toast.makeText(appContext, message, Toast.LENGTH_LONG).show() }
+        }
+
+        ensureChannel(appContext)
+        val manager = ContextCompat.getSystemService(appContext, NotificationManager::class.java) ?: return
+        val notification = Notification.Builder(appContext, CHANNEL_ID)
+            .setContentTitle(appContext.getString(R.string.app_name))
             .setContentText(message)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setAutoCancel(true)
             .build()
-        manager.notify(MESSAGE_NOTIFICATION_ID, notification)
+        runCatching { manager.notify(MESSAGE_NOTIFICATION_ID, notification) }
     }
 }

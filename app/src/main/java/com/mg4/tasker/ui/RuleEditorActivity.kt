@@ -54,6 +54,16 @@ class RuleEditorActivity : AppCompatActivity() {
     /** Connected car firmware, if reported: drives which catalogue entries are offered. */
     private var firmware: com.mg4.hardware.FirmwareGen? = null
 
+    /**
+     * What the car reports right now, read once when the editor opens.
+     *
+     * Used to open a value control on the present setting rather than on the bottom of its
+     * range, and to prefill a location condition with where the car is. Read once and not
+     * refreshed: a slider that moved under the user's finger because the car changed would
+     * be worse than a value a minute old.
+     */
+    private var snapshot: com.mg4.tasker.model.Snapshot? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRuleEditorBinding.inflate(layoutInflater)
@@ -77,10 +87,12 @@ class RuleEditorActivity : AppCompatActivity() {
 
         binding.addConditionButton.setOnClickListener {
             CatalogPicker.pickCondition(this, firmware) { type ->
-                val fresh = Condition(type = type)
-                ValueEditorDialog.editCondition(this, fresh, mediaVolumeMax) { configured ->
-                    conditions += configured
-                    renderConditions()
+                withLocationIfNeeded(type) {
+                    val fresh = Condition(type = type)
+                    ValueEditorDialog.editCondition(this, fresh, mediaVolumeMax, currentPoint()) { configured ->
+                        conditions += configured
+                        renderConditions()
+                    }
                 }
             }
         }
@@ -91,7 +103,9 @@ class RuleEditorActivity : AppCompatActivity() {
                     actions += fresh
                     renderActions()
                 } else {
-                    ValueEditorDialog.editAction(this, fresh, mediaVolumeMax, profiles) { configured ->
+                    ValueEditorDialog.editAction(
+                        this, fresh, mediaVolumeMax, profiles, currentValue(type)
+                    ) { configured ->
                         actions += configured
                         renderActions()
                     }
@@ -126,12 +140,74 @@ class RuleEditorActivity : AppCompatActivity() {
                 bridge.disconnect()
             }
 
+            val fresh = com.mg4.tasker.vehicle.VehicleReader.read(
+                btMacs = emptySet(),
+                btAvailable = false,
+                fix = com.mg4.tasker.util.CarLocation.lastKnown(applicationContext)
+            )
+
             Handler(Looper.getMainLooper()).post {
                 profiles = loadedProfiles
                 mediaVolumeMax = if (maxVolume >= 0) maxVolume else null
                 firmware = gen
+                snapshot = fresh
             }
         }
+    }
+
+    /**
+     * Asks for the position permission at the moment a rule first needs it.
+     *
+     * Not at startup: an app that asks for location before the user has expressed any
+     * interest in it has not explained why, and on a car the answer is usually no. Here the
+     * request follows the choice that requires it, and a refusal still opens the editor —
+     * the condition is saved, the Diagnostic tab reports it as having no position, and
+     * granting the permission later makes it work with no change to the rule.
+     */
+    private fun withLocationIfNeeded(type: com.mg4.hardware.catalog.ConditionType, next: () -> Unit) {
+        if (type != com.mg4.hardware.catalog.ConditionType.LOCATION_WITHIN ||
+            com.mg4.tasker.util.CarLocation.hasPermission(this)
+        ) {
+            next()
+            return
+        }
+        pendingAfterLocation = next
+        locationPermission.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+
+    private var pendingAfterLocation: (() -> Unit)? = null
+
+    private val locationPermission =
+        registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                // The fix is what prefills the point; re-read it before the dialog opens.
+                thread(name = "mg4-tasker-editor-fix") {
+                    val fix = com.mg4.tasker.util.CarLocation.lastKnown(applicationContext)
+                    Handler(Looper.getMainLooper()).post {
+                        snapshot = snapshot?.copy(latitude = fix?.latitude, longitude = fix?.longitude)
+                        pendingAfterLocation?.invoke()
+                        pendingAfterLocation = null
+                    }
+                }
+            } else {
+                pendingAfterLocation?.invoke()
+                pendingAfterLocation = null
+            }
+        }
+
+    /** The car's present value for what [type] controls, when it reports one. */
+    private fun currentValue(type: com.mg4.hardware.catalog.ActionType): Number? {
+        val key = type.currentKey ?: return null
+        val readings = snapshot?.readings ?: return null
+        return readings[key] as? Number
+    }
+
+    /** "latitude,longitude" for a fresh location condition, or null with no fix. */
+    private fun currentPoint(): String? {
+        val current = snapshot ?: return null
+        val lat = current.latitude ?: return null
+        val lon = current.longitude ?: return null
+        return String.format(java.util.Locale.US, "%.6f,%.6f", lat, lon)
     }
 
     // -------------------------------------------------------------------------
@@ -147,7 +223,7 @@ class RuleEditorActivity : AppCompatActivity() {
                 label = labels.describe(condition),
                 gated = false,
                 onEdit = {
-                    ValueEditorDialog.editCondition(this, condition, mediaVolumeMax) { updated ->
+                    ValueEditorDialog.editCondition(this, condition, mediaVolumeMax, currentPoint()) { updated ->
                         conditions[index] = updated
                         renderConditions()
                     }
@@ -166,7 +242,9 @@ class RuleEditorActivity : AppCompatActivity() {
                 label = labels.describe(action),
                 gated = action.type.gated,
                 onEdit = {
-                    ValueEditorDialog.editAction(this, action, mediaVolumeMax, profiles) { updated ->
+                    ValueEditorDialog.editAction(
+                        this, action, mediaVolumeMax, profiles, currentValue(action.type)
+                    ) { updated ->
                         actions[index] = updated
                         renderActions()
                     }

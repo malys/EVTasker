@@ -116,9 +116,20 @@ object DebugReport {
      * fenced block, because the alignment is what makes a 40-row verdict list readable at a
      * glance. Reflowing it as prose would lose exactly that.
      */
-    fun renderMarkdown(context: Context, report: DiagnosticProbe.Report): String = buildString {
+    fun renderMarkdown(
+        context: Context,
+        report: DiagnosticProbe.Report,
+        /** Front matter for a shared paste: how to open it, and who is hosting it. */
+        header: String? = null,
+    ): String = buildString {
         appendLine("# MG4Tasker diagnostic report")
         appendLine()
+        header?.let {
+            appendLine(it.trim())
+            appendLine()
+            appendLine("---")
+            appendLine()
+        }
         appendLine("| | |")
         appendLine("|---|---|")
         appendLine("| generated | ${timestamp(report.at)} |")

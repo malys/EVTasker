@@ -120,8 +120,15 @@ class ConsoleFragment : Fragment() {
         Toast.makeText(requireContext(), R.string.console_share_running, Toast.LENGTH_SHORT).show()
         val appCtx = requireContext().applicationContext
         // The probe blocks and the upload is a network call: neither belongs on the main thread.
+        // Built here, not in the worker: getString needs the fragment's configuration, and
+        // the header must be in the language the app is displaying, not the system's.
+        val header = getString(
+            R.string.paste_header,
+            PasteConfig.CONFIG.password,
+            PasteConfig.HOST
+        )
         thread(name = "mg4-tasker-log-share") {
-            val markdown = DebugReport.renderMarkdown(appCtx, DiagnosticProbe.run(appCtx))
+            val markdown = DebugReport.renderMarkdown(appCtx, DiagnosticProbe.run(appCtx), header)
             val outcome = PrivateBin.paste(markdown, PasteConfig.CONFIG)
             val message = when (outcome) {
                 is PrivateBin.Outcome.Ok -> {

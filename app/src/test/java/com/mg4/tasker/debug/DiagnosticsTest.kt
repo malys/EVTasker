@@ -178,10 +178,43 @@ class DiagnosticsTest {
         assertEquals(Diagnostics.Reason.NO_TTS_ENGINE, entry(noTts, "SPEAK_TEXT").reason)
         assertEquals(Diagnostics.Status.OK, entry(noTts, "SHOW_NOTIFICATION").status)
 
+        // The message action shows on screen as well as in the shade, so a silenced channel
+        // no longer stops it reaching the driver — it is reported on its own row instead.
         val silenced =
             Diagnostics.actions(allowed.copy(notificationsEnabled = false), FirmwareGen.SWI68)
-        assertEquals(Diagnostics.Reason.NOTIFICATIONS_OFF, entry(silenced, "SHOW_NOTIFICATION").reason)
+        assertEquals(Diagnostics.Status.OK, entry(silenced, "SHOW_NOTIFICATION").status)
         assertEquals(Diagnostics.Status.OK, entry(silenced, "SPEAK_TEXT").status)
+    }
+
+    @Test
+    fun `vendor entries are blocked when their service is not bound`() {
+        val none = Diagnostics.actions(allowed, FirmwareGen.SWI68)
+
+        assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "SET_CABIN_TEMP").reason)
+        assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "SET_CHARGE_LIMIT").reason)
+        assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "PLAY_RADIO").reason)
+        assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "CALL_NUMBER").reason)
+
+        val bound = Diagnostics.actions(
+            allowed.copy(
+                climateService = true, chargingService = true,
+                radioService = true, phoneService = true
+            ),
+            FirmwareGen.SWI68
+        )
+        assertEquals(Diagnostics.Status.OK, entry(bound, "SET_CABIN_TEMP").status)
+        assertEquals(Diagnostics.Status.OK, entry(bound, "SET_CHARGE_LIMIT").status)
+        assertEquals(Diagnostics.Status.OK, entry(bound, "PLAY_RADIO").status)
+        assertEquals(Diagnostics.Status.OK, entry(bound, "CALL_NUMBER").status)
+    }
+
+    @Test
+    fun `navigation is blocked when nothing answers a geo intent`() {
+        val none = Diagnostics.actions(allowed, FirmwareGen.SWI68)
+        assertEquals(Diagnostics.Reason.NO_NAVIGATION_APP, entry(none, "NAVIGATE_TO").reason)
+
+        val withApp = Diagnostics.actions(allowed.copy(navigationApp = true), FirmwareGen.SWI68)
+        assertEquals(Diagnostics.Status.OK, entry(withApp, "NAVIGATE_TO").status)
     }
 
     /** No write can be probed without performing it, so an excluded firmware fails closed. */

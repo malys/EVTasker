@@ -41,6 +41,13 @@ per-generation routing in `MG4Hardware`. It is the single source of truth for:
 
 Adding a vehicle entry without `@SupportedOn` fails `FirmwareSupportTest`.
 
+## The standstill gate is configurable, and still fails closed
+
+`VehicleWriteGate.allowUpToKmh` moves the "moving" boundary from 0 up to 50 km/h; the app
+stores the user's choice and pushes it in wherever the vehicle layer is initialised. Two
+invariants are not negotiable and are unit-tested: an unreadable or negative speed refuses at
+any threshold, and the shared layer clamps the value. Default is 0.
+
 ## Vehicle writes go in MG4Control, reads too
 
 MG4Tasker adds no vehicle access code. When a new action needs a new capability, implement
@@ -48,10 +55,19 @@ the read/write in MG4Control's `MG4Hardware` (branched per firmware generation �
 assume universal), expose it through `TaskerBridgeService`, then add the catalogue entry
 here. Property ids and per-generation routing live in MG4Control; do not duplicate them.
 
-Climate/window signals are **read-only and unverified** today: standard AOSP ids that the
-R69 sources name, but not confirmed on any MG4. They exist so the Diagnostic tab can prove
-a signal is readable before any write path is added. Do not add climate/window writes
-until the reads are confirmed on a vehicle.
+Climate, charging, radio and hands-free calls do **not** go through property ids. They use
+the SAIC vendor binder services the car's own apps use (`com.mg4.hardware.saic`), with every
+descriptor and transaction code read off the decompiled head-unit APKs in `apks/` — cite the
+APK and class when you add one. That is what made climate writes honest: the earlier AOSP
+climate ids were standard ids the R69 sources name but no MG4 confirmed, so writing them
+would have been a guess.
+
+Window writes remain absent — no vendor service exposes them. The AOSP climate reads stay as
+a fallback where the vendor service does not answer.
+
+Whether a car has a given vendor service is a **bind, not a table**: the `@SupportedOn` set
+records the generations we have evidence for (SWI68/SWI165, the `apks/` platform), and the
+Diagnostic tab's *Vehicle services* row is what widens it.
 
 ## Reference patterns (inherited from MG4Control / MG4ABRPUploader)
 

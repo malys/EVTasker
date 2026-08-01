@@ -36,6 +36,7 @@ object ValueEditorDialog {
         context: Context,
         condition: Condition,
         dynamicMax: Int?,
+        currentPoint: String? = null,
         onDone: (Condition) -> Unit
     ) {
         val binding = DialogValueEditorBinding.inflate(android.view.LayoutInflater.from(context))
@@ -60,6 +61,7 @@ object ValueEditorDialog {
             initialNumber = condition.number,
             initialFlag = condition.flag,
             initialText = condition.text,
+            currentPoint = currentPoint,
             firmwareEnum = condition.type == ConditionType.FIRMWARE_GEN,
             choices = when {
                 condition.type == ConditionType.FIRMWARE_GEN ->
@@ -101,6 +103,8 @@ object ValueEditorDialog {
         action: Action,
         dynamicMax: Int?,
         profiles: List<Pair<String, String>>,
+        /** What the car reports for this setting now — see [ActionType.currentKey]. */
+        currentValue: Number? = null,
         onDone: (Action) -> Unit
     ) {
         val binding = DialogValueEditorBinding.inflate(android.view.LayoutInflater.from(context))
@@ -118,7 +122,9 @@ object ValueEditorDialog {
             spec = spec,
             dynamicMax = dynamicMax,
             gated = action.type.gated,
-            initialNumber = action.number.toFloat(),
+            // A fresh action carries no value yet, so the control opens on what the car
+            // reports right now rather than on the bottom of its range.
+            initialNumber = seedNumber(action, currentValue),
             initialFlag = action.flag,
             initialText = action.text,
             firmwareEnum = false,
@@ -127,8 +133,8 @@ object ValueEditorDialog {
                 if (spec.kind == ValueKind.PROFILE) R.string.value_no_profiles
                 else R.string.value_no_bt_devices
             ),
-            initialMinutesFrom = 0,
-            initialMinutesTo = 0,
+            initialMinutesFrom = action.minutesFrom,
+            initialMinutesTo = action.minutesTo,
             initialDays = emptyList()
         )
 
@@ -141,7 +147,9 @@ object ValueEditorDialog {
                     action.copy(
                         number = state.number().toInt(),
                         flag = state.flag(),
-                        text = state.text()
+                        text = state.text(),
+                        minutesFrom = state.minutesFrom,
+                        minutesTo = state.minutesTo
                     )
                 )
             }
@@ -149,6 +157,18 @@ object ValueEditorDialog {
     }
 
     // -------------------------------------------------------------------------
+
+    /**
+     * The car's present value, but only for an action being created.
+     *
+     * Reopening a saved action must show what the rule says, not what the car happens to be
+     * doing — otherwise editing the name of a rule would quietly rewrite its brightness. A
+     * fresh action is recognisable by carrying the model defaults.
+     */
+    private fun seedNumber(action: Action, currentValue: Number?): Float {
+        if (action.number != 0 || currentValue == null) return action.number.toFloat()
+        return currentValue.toFloat()
+    }
 
     private data class Choice(val value: String, val label: String)
 
@@ -171,6 +191,7 @@ object ValueEditorDialog {
         initialNumber: Float,
         initialFlag: Boolean,
         initialText: String,
+        currentPoint: String? = null,
         firmwareEnum: Boolean,
         choices: List<Choice>,
         emptyChoiceMessage: String,
@@ -295,6 +316,35 @@ object ValueEditorDialog {
                 binding.textBlock.visibility = View.VISIBLE
                 binding.textInput.setText(initialText)
                 binding.textInput.addTextChangedListener { text = it }
+            }
+
+            /**
+             * Two of the existing controls at once: the text field holds the point, the
+             * slider the radius. Prefilling the field with the car's current position is
+             * what makes this usable at the wheel — nobody types coordinates on a head unit,
+             * and "here" is the place almost every such rule is about.
+             */
+            ValueKind.LOCATION -> {
+                binding.textBlock.visibility = View.VISIBLE
+                binding.textInput.hint = context.getString(R.string.value_location_hint)
+                val start = initialText.ifBlank { currentPoint.orEmpty() }
+                binding.textInput.setText(start)
+                text = start
+                binding.textInput.addTextChangedListener { text = it }
+
+                binding.numberBlock.visibility = View.VISIBLE
+                binding.numberSlider.valueFrom = spec.min.toFloat()
+                binding.numberSlider.valueTo = spec.max.toFloat()
+                val radius = initialNumber.takeIf { it > 0f } ?: spec.min.toFloat()
+                val clamped = radius.coerceIn(spec.min.toFloat(), spec.max.toFloat())
+                binding.numberSlider.value = clamped
+                number = clamped
+                val unit = spec.unitRes.takeIf { it != 0 }?.let { " " + context.getString(it) } ?: ""
+                binding.numberValue.text = "${clamped.toInt()}$unit"
+                binding.numberSlider.addOnChangeListener { _, value, _ ->
+                    number = value
+                    binding.numberValue.text = "${value.toInt()}$unit"
+                }
             }
 
             ValueKind.NONE -> Unit

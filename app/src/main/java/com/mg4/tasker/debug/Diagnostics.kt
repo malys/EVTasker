@@ -44,6 +44,14 @@ object Diagnostics {
     /** All seven days, so [ConditionType.DAY_OF_WEEK] probes availability, not configuration. */
     private val ALL_DAYS = (1..7).toList()
 
+    /**
+     * Null Island, for the same reason as [PROBE_MAC]: a parseable point makes the location
+     * probe report whether the car has a fix, instead of reporting an unfinished rule. No
+     * car will be within the radius of it, which does not matter — only MATCH versus
+     * UNAVAILABLE is read back.
+     */
+    private const val PROBE_POINT = "0.0,0.0"
+
     enum class Status { OK, BLOCKED }
 
     /** Why an entry is blocked, or [NONE] when it is not. */
@@ -65,6 +73,12 @@ object Diagnostics {
         MG4CONTROL_UNREACHABLE,
         NO_TTS_ENGINE,
         NOTIFICATIONS_OFF,
+        /** The SAIC vendor service behind this entry is not bound on this car. */
+        NO_VENDOR_SERVICE,
+        /** Nothing on the head unit answers a `geo:` intent. */
+        NO_NAVIGATION_APP,
+        /** No location permission, or no fix recent enough to place the car. */
+        NO_LOCATION,
     }
 
     /**
@@ -96,6 +110,18 @@ object Diagnostics {
         val profileBridgeReachable: Boolean,
         val notificationsEnabled: Boolean,
         val ttsEngineAvailable: Boolean,
+        /**
+         * SAIC vendor services, each bound or not independently. They are what the climate,
+         * charging, radio and call entries run on, and the firmware matrix cannot answer for
+         * them: it says which generation *should* have the service, the bind says whether
+         * this car actually does.
+         */
+        val climateService: Boolean = false,
+        val chargingService: Boolean = false,
+        val radioService: Boolean = false,
+        val phoneService: Boolean = false,
+        /** Something on the head unit answers a `geo:` intent. */
+        val navigationApp: Boolean = false,
     )
 
     /**
@@ -151,6 +177,7 @@ object Diagnostics {
      */
     private fun unavailableReason(type: ConditionType, snapshot: Snapshot): Reason = when {
         type in BLUETOOTH_CONDITIONS -> Reason.BLUETOOTH_OFF
+        type == ConditionType.LOCATION_WITHIN -> Reason.NO_LOCATION
         !snapshot.bridgeAvailable -> Reason.LAYER_NOT_READY
         else -> Reason.NOT_READABLE
     }
@@ -168,13 +195,40 @@ object Diagnostics {
         // Resolving the target package is a per-rule matter, not a per-action one: the
         // executor checks the package the rule names, which this screen does not know.
         ActionType.LAUNCH_APP -> Reason.NONE
-        ActionType.SHOW_NOTIFICATION ->
-            if (caps.notificationsEnabled) Reason.NONE else Reason.NOTIFICATIONS_OFF
+        // Always reaches the driver: the message is shown on screen, and the notification
+        // is the part that may be silenced. The NOTIFICATIONS row still reports the channel.
+        ActionType.SHOW_NOTIFICATION -> Reason.NONE
         ActionType.SPEAK_TEXT ->
             if (caps.ttsEngineAvailable) Reason.NONE else Reason.NO_TTS_ENGINE
+        ActionType.NAVIGATE_TO ->
+            if (caps.navigationApp) Reason.NONE else Reason.NO_NAVIGATION_APP
+
+        // Vendor services — bound separately from the AOSP car layer, so the layer being
+        // down says nothing about them and vice versa.
+        in CLIMATE_ACTIONS ->
+            if (caps.climateService) gateReason(type, caps) else Reason.NO_VENDOR_SERVICE
+        in CHARGING_ACTIONS ->
+            if (caps.chargingService) gateReason(type, caps) else Reason.NO_VENDOR_SERVICE
+        ActionType.PLAY_RADIO ->
+            if (caps.radioService) Reason.NONE else Reason.NO_VENDOR_SERVICE
+        ActionType.CALL_NUMBER ->
+            if (caps.phoneService) Reason.NONE else Reason.NO_VENDOR_SERVICE
+
         // Everything else is a direct MG4Hardware write.
         else -> if (!caps.vehicleLayerReady) Reason.LAYER_NOT_READY else gateReason(type, caps)
     }
+
+    private val CLIMATE_ACTIONS = setOf(
+        ActionType.SET_CLIMATE_POWER, ActionType.SET_CABIN_TEMP, ActionType.SET_AC,
+        ActionType.SET_CLIMATE_AUTO, ActionType.SET_RECIRCULATION, ActionType.SET_FAN_LEVEL,
+        ActionType.SET_FRONT_DEFROST, ActionType.SET_REAR_DEFROST
+    )
+
+    private val CHARGING_ACTIONS = setOf(
+        ActionType.SET_CHARGE_LIMIT, ActionType.SET_CHARGING_ENABLED,
+        ActionType.SET_CHARGE_SCHEDULE, ActionType.SET_CHARGE_WINDOW,
+        ActionType.SET_BATTERY_PREHEAT
+    )
 
     private fun gateReason(type: ActionType, caps: Capabilities): Reason =
         if (!type.gated) Reason.NONE else when (caps.gateVerdict) {
@@ -191,7 +245,11 @@ object Diagnostics {
     private fun probeOf(type: ConditionType) = Condition(
         type = type,
         op = CompareOp.EQ,
-        text = if (type == ConditionType.BT_DEVICE_CONNECTED) PROBE_MAC else "",
+        text = when (type) {
+            ConditionType.BT_DEVICE_CONNECTED -> PROBE_MAC
+            ConditionType.LOCATION_WITHIN -> PROBE_POINT
+            else -> ""
+        },
         days = ALL_DAYS
     )
 
@@ -207,6 +265,10 @@ object Diagnostics {
         ConditionType.DAY_OF_WEEK -> snapshot.dayOfWeek
         ConditionType.ANY_BT_CONNECTED -> snapshot.btMacs.isNotEmpty()
         ConditionType.BT_DEVICE_CONNECTED -> snapshot.btMacs.sorted().joinToString(", ")
+        // Where the car thinks it is, which is the only way to tell a radius that is too
+        // small from a fix that is simply wrong.
+        ConditionType.LOCATION_WITHIN ->
+            snapshot.latitude?.let { lat -> snapshot.longitude?.let { lon -> "$lat,$lon" } }
         else -> type.snapshotKey?.let { snapshot.readings[it] }
     }
 }

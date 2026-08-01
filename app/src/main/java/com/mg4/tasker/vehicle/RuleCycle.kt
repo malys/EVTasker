@@ -5,7 +5,9 @@ import com.mg4.hardware.AppLogger
 import com.mg4.tasker.engine.RuleEngine
 import com.mg4.tasker.store.HistoryStore
 import com.mg4.tasker.store.RuleStore
+import com.mg4.tasker.model.EngineRun
 import com.mg4.tasker.util.BtDevices
+import com.mg4.tasker.util.CarLocation
 
 /**
  * Bluetooth devices currently connected to the vehicle.
@@ -22,6 +24,26 @@ object BtTracker {
     fun observed(): Set<String> = macs.toSet()
 
     fun snapshot(context: Context): Set<String> = observed() + BtDevices.connected(context)
+}
+
+/**
+ * Delivers the outcome of a cycle to whatever screen is watching.
+ *
+ * The manual test runs in a service, so the Rules screen has no return value to show. It
+ * used to say "test running" and nothing else, which left the user to open the History tab
+ * to find out what happened — for a button whose whole purpose is to answer that question.
+ *
+ * A listener rather than a broadcast: same process, one observer at a time, and nothing to
+ * unregister at the wrong moment beyond clearing the field.
+ */
+object CycleReporter {
+
+    @Volatile
+    var listener: ((EngineRun) -> Unit)? = null
+
+    fun publish(run: EngineRun) {
+        listener?.invoke(run)
+    }
 }
 
 /**
@@ -42,12 +64,14 @@ object RuleCycle {
         try {
             val snapshot = VehicleReader.read(
                 btMacs = BtTracker.snapshot(context),
-                btAvailable = BtDevices.isAvailable(context)
+                btAvailable = BtDevices.isAvailable(context),
+                fix = CarLocation.lastKnown(context)
             )
             val result = RuleEngine(DirectExecutor(context, profileBridge))
                 .run(rules, snapshot, trigger, System.currentTimeMillis())
             HistoryStore(context).append(result)
             AppLogger.i(TAG, "cycle $trigger — ${result.ruleRuns.size} rules evaluated")
+            CycleReporter.publish(result)
         } finally {
             profileBridge?.disconnect()
         }

@@ -117,6 +117,61 @@ class ConditionEvaluatorTest {
     }
 
     // -------------------------------------------------------------------------
+    // Position
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `dans le rayon la condition est remplie`() {
+        // Tour Eiffel → Champ-de-Mars, ~300 m.
+        val condition = Condition(
+            ConditionType.LOCATION_WITHIN, text = "48.858370,2.294481", number = 500f
+        )
+        val snapshot = Snapshot(latitude = 48.855800, longitude = 2.298600)
+
+        assertEquals(ConditionOutcome.MATCH, ConditionEvaluator.evaluate(condition, snapshot))
+    }
+
+    @Test
+    fun `hors du rayon la condition n est pas remplie`() {
+        val condition = Condition(
+            ConditionType.LOCATION_WITHIN, text = "48.858370,2.294481", number = 200f
+        )
+        val snapshot = Snapshot(latitude = 48.873800, longitude = 2.295000)   // Arc de Triomphe
+
+        assertEquals(ConditionOutcome.NO_MATCH, ConditionEvaluator.evaluate(condition, snapshot))
+    }
+
+    @Test
+    fun `sans fix la position est indisponible et non hors zone`() {
+        // Sans ça, une règle « quand je ne suis PAS à la maison » se déclencherait dans
+        // l'allée, le temps que le GPS accroche.
+        val condition = Condition(
+            ConditionType.LOCATION_WITHIN, text = "48.858370,2.294481", number = 500f
+        )
+
+        assertEquals(
+            ConditionOutcome.UNAVAILABLE,
+            ConditionEvaluator.evaluate(condition, Snapshot())
+        )
+    }
+
+    @Test
+    fun `un point illisible rend la condition indisponible`() {
+        val snapshot = Snapshot(latitude = 48.85, longitude = 2.29)
+
+        listOf("", "48.85", "abc,def", "91.0,2.0").forEach { text ->
+            assertEquals(
+                "« $text » ne décrit pas un point",
+                ConditionOutcome.UNAVAILABLE,
+                ConditionEvaluator.evaluate(
+                    Condition(ConditionType.LOCATION_WITHIN, text = text, number = 500f),
+                    snapshot
+                )
+            )
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Heure et jours
     // -------------------------------------------------------------------------
 

@@ -28,6 +28,14 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
+    <!-- Position, for the "near a place" condition only. Last known fix, never a live
+         request, never sent anywhere: it is compared to a point stored in the rule and the
+         result is a yes/no. Denying it disables that one condition and nothing else.
+         COARSE is declared alongside FINE because the platform requires the pair; a radius
+         in metres is what FINE is for, and COARSE alone still answers a wide-enough one. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <!-- The one network use: uploading a diagnostic report to a PrivateBin paste, on an
          explicit user action from the Console tab. Nothing is sent in the background, and
          the paste is encrypted client-side — the server never receives the key. -->

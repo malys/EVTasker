@@ -53,6 +53,14 @@ moving. A proof of concept helps; a working exploit is not required.
   would write to a car on an assumption.
 - **The ignition trigger is delayed by ~8 s** so MG4Control's own profile application
   finishes first. Interleaving two write sequences was the failure mode being avoided.
+- **The standstill gate is configurable, and fails closed regardless.** The Rules screen can
+  raise the write threshold from 0 to 50 km/h. The default is 0 — apply only when stopped —
+  the cap is enforced in the shared layer, an unreadable speed refuses at any threshold, and
+  the value in force is printed in every exported diagnostic.
+- **Position never leaves the car.** The "near a place" condition reads the last known fix
+  (no live request), compares it with a point stored in the rule, and yields a yes/no. The
+  coordinates are not sent anywhere, including in a shared paste's rule dump, which stores
+  the point the user chose — the same one they wrote.
 - **One network use, user-triggered.** `INTERNET` exists for a single path: *Share* on the
   Console tab uploads the diagnostic report to a PrivateBin paste
   (`https://paste.chapril.org`). PrivateBin is zero-knowledge — the report is encrypted and

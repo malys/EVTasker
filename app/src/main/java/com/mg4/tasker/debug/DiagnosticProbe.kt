@@ -5,14 +5,20 @@ import com.mg4.hardware.FirmwareInfo
 import com.mg4.hardware.FirmwareSupport
 import com.mg4.hardware.MG4Hardware
 import com.mg4.hardware.VehicleWriteGate
+import com.mg4.hardware.saic.SaicCharging
+import com.mg4.hardware.saic.SaicClimate
+import com.mg4.hardware.saic.SaicPhone
+import com.mg4.hardware.saic.SaicRadio
 import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.service.TaskerVehicleService
 import com.mg4.tasker.store.AppState
 import com.mg4.tasker.store.SupportStore
 import com.mg4.tasker.util.BtDevices
+import com.mg4.tasker.util.CarLocation
 import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.util.SpeechEngines
 import com.mg4.tasker.vehicle.BtTracker
+import com.mg4.tasker.vehicle.VendorServices
 import com.mg4.tasker.vehicle.ProfileBridge
 import com.mg4.tasker.vehicle.VehicleReader
 
@@ -64,6 +70,16 @@ object DiagnosticProbe {
          * the most reported symptom, and the connected list is the one fact that explains it.
          */
         BLUETOOTH,
+        /**
+         * The SAIC vendor services behind climate, charging, radio and calls. One row, four
+         * binds: the detail names the ones that answered, which is what says whether a
+         * firmware this build has never seen supports them.
+         */
+        VENDOR_SERVICES,
+        /** Position: the permission, and whether there is a fix recent enough to use. */
+        LOCATION,
+        /** Standstill threshold in force — 0 means writes only when stopped. */
+        WRITE_THRESHOLD,
     }
 
     data class Report(
@@ -86,9 +102,14 @@ object DiagnosticProbe {
 
         val genName = FirmwareInfo.getGeneration().name
         val gen = FirmwareSupport.parse(genName)
+        // Ask for the vendor binds before reading: they are asynchronous, so a diagnostic run
+        // right after boot is also what gets them connected for the next rule cycle.
+        VendorServices.connect(appContext)
+        val fix = CarLocation.lastKnown(appContext)
         val snapshot = VehicleReader.read(
             btMacs = BtTracker.snapshot(appContext),
-            btAvailable = BtDevices.isAvailable(appContext)
+            btAvailable = BtDevices.isAvailable(appContext),
+            fix = fix
         )
 
         // Bound and released here rather than inferred from the package list: an installed
@@ -104,6 +125,11 @@ object DiagnosticProbe {
             profileBridgeReachable = bridgeReachable,
             notificationsEnabled = Notifier.canNotify(appContext),
             ttsEngineAvailable = engines.isNotEmpty(),
+            climateService = SaicClimate.isAvailable,
+            chargingService = SaicCharging.isAvailable,
+            radioService = SaicRadio.isAvailable,
+            phoneService = SaicPhone.isAvailable,
+            navigationApp = hasNavigationApp(appContext),
         )
 
         return Report(
@@ -111,7 +137,7 @@ object DiagnosticProbe {
             firmwareGen = genName,
             appVersion = "${com.mg4.tasker.BuildConfig.VERSION_NAME} (${com.mg4.tasker.BuildConfig.VERSION_CODE})",
             capabilities = caps,
-            environment = environment(appContext, caps, gen?.name, engines, snapshot),
+            environment = environment(appContext, caps, gen?.name, engines, snapshot, fix),
             conditions = Diagnostics.conditions(snapshot, gen),
             actions = Diagnostics.actions(caps, gen),
         )
@@ -122,7 +148,8 @@ object DiagnosticProbe {
         caps: Diagnostics.Capabilities,
         genName: String?,
         ttsEngines: List<String>,
-        snapshot: com.mg4.tasker.model.Snapshot
+        snapshot: com.mg4.tasker.model.Snapshot,
+        fix: CarLocation.Fix?
     ): List<EnvCheck> {
         val cached = SupportStore.lastCheck(context)
         val cacheStale = SupportStore.needsCheck(context) || cached?.gen != genName
@@ -157,7 +184,44 @@ object DiagnosticProbe {
                 ok = snapshot.btAvailable,
                 detail = snapshot.btMacs.sorted().joinToString(", ").ifEmpty { "none connected" }
             ),
+            // Named individually: "climate works but charging does not" is a real state, and
+            // a single yes/no would hide which half of the catalogue is out.
+            EnvCheck(
+                Env.VENDOR_SERVICES,
+                ok = caps.climateService || caps.chargingService ||
+                    caps.radioService || caps.phoneService,
+                detail = listOf(
+                    "climate" to caps.climateService,
+                    "charging" to caps.chargingService,
+                    "radio" to caps.radioService,
+                    "btcall" to caps.phoneService,
+                ).joinToString(" ") { (name, bound) -> if (bound) name else "$name:no" }
+            ),
+            EnvCheck(
+                Env.LOCATION,
+                ok = fix != null,
+                detail = when {
+                    !CarLocation.hasPermission(context) -> "permission denied"
+                    fix == null -> "no recent fix"
+                    else -> "${fix.latitude},${fix.longitude}"
+                }
+            ),
+            // Reported, never judged: zero is the safe value and any other one was chosen.
+            EnvCheck(
+                Env.WRITE_THRESHOLD,
+                ok = true,
+                detail = "${VehicleWriteGate.allowUpToKmh.toInt()} km/h"
+            ),
         )
+    }
+
+    /** Whether any activity answers a `geo:` intent — what NAVIGATE_TO needs to exist. */
+    private fun hasNavigationApp(context: Context): Boolean {
+        val intent = android.content.Intent(
+            android.content.Intent.ACTION_VIEW,
+            android.net.Uri.parse("geo:0,0?q=test")
+        )
+        return intent.resolveActivity(context.packageManager) != null
     }
 
     private fun gateVerdict(): String =

@@ -180,6 +180,9 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.MG4CONTROL -> R.string.diag_env_mg4control
             DiagnosticProbe.Env.TTS -> R.string.diag_env_tts
             DiagnosticProbe.Env.BLUETOOTH -> R.string.diag_env_bluetooth
+            DiagnosticProbe.Env.VENDOR_SERVICES -> R.string.diag_env_vendor
+            DiagnosticProbe.Env.LOCATION -> R.string.diag_env_location
+            DiagnosticProbe.Env.WRITE_THRESHOLD -> R.string.diag_env_threshold
         }
     )
 
@@ -189,6 +192,9 @@ class DiagnosticFragment : Fragment() {
         if (check.id == DiagnosticProbe.Env.BLUETOOTH) {
             return if (!check.ok) getString(R.string.diag_bt_off) else check.detail
         }
+        // These three carry their answer in the detail — a bound-service list, a position,
+        // a speed. Mapping them to a yes/no string would throw away what makes them useful.
+        if (check.id in DETAIL_ROWS) return check.detail
         return getString(envValueRes(check))
     }
 
@@ -210,7 +216,10 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.TTS ->
                 if (check.ok) R.string.diag_installed else R.string.diag_absent
             // Rendered by envValue() from the detail — never reached.
-            DiagnosticProbe.Env.BLUETOOTH -> R.string.diag_bt_off
+            DiagnosticProbe.Env.BLUETOOTH,
+            DiagnosticProbe.Env.VENDOR_SERVICES,
+            DiagnosticProbe.Env.LOCATION,
+            DiagnosticProbe.Env.WRITE_THRESHOLD -> R.string.diag_bt_off
         }
     )
 
@@ -266,6 +275,9 @@ class DiagnosticFragment : Fragment() {
         when (entry.reason) {
             Diagnostics.Reason.NOT_READABLE -> R.string.diag_reason_not_readable
             Diagnostics.Reason.BLUETOOTH_OFF -> R.string.diag_reason_bluetooth_off
+            Diagnostics.Reason.NO_VENDOR_SERVICE -> R.string.diag_reason_vendor
+            Diagnostics.Reason.NO_NAVIGATION_APP -> R.string.diag_reason_no_navigation
+            Diagnostics.Reason.NO_LOCATION -> R.string.diag_reason_no_location
             Diagnostics.Reason.LAYER_NOT_READY -> R.string.diag_reason_layer
             Diagnostics.Reason.GATE_MOVING -> R.string.verdict_moving
             Diagnostics.Reason.GATE_UNKNOWN_SPEED -> R.string.verdict_unknown_speed
@@ -332,5 +344,12 @@ class DiagnosticFragment : Fragment() {
     private companion object {
         const val TYPE_HEADER = 0
         const val TYPE_ITEM = 1
+
+        /** Environment rows whose value is the detail string itself. */
+        val DETAIL_ROWS = setOf(
+            DiagnosticProbe.Env.VENDOR_SERVICES,
+            DiagnosticProbe.Env.LOCATION,
+            DiagnosticProbe.Env.WRITE_THRESHOLD,
+        )
     }
 }

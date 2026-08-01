@@ -94,6 +94,18 @@ class Labels(
         return "${context.getString(result.actionType.labelRes)} — ${verdictLabel(result.verdict)}$retries"
     }
 
+    /** What became of one rule, in one word — the History tab's wording, reused. */
+    fun outcomeLabel(run: com.mg4.tasker.model.RuleRun): String = context.getString(
+        when (run.outcome) {
+            com.mg4.tasker.model.RuleOutcome.FIRED ->
+                if (run.status == com.mg4.tasker.model.RuleStatus.FAILED) R.string.outcome_failed
+                else R.string.outcome_fired
+            com.mg4.tasker.model.RuleOutcome.NOT_MATCHED -> R.string.outcome_not_matched
+            com.mg4.tasker.model.RuleOutcome.NOT_EVALUABLE -> R.string.outcome_not_evaluable
+            com.mg4.tasker.model.RuleOutcome.DISABLED -> R.string.outcome_disabled
+        }
+    )
+
     fun verdictLabel(verdict: String): String = context.getString(
         when (verdict) {
             BridgeContract.VERDICT_ALLOWED       -> R.string.verdict_allowed

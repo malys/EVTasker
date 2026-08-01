@@ -5,8 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import com.mg4.hardware.MG4Hardware
+import com.mg4.tasker.store.AppState
 import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.vehicle.RuleCycle
+import com.mg4.tasker.vehicle.VendorServices
 import kotlin.concurrent.thread
 
 /**
@@ -31,6 +33,8 @@ class TaskerRunService : Service() {
         thread(name = "mg4-tasker-manual") {
             MG4Hardware.init(applicationContext)      // idempotent
             MG4Hardware.initAudio(applicationContext) // idempotent; binds the vendor audio helper
+            VendorServices.connect(applicationContext)
+            AppState.applyWriteThreshold(this)
             RuleCycle.run(this, "MANUAL")
             stopSelf(startId)
         }
