@@ -87,6 +87,20 @@ class DiagnosticsTest {
     }
 
     @Test
+    fun `a radio that is off blames bluetooth, not the vehicle layer`() {
+        val entries = Diagnostics.conditions(Snapshot(btAvailable = false), null)
+
+        assertEquals(
+            Diagnostics.Reason.BLUETOOTH_OFF,
+            entry(entries, "BT_DEVICE_CONNECTED").reason
+        )
+        assertEquals(
+            Diagnostics.Reason.BLUETOOTH_OFF,
+            entry(entries, "ANY_BT_CONNECTED").reason
+        )
+    }
+
+    @Test
     fun `a readable condition the matrix excludes stays OK and is flagged hidden`() {
         // OUTSIDE_TEMP is annotated for every generation, so an unparsed generation is used
         // to exercise the flag without pinning the test to one firmware's annotations.

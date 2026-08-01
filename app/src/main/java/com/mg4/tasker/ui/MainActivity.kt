@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Unstable builds check for a newer pre-release; the stable flavor's UpdateHook is
-        // a no-op and the stable APK contains no updater code or network permission.
+        // a no-op and the stable APK contains no updater code at all.
         com.mg4.tasker.update.UpdateHook.checkInBackground(this)
     }
 

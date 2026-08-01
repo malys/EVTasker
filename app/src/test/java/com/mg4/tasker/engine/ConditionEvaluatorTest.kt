@@ -85,15 +85,35 @@ class ConditionEvaluatorTest {
     }
 
     @Test
-    fun `sans pont l etat bluetooth est indisponible et non vide`() {
-        // bridgeAvailable=false signifie « MG4Control n'a pas répondu ». L'ensemble des
+    fun `radio eteinte l etat bluetooth est indisponible et non vide`() {
+        // btAvailable=false signifie « la radio est coupée ou illisible ». L'ensemble des
         // MAC est vide pour cette raison, pas parce qu'aucun téléphone n'est connecté.
         val condition = Condition(ConditionType.BT_DEVICE_CONNECTED, text = "AA:BB:CC:DD:EE:FF")
 
         assertEquals(
             ConditionOutcome.UNAVAILABLE,
-            ConditionEvaluator.evaluate(condition, Snapshot(bridgeAvailable = false))
+            ConditionEvaluator.evaluate(condition, Snapshot(btAvailable = false))
         )
+    }
+
+    @Test
+    fun `radio eteinte aucun peripherique connecte est indisponible et non faux`() {
+        val condition = Condition(ConditionType.ANY_BT_CONNECTED, flag = false)
+
+        assertEquals(
+            ConditionOutcome.UNAVAILABLE,
+            ConditionEvaluator.evaluate(condition, Snapshot(btAvailable = false))
+        )
+    }
+
+    @Test
+    fun `le bluetooth reste evaluable quand la couche vehicule n est pas prete`() {
+        // Le Bluetooth est du contexte, pas un signal véhicule : une règle « mon téléphone
+        // est connecté » doit répondre même si MG4Hardware n'est pas monté.
+        val condition = Condition(ConditionType.BT_DEVICE_CONNECTED, text = "AA:BB:CC:DD:EE:FF")
+        val snapshot = Snapshot(btMacs = setOf("AA:BB:CC:DD:EE:FF"), bridgeAvailable = false)
+
+        assertEquals(ConditionOutcome.MATCH, ConditionEvaluator.evaluate(condition, snapshot))
     }
 
     // -------------------------------------------------------------------------

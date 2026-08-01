@@ -48,11 +48,23 @@ class DirectExecutor(
             val verdict = gateVerdict()
             if (verdict != BridgeContract.VERDICT_ALLOWED) return ActionResult(a.type, false, verdict)
         }
+        // null = catalogued but with no write path here. Reported as unsupported rather than
+        // as an error: an error is retried three times with backoff, and no amount of
+        // retrying adds a missing branch.
         val ok = write(a)
+            ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no write path")
         return ActionResult(a.type, ok, if (ok) BridgeContract.VERDICT_ALLOWED else BridgeContract.VERDICT_ERROR)
     }
 
-    private fun write(a: Action): Boolean {
+    /**
+     * Exhaustive on purpose — no `else`.
+     *
+     * A vehicle action whose branch is missing used to fall through to `false` and be
+     * reported as a transient failure, which is how [ActionType.SET_TONE_CONTROL] shipped
+     * catalogued, selectable, and silently inert. Listing every constant makes the compiler
+     * refuse the next one.
+     */
+    private fun write(a: Action): Boolean? {
         val i = a.number
         val b = a.flag
         return when (a.type) {
@@ -64,6 +76,7 @@ class DirectExecutor(
             ActionType.SET_SCREEN_BRIGHTNESS     -> MG4Hardware.setScreenBrightnessPercent(i)
             ActionType.SET_AUDIO_BALANCE         -> MG4Hardware.setAudioBalance(i)
             ActionType.SET_AUDIO_FADER           -> MG4Hardware.setAudioFader(i)
+            ActionType.SET_TONE_CONTROL          -> MG4Hardware.setToneControl(i)
             ActionType.SET_BOSE_SOUND_TYPE       -> MG4Hardware.setBoseSoundType(i)
             ActionType.SET_3D_EFFECT             -> MG4Hardware.set3dEffectType(i)
             ActionType.SET_SPEED_VOLUME          -> MG4Hardware.setSpeedVolumeLevel(i)
@@ -85,7 +98,11 @@ class DirectExecutor(
             ActionType.SET_TSR              -> MG4Hardware.setTsrMode(b)
             ActionType.SET_ACC_TJA_MODE     -> MG4Hardware.setAccTjaMode(i)
             ActionType.SET_LIMITER_MODE     -> MG4Hardware.setSpeedLimiterMode(i)
-            else                            -> false
+            // Not vehicle writes — handled by execute() before it ever gets here.
+            ActionType.APPLY_PROFILE,
+            ActionType.LAUNCH_APP,
+            ActionType.SHOW_NOTIFICATION,
+            ActionType.SPEAK_TEXT -> null
         }
     }
 
@@ -125,7 +142,18 @@ class DirectExecutor(
         }
     }
 
+    /**
+     * A blocked channel makes `notify()` a no-op the platform reports nothing about. Claiming
+     * ALLOWED there is how "the message action does not work" became invisible in the
+     * history: the rule said applied, the driver saw nothing, and the two never met.
+     */
     private fun notify(a: Action): ActionResult {
+        if (a.text.isBlank()) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no message")
+        }
+        if (!Notifier.canNotify(context)) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "notifications off")
+        }
         Notifier.showRuleMessage(context, a.text)
         return ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
     }
@@ -139,10 +167,13 @@ class DirectExecutor(
         if (a.text.isBlank()) {
             return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no message")
         }
-        return if (Speaker.speak(context, a.text)) {
-            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
-        } else {
-            ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, "no speech engine")
-        }
+        val failure = Speaker.speak(context, a.text)
+            ?: return ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
+        // A missing engine will still be missing on the third try, so it is not an ERROR the
+        // rule engine should retry with backoff — only a refused utterance is worth another go.
+        val verdict =
+            if (failure == Speaker.Failure.REFUSED) BridgeContract.VERDICT_ERROR
+            else BridgeContract.VERDICT_UNSUPPORTED
+        return ActionResult(a.type, false, verdict, failure.name)
     }
 }

@@ -60,7 +60,10 @@ run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME assembleStableDebug'
 
 [tasks.test]
 description = "Tests unitaires JVM"
-run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME testStableDebugUnitTest testUnstableDebugUnitTest'
+# :mg4hardware inclus : c'est sa suite qui régénère docs/firmware-matrix.md à partir des
+# annotations @SupportedOn. Sans elle, la matrice publiée diverge du filtre appliqué à
+# l'exécution sans que rien n'échoue.
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME testStableDebugUnitTest testUnstableDebugUnitTest :mg4hardware:testDebugUnitTest'
 
 [tasks.lint]
 description = "Analyse lint Android"

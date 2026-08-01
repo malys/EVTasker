@@ -35,6 +35,8 @@ profile* — becomes available.
 - [Firmware compatibility](#firmware-compatibility)
 - [Climate and windows (read-only for now)](#climate-and-windows-read-only-for-now)
 - [Diagnostic](#diagnostic)
+  - [Exporting the diagnostic and the logs](#exporting-the-diagnostic-and-the-logs)
+  - [Sharing the logs from the car](#sharing-the-logs-from-the-car)
   - [When a rule will not save](#when-a-rule-will-not-save)
 - [Import and export (USB stick)](#import-and-export-usb-stick)
 - [Building](#building)
@@ -214,8 +216,11 @@ Three sections:
 
 - **Execution context** — the prerequisites that decide whether rules run at all: vehicle
   layer, the ignition-listening service, the automation master switch, notifications, the
-  standstill gate as it stands now, whether the cached supported-feature set is stale, and
-  whether MG4Control is installed alongside.
+  standstill gate as it stands now, whether the cached supported-feature set is stale,
+  whether MG4Control is installed alongside, which speech engine the car exposes, and which
+  Bluetooth devices are connected right now. The last one is listed by MAC on purpose:
+  comparing it with the address a rule names is what turns "my Bluetooth rule never fires"
+  into an answer.
 - **Conditions** — the value read for each one, or why it cannot be read.
 - **Actions** — runnable, or the exact check that blocks it.
 
@@ -229,8 +234,8 @@ reach it.
 the diagnostic verdicts, the current rules (in the import format, so they can be replayed on
 another car), the run history, the in-app log and the last crash report.
 
-The head unit has no cable, no logcat and no crash reporter, and the "Share" button needs an
-app the car usually does not have. Writing `mg4tasker-diagnostic-<yyyyMMdd-HHmmss>.txt` to
+The head unit has no cable, no logcat and no crash reporter. Writing
+`mg4tasker-diagnostic-<yyyyMMdd-HHmmss>.txt` to
 the USB stick already used for rules is the path that works on the vehicle itself. The folder
 is chosen with the same browser as the rules export, and the file is written to a `.tmp` then
 renamed, so a stick pulled mid-write never leaves a half-report that reads as complete.
@@ -238,6 +243,28 @@ renamed, so a stick pulled mid-write never leaves a half-report that reads as co
 The report also carries a **Storage** section — every path `getExternalFilesDirs()` returns,
 every root the browser offers, and where each one is actually writable. When an export cannot
 reach a stick, that section is what says why.
+
+### Sharing the logs from the car
+
+**Share**, on the Console tab, uploads the same report — as Markdown — to a
+[PrivateBin](https://privatebin.info/) paste on [paste.chapril.org](https://paste.chapril.org),
+run by the French non-profit April. It exists because a USB stick is not always at hand, and
+because the car has no share target worth the name.
+
+- **Encrypted on the device.** PrivateBin is zero-knowledge: the key never reaches the
+  server, it travels only in the URL fragment. The paste is additionally protected by the
+  password `mg4taskerR0ck$`.
+- **Gone in an hour.** The expiry is set to `1hour`, short enough that a car's diagnostic is
+  not left lying around.
+- **Confirmed every time.** A dialog names the host before anything leaves the vehicle.
+  Nothing is ever uploaded in the background.
+- **The link comes back through the log.** A toast cannot be read after it fades and the
+  head unit has no clipboard worth using, so the paste URL and the password are written to
+  the in-app log — the screen the user is already on, and one that survives into the next
+  exported report.
+
+Read it back by opening the link and entering the password. The upload is the only network
+use of the stable build.
 
 ### When a rule will not save
 
@@ -415,8 +442,7 @@ regenerates on the next test run.
 
 Two build flavors, like the sibling apps:
 
-- **stable** — tagged releases, **no self-update**. The updater class is not in the APK and
-  it has no network permission.
+- **stable** — tagged releases, **no self-update**. The updater class is not in the APK.
 - **unstable** — pre-releases published on every push to `master`, with **OTA**: the app
   checks GitHub pre-releases and downloads a newer unstable APK (https + GitHub host
   allowlist + same-signature check, all fail-closed; install is a manual tap). Installs

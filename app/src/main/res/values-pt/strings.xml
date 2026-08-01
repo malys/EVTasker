@@ -147,6 +147,9 @@
     <string name="diag_env_cache">Cache de funções suportadas</string>
     <string name="diag_env_mg4control">MG4Control</string>
     <string name="diag_env_tts">Motor de voz</string>
+    <string name="diag_env_bluetooth">Bluetooth</string>
+    <string name="diag_bt_off">desligado</string>
+    <string name="diag_reason_bluetooth_off">Bluetooth desligado — nada pode ser sabido</string>
 
     <string name="diag_state_ready">pronta</string>
     <string name="diag_state_not_ready">não pronta</string>
@@ -181,6 +184,11 @@
     <!-- Console -->
     <string name="tab_console">Consola</string>
     <string name="console_share">Partilhar</string>
+    <string name="console_share_confirm">O registo, o diagnóstico e as suas regras serão enviados para %1$s, cifrados e protegidos por palavra-passe, e apagados ao fim de uma hora. A ligação e a palavra-passe aparecem no registo abaixo.</string>
+    <string name="console_share_send">Enviar</string>
+    <string name="console_share_running">A enviar o relatório…</string>
+    <string name="console_share_ok">Relatório enviado — a ligação está no fim do registo</string>
+    <string name="console_share_failed">Falha no envio: %1$s</string>
     <string name="console_clear">Limpar</string>
     <string name="console_empty">Ainda sem entradas de registo.</string>
     <string name="console_crash_title">Falha anterior detetada</string>

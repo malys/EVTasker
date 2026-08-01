@@ -147,6 +147,9 @@
     <string name="diag_env_cache">Cache delle funzioni supportate</string>
     <string name="diag_env_mg4control">MG4Control</string>
     <string name="diag_env_tts">Motore vocale</string>
+    <string name="diag_env_bluetooth">Bluetooth</string>
+    <string name="diag_bt_off">spento</string>
+    <string name="diag_reason_bluetooth_off">Bluetooth spento — non si può sapere nulla</string>
 
     <string name="diag_state_ready">pronto</string>
     <string name="diag_state_not_ready">non pronto</string>
@@ -181,6 +184,11 @@
     <!-- Console -->
     <string name="tab_console">Console</string>
     <string name="console_share">Condividi</string>
+    <string name="console_share_confirm">Il registro, la diagnostica e le tue regole verranno caricati su %1$s, cifrati e protetti da password, ed eliminati dopo un’ora. Il link e la password compariranno nel registro qui sotto.</string>
+    <string name="console_share_send">Invia</string>
+    <string name="console_share_running">Invio del rapporto…</string>
+    <string name="console_share_ok">Rapporto inviato — il link è in fondo al registro</string>
+    <string name="console_share_failed">Invio non riuscito: %1$s</string>
     <string name="console_clear">Cancella</string>
     <string name="console_empty">Ancora nessuna voce di registro.</string>
     <string name="console_crash_title">Arresto anomalo precedente rilevato</string>

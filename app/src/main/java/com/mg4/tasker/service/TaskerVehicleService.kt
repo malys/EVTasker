@@ -67,6 +67,11 @@ class TaskerVehicleService : Service() {
             }
         }
         MG4Hardware.init(applicationContext)
+        // The vendor audio helper is a separate bind, and without it every balance / fader /
+        // tone / Bose / 3D / speed-volume write returns false with nothing in the log. It was
+        // simply never requested here, which is why those six actions had never once worked
+        // from a rule. A no-op on firmware that has no such helper.
+        MG4Hardware.initAudio(applicationContext)
         registerBtReceiver()
         registerIgnitionListener()
         warnIfMG4ControlPresent()

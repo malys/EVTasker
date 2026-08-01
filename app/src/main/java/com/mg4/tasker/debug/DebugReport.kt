@@ -91,16 +91,7 @@ object DebugReport {
         section("Storage")
         // What the browser offered and where the app may write. A stick the car mounts
         // somewhere the app never looks is invisible from the UI but obvious here.
-        context.getExternalFilesDirs(null).forEachIndexed { index, dir ->
-            appendLine("externalFilesDir[$index] = ${dir?.absolutePath ?: "(null)"}")
-        }
-        StorageBrowser.roots(context).forEach { root ->
-            appendLine(
-                "root ${root.dir.absolutePath} removable=${root.removable} " +
-                    "entries=${root.dir.listFiles()?.size ?: -1} " +
-                    "writableTarget=${StorageBrowser.writableTarget(context, root.dir)?.absolutePath ?: "(none)"}"
-            )
-        }
+        appendLine(storage(context))
         appendLine()
 
         section("History")
@@ -117,6 +108,73 @@ object DebugReport {
             appendLine(it)
         }
     }.take(MAX_CHARS)
+
+    /**
+     * The same report as [render], as Markdown.
+     *
+     * Only the frame changes: the body of each section is a fixed-width table and stays in a
+     * fenced block, because the alignment is what makes a 40-row verdict list readable at a
+     * glance. Reflowing it as prose would lose exactly that.
+     */
+    fun renderMarkdown(context: Context, report: DiagnosticProbe.Report): String = buildString {
+        appendLine("# MG4Tasker diagnostic report")
+        appendLine()
+        appendLine("| | |")
+        appendLine("|---|---|")
+        appendLine("| generated | ${timestamp(report.at)} |")
+        appendLine("| app | ${report.appVersion} |")
+        appendLine("| android | ${android.os.Build.VERSION.SDK_INT} |")
+        appendLine("| device | ${android.os.Build.DEVICE} (${android.os.Build.MODEL}) |")
+        appendLine("| firmware | ${report.firmwareGen} |")
+        appendLine()
+
+        fenced("Environment") {
+            report.environment.forEach { appendLine(row(it.ok, it.id.name, it.detail)) }
+        }
+        fenced("Conditions — ${report.blockedConditions} blocked of ${report.conditions.size}") {
+            report.conditions.forEach { appendLine(entryRow(it)) }
+        }
+        fenced("Actions — ${report.blockedActions} blocked of ${report.actions.size}") {
+            report.actions.forEach { appendLine(entryRow(it)) }
+        }
+        fenced("Rules", language = "json") {
+            appendLine(RuleStore(context).getAll().let { rules ->
+                if (rules.isEmpty()) "(none)" else RuleTransfer.encode(rules)
+            })
+        }
+        fenced("Storage") { appendLine(storage(context)) }
+        fenced("History", language = "json") {
+            val runs = HistoryStore(context).getAll()
+            appendLine(
+                if (runs.isEmpty()) "(none)"
+                else GsonBuilder().setPrettyPrinting().create().toJson(runs)
+            )
+        }
+        fenced("Log") { appendLine(AppLogger.dump().ifEmpty { "(empty)" }) }
+        CrashLogger.read(context)?.let { crash -> fenced("Previous crash") { appendLine(crash) } }
+    }.take(MAX_CHARS)
+
+    private fun StringBuilder.fenced(title: String, language: String = "", body: StringBuilder.() -> Unit) {
+        appendLine("## $title")
+        appendLine()
+        appendLine("```$language")
+        body()
+        appendLine("```")
+        appendLine()
+    }
+
+    private fun storage(context: Context): String = buildString {
+        context.getExternalFilesDirs(null).forEachIndexed { index, dir ->
+            appendLine("externalFilesDir[$index] = ${dir?.absolutePath ?: "(null)"}")
+        }
+        StorageBrowser.roots(context).forEach { root ->
+            appendLine(
+                "root ${root.dir.absolutePath} removable=${root.removable} " +
+                    "entries=${root.dir.listFiles()?.size ?: -1} " +
+                    "writableTarget=${StorageBrowser.writableTarget(context, root.dir)?.absolutePath ?: "(none)"}"
+            )
+        }
+    }.trimEnd()
 
     private fun StringBuilder.section(title: String) {
         appendLine(SEPARATOR)

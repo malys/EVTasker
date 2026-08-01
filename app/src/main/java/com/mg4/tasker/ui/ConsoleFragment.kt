@@ -1,6 +1,5 @@
 package com.mg4.tasker.ui
 
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -16,6 +15,7 @@ import com.mg4.hardware.AppLogger
 import com.mg4.tasker.debug.CrashLogger
 import com.mg4.tasker.debug.DebugReport
 import com.mg4.tasker.debug.DiagnosticProbe
+import com.mg4.tasker.debug.PrivateBin
 import kotlin.concurrent.thread
 
 /**
@@ -95,24 +95,80 @@ class ConsoleFragment : Fragment() {
         }
     }
 
+    /**
+     * Uploads the full report to a PrivateBin paste and puts the link in the log.
+     *
+     * The car has no share target worth the name and no way to read a URL off a toast that
+     * has already gone. Writing the link into the app log is what makes it recoverable: it
+     * survives on the very screen the user is already looking at, and lands in the next
+     * exported report too.
+     *
+     * Confirmed first, every time. It leaves the vehicle for a public server — encrypted and
+     * password-protected, but it leaves — and that is not a decision to make on the user's
+     * behalf because they tapped a button labelled "share".
+     */
     private fun share() {
-        val body = buildString {
-            CrashLogger.read(requireContext())?.let {
-                appendLine(it)
-                appendLine()
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.console_share)
+            .setMessage(getString(R.string.console_share_confirm, PasteConfig.HOST))
+            .setNegativeButton(R.string.editor_cancel, null)
+            .setPositiveButton(R.string.console_share_send) { _, _ -> upload() }
+            .show()
+    }
+
+    private fun upload() {
+        Toast.makeText(requireContext(), R.string.console_share_running, Toast.LENGTH_SHORT).show()
+        val appCtx = requireContext().applicationContext
+        // The probe blocks and the upload is a network call: neither belongs on the main thread.
+        thread(name = "mg4-tasker-log-share") {
+            val markdown = DebugReport.renderMarkdown(appCtx, DiagnosticProbe.run(appCtx))
+            val outcome = PrivateBin.paste(markdown, PasteConfig.CONFIG)
+            val message = when (outcome) {
+                is PrivateBin.Outcome.Ok -> {
+                    // The log is the delivery mechanism, not a trace of one: this line is how
+                    // the user gets the link back after the toast is gone.
+                    AppLogger.i(SHARE_TAG, "diagnostic uploaded — ${outcome.url}")
+                    AppLogger.i(SHARE_TAG, "password ${PasteConfig.CONFIG.password}, expires in 1 hour")
+                    appCtx.getString(R.string.console_share_ok)
+                }
+                is PrivateBin.Outcome.Failed -> {
+                    AppLogger.w(SHARE_TAG, "diagnostic upload failed — ${outcome.reason}")
+                    appCtx.getString(R.string.console_share_failed, outcome.reason)
+                }
             }
-            append(AppLogger.dump())
+            Handler(Looper.getMainLooper()).post {
+                if (_binding == null) return@post
+                render()
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+            }
         }
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name))
-            putExtra(Intent.EXTRA_TEXT, body)
-        }
-        runCatching { startActivity(Intent.createChooser(intent, getString(R.string.console_share))) }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    /**
+     * Where a shared report goes.
+     *
+     * Chapril's PrivateBin instance, run by April, a French non-profit — no account, no
+     * tracking, and the server never holds the key. One hour is deliberately short: long
+     * enough to send the link to whoever is helping, too short to leave a car's diagnostic
+     * lying around, and the paste is password-protected on top.
+     */
+    private object PasteConfig {
+        const val HOST = "paste.chapril.org"
+
+        val CONFIG = PrivateBin.Config(
+            baseUrl = "https://$HOST/",
+            password = "mg4taskerR0ck\$",
+            expire = "1hour",
+            formatter = "markdown",
+        )
+    }
+
+    private companion object {
+        const val SHARE_TAG = "MG4Tasker.Share"
     }
 }

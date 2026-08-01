@@ -7,6 +7,8 @@ import com.mg4.hardware.FirmwareSupport
 import com.mg4.hardware.MG4Hardware
 import com.mg4.hardware.catalog.ActionType
 import com.mg4.hardware.catalog.ConditionType
+import com.mg4.tasker.util.Notifier
+import com.mg4.tasker.util.SpeechEngines
 
 /**
  * Runs the "check support of MG4 properties" step and stores its result (see [SupportStore]).
@@ -36,8 +38,20 @@ object SupportChecker {
             context,
             gen = gen?.name,
             conditions = supportedConditionNames(gen),
-            actions = supportedActionNames(gen),
+            actions = supportedActionNames(gen) - unavailableLocalActions(context),
         )
+    }
+
+    /**
+     * Local actions the head unit cannot perform, whatever the firmware says.
+     *
+     * The matrix only knows about vehicle capabilities, so it counts "speak" as supported on
+     * a car with no speech engine — and the Diagnostic summary then advertises an action the
+     * same screen reports as blocked two rows below.
+     */
+    private fun unavailableLocalActions(context: Context): Set<String> = buildSet {
+        if (!SpeechEngines.any(context)) add(ActionType.SPEAK_TEXT.name)
+        if (!Notifier.canNotify(context)) add(ActionType.SHOW_NOTIFICATION.name)
     }
 
     // Pure — no Android, no hardware state. Split out so the matrix filter is unit-testable.

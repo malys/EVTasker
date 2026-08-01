@@ -17,6 +17,9 @@ import com.mg4.hardware.catalog.ValueKind
 import com.mg4.hardware.FirmwareGen
 import com.mg4.hardware.FirmwareSupport
 import com.mg4.tasker.store.SupportStore
+import com.mg4.tasker.util.BtDevices
+import com.mg4.tasker.util.Notifier
+import com.mg4.tasker.util.SpeechEngines
 import com.mg4.tasker.vehicle.ProfileBridge
 import java.util.Locale
 
@@ -43,10 +46,15 @@ object CatalogPicker {
 
     fun pickCondition(context: Context, firmware: FirmwareGen?, onPick: (ConditionType) -> Unit) {
         val allowed = SupportStore.supportedConditions(context)
+        // Nothing paired means the device picker would be empty, and the rule would carry a
+        // blank MAC that can never match. Same reasoning as the profile action below.
+        val hasPairedDevice = BtDevices.bonded(context).isNotEmpty()
         val groups = ConditionType.byGroup().mapNotNull { (group, types) ->
-            val supported = types.filter { type ->
-                allow(allowed, type.name) { FirmwareSupport.isSupported(type, firmware) }
-            }
+            val supported = types
+                .filter { hasPairedDevice || it.spec.kind != ValueKind.BT_DEVICE }
+                .filter { type ->
+                    allow(allowed, type.name) { FirmwareSupport.isSupported(type, firmware) }
+                }
             if (supported.isEmpty()) return@mapNotNull null
             Group(
                 label = context.getString(group.labelRes),
@@ -66,6 +74,7 @@ object CatalogPicker {
         val groups = ActionType.byGroup().mapNotNull { (group, types) ->
             val supported = types
                 .filter { hasProfiles || it.spec.kind != ValueKind.PROFILE }
+                .filter { runnableHere(context, it) }
                 .filter { type -> allow(allowed, type.name) { FirmwareSupport.isSupported(type, firmware) } }
             if (supported.isEmpty()) return@mapNotNull null
             Group(
@@ -87,6 +96,21 @@ object CatalogPicker {
     /** Stored support wins when a check has run; otherwise fall back to the live matrix. */
     private inline fun allow(allowed: Set<String>?, name: String, live: () -> Boolean): Boolean =
         allowed?.contains(name) ?: live()
+
+    /**
+     * The local actions depend on the head unit, not on the firmware matrix, so the matrix
+     * cannot filter them.
+     *
+     * Speech was the visible case: the Diagnostic tab reported "no speech engine" while the
+     * editor kept offering the action, and picking it produced a rule that could only ever
+     * fail. Both now ask [SpeechEngines] and [Notifier] the same question. These are cheap
+     * (a package query, a channel lookup) — no vehicle read, nothing that blocks.
+     */
+    private fun runnableHere(context: Context, type: ActionType): Boolean = when (type) {
+        ActionType.SPEAK_TEXT -> SpeechEngines.any(context)
+        ActionType.SHOW_NOTIFICATION -> Notifier.canNotify(context)
+        else -> true
+    }
 
     private class Group(val label: String, val entries: List<Entry>)
 

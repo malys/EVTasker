@@ -1,9 +1,6 @@
 package com.mg4.tasker.debug
 
 import android.content.Context
-import android.content.Intent
-import android.provider.Settings
-import android.speech.tts.TextToSpeech
 import com.mg4.hardware.FirmwareInfo
 import com.mg4.hardware.FirmwareSupport
 import com.mg4.hardware.MG4Hardware
@@ -12,7 +9,9 @@ import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.service.TaskerVehicleService
 import com.mg4.tasker.store.AppState
 import com.mg4.tasker.store.SupportStore
+import com.mg4.tasker.util.BtDevices
 import com.mg4.tasker.util.Notifier
+import com.mg4.tasker.util.SpeechEngines
 import com.mg4.tasker.vehicle.BtTracker
 import com.mg4.tasker.vehicle.ProfileBridge
 import com.mg4.tasker.vehicle.VehicleReader
@@ -60,6 +59,11 @@ object DiagnosticProbe {
         MG4CONTROL,
         /** The engine behind the "speak" action; the detail names it, for the report. */
         TTS,
+        /**
+         * Radio state and what is connected right now. A Bluetooth rule that never fires is
+         * the most reported symptom, and the connected list is the one fact that explains it.
+         */
+        BLUETOOTH,
     }
 
     data class Report(
@@ -82,14 +86,17 @@ object DiagnosticProbe {
 
         val genName = FirmwareInfo.getGeneration().name
         val gen = FirmwareSupport.parse(genName)
-        val snapshot = VehicleReader.read(BtTracker.snapshot())
+        val snapshot = VehicleReader.read(
+            btMacs = BtTracker.snapshot(appContext),
+            btAvailable = BtDevices.isAvailable(appContext)
+        )
 
         // Bound and released here rather than inferred from the package list: an installed
         // MG4Control whose bridge refuses the bind fails the profile action just the same.
         val bridge = ProfileBridge(appContext)
         val bridgeReachable = try { bridge.connect() } finally { bridge.disconnect() }
 
-        val engines = ttsEngines(appContext)
+        val engines = SpeechEngines.list(appContext)
         val caps = Diagnostics.Capabilities(
             vehicleLayerReady = MG4Hardware.isCarPropertyManagerReady(),
             gateVerdict = gateVerdict(),
@@ -104,7 +111,7 @@ object DiagnosticProbe {
             firmwareGen = genName,
             appVersion = "${com.mg4.tasker.BuildConfig.VERSION_NAME} (${com.mg4.tasker.BuildConfig.VERSION_CODE})",
             capabilities = caps,
-            environment = environment(appContext, caps, gen?.name, engines),
+            environment = environment(appContext, caps, gen?.name, engines, snapshot),
             conditions = Diagnostics.conditions(snapshot, gen),
             actions = Diagnostics.actions(caps, gen),
         )
@@ -114,7 +121,8 @@ object DiagnosticProbe {
         context: Context,
         caps: Diagnostics.Capabilities,
         genName: String?,
-        ttsEngines: List<String>
+        ttsEngines: List<String>,
+        snapshot: com.mg4.tasker.model.Snapshot
     ): List<EnvCheck> {
         val cached = SupportStore.lastCheck(context)
         val cacheStale = SupportStore.needsCheck(context) || cached?.gen != genName
@@ -142,6 +150,13 @@ object DiagnosticProbe {
                 ok = ttsEngines.isNotEmpty(),
                 detail = ttsEngines.joinToString(", ").ifEmpty { "none" }
             ),
+            // The MACs, not just a count: matching them against the one a rule names is what
+            // turns "my Bluetooth rule never fires" into an answer.
+            EnvCheck(
+                Env.BLUETOOTH,
+                ok = snapshot.btAvailable,
+                detail = snapshot.btMacs.sorted().joinToString(", ").ifEmpty { "none connected" }
+            ),
         )
     }
 
@@ -152,28 +167,4 @@ object DiagnosticProbe {
             VehicleWriteGate.Decision.REFUSED_UNKNOWN_SPEED -> BridgeContract.VERDICT_UNKNOWN_SPEED
         }
 
-    /**
-     * The TTS engine packages this app can see, most reliable source first.
-     *
-     * Queried instead of instantiated: creating a [TextToSpeech] to test it would take audio
-     * focus, and on a car that means talking over whatever is playing.
-     *
-     * The service query alone under-reports. On API 30+ it only returns packages made
-     * visible to us, and a head unit whose engine ships outside that visibility — or whose
-     * engine service is declared in a way this filter misses — then reads as a car with no
-     * voice at all, which is what the driver disproves every time the vehicle speaks. The
-     * default-engine setting is readable whatever the package visibility rules say, so it
-     * settles the question the query got wrong.
-     */
-    private fun ttsEngines(context: Context): List<String> {
-        val services = context.packageManager
-            .queryIntentServices(Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE), 0)
-            .mapNotNull { it.serviceInfo?.packageName }
-            .distinct()
-        if (services.isNotEmpty()) return services
-        // Settings.Secure.TTS_DEFAULT_SYNTH, spelled out: the constant is deprecated, the
-        // row it names is still the one the platform reads when it picks an engine.
-        val default = Settings.Secure.getString(context.contentResolver, "tts_default_synth")
-        return listOfNotNull(default?.takeIf { it.isNotBlank() })
-    }
 }

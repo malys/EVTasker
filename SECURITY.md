@@ -53,5 +53,10 @@ moving. A proof of concept helps; a working exploit is not required.
   would write to a car on an assumption.
 - **The ignition trigger is delayed by ~8 s** so MG4Control's own profile application
   finishes first. Interleaving two write sequences was the failure mode being avoided.
-- **No network, no auto-updater.** `INTERNET` is not in the permission allowlist, and
-  adding it would require justifying what leaves the vehicle and where it goes.
+- **One network use, user-triggered.** `INTERNET` exists for a single path: *Share* on the
+  Console tab uploads the diagnostic report to a PrivateBin paste
+  (`https://paste.chapril.org`). PrivateBin is zero-knowledge — the report is encrypted and
+  the key never leaves the device, travelling only in the URL fragment — the paste is
+  password-protected and expires after one hour, and nothing is sent unless the user
+  confirms the dialog. The unstable flavor additionally self-updates (see *Channels*);
+  stable contains no updater code. There is no background traffic in either.

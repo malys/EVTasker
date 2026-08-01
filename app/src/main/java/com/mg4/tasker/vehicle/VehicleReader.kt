@@ -18,14 +18,22 @@ import java.util.Calendar
  */
 object VehicleReader {
 
-    fun read(btMacs: Set<String>): Snapshot {
+    fun read(btMacs: Set<String>, btAvailable: Boolean): Snapshot {
         val calendar = Calendar.getInstance()
         val minutes = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
         val day = calendar.get(Calendar.DAY_OF_WEEK)
 
         val ready = MG4Hardware.isCarPropertyManagerReady()
         if (!ready) {
-            return Snapshot(minutesOfDay = minutes, dayOfWeek = day, bridgeAvailable = false)
+            // Bluetooth and the clock still hold: they are context, not vehicle signals, and
+            // a rule made only of those must stay evaluable when the car layer is not up.
+            return Snapshot(
+                btMacs = btMacs,
+                btAvailable = btAvailable,
+                minutesOfDay = minutes,
+                dayOfWeek = day,
+                bridgeAvailable = false
+            )
         }
 
         val readings = buildMap<String, Any> {
@@ -40,9 +48,9 @@ object VehicleReader {
             MG4Hardware.getDriveMode()?.let { put(SnapshotKeys.KEY_DRIVE_MODE, it.value) }
             MG4Hardware.getRegenLevel()?.let { put(SnapshotKeys.KEY_REGEN_LEVEL, it.value) }
 
-            putIfReadable(SnapshotKeys.KEY_SEAT_HEAT_L, MG4Hardware.getSeatHeatLeft())
-            putIfReadable(SnapshotKeys.KEY_SEAT_HEAT_R, MG4Hardware.getSeatHeatRight())
-            put(SnapshotKeys.KEY_STEERING_HEAT, MG4Hardware.isSteeringHeatOn())
+            MG4Hardware.seatHeatLeftOrNull()?.let { put(SnapshotKeys.KEY_SEAT_HEAT_L, it) }
+            MG4Hardware.seatHeatRightOrNull()?.let { put(SnapshotKeys.KEY_SEAT_HEAT_R, it) }
+            MG4Hardware.steeringHeatOnOrNull()?.let { put(SnapshotKeys.KEY_STEERING_HEAT, it) }
 
             putIfReadable(SnapshotKeys.KEY_MEDIA_VOLUME, MG4Hardware.getMediaVolume())
             putIfReadable(SnapshotKeys.KEY_MEDIA_VOLUME_MAX, MG4Hardware.getMediaVolumeMax())
@@ -50,16 +58,19 @@ object VehicleReader {
                 putIfReadable(SnapshotKeys.KEY_BRIGHTNESS, MG4Hardware.getScreenBrightnessPercent())
             }
 
-            put(SnapshotKeys.KEY_OVERSPEED_ALARM, MG4Hardware.isOverspeedAlarmOn())
-            put(SnapshotKeys.KEY_SPEED_LIMIT_TONE, MG4Hardware.isSpeedLimitToneOn())
-            put(SnapshotKeys.KEY_SOUND_WARNING, MG4Hardware.isSoundWarningOn())
-            put(SnapshotKeys.KEY_AEB_ENABLED, MG4Hardware.isAebEnabled())
-            putIfReadable(SnapshotKeys.KEY_AEB_MODE, MG4Hardware.getAebMode())
+            // The `…OrNull` readers, not the Boolean ones: those answer false for a signal
+            // the firmware never returned, which the engine would read as "the feature is
+            // off" and act on. Absent from the snapshot is the honest answer.
+            MG4Hardware.overspeedAlarmOnOrNull()?.let { put(SnapshotKeys.KEY_OVERSPEED_ALARM, it) }
+            MG4Hardware.speedLimitToneOnOrNull()?.let { put(SnapshotKeys.KEY_SPEED_LIMIT_TONE, it) }
+            MG4Hardware.soundWarningOnOrNull()?.let { put(SnapshotKeys.KEY_SOUND_WARNING, it) }
+            MG4Hardware.aebEnabledOrNull()?.let { put(SnapshotKeys.KEY_AEB_ENABLED, it) }
+            MG4Hardware.aebModeOrNull()?.let { put(SnapshotKeys.KEY_AEB_MODE, it) }
             putIfReadable(SnapshotKeys.KEY_AEB_SENSITIVITY, MG4Hardware.getAebSensitivity())
             putIfReadable(SnapshotKeys.KEY_ELK_MODE, MG4Hardware.getElkMode())
             putIfReadable(SnapshotKeys.KEY_ELK_SENSITIVITY, MG4Hardware.getElkSensitivity())
-            put(SnapshotKeys.KEY_TSR, MG4Hardware.isTsrOn())
-            put(SnapshotKeys.KEY_ENERGY_SAVING, MG4Hardware.isEnergySavingOn())
+            MG4Hardware.tsrOnOrNull()?.let { put(SnapshotKeys.KEY_TSR, it) }
+            MG4Hardware.energySavingOnOrNull()?.let { put(SnapshotKeys.KEY_ENERGY_SAVING, it) }
             putIfReadable(SnapshotKeys.KEY_ACC_TJA_MODE, MG4Hardware.getAccTjaMode())
             putIfReadable(SnapshotKeys.KEY_LIMITER_MODE, MG4Hardware.getSpeedLimiterMode())
 
@@ -76,6 +87,7 @@ object VehicleReader {
         return Snapshot(
             readings = readings,
             btMacs = btMacs,
+            btAvailable = btAvailable,
             minutesOfDay = minutes,
             dayOfWeek = day,
             bridgeAvailable = true

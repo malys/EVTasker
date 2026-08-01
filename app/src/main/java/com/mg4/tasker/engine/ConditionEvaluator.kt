@@ -38,8 +38,9 @@ object ConditionEvaluator {
     // -------------------------------------------------------------------------
 
     private fun evaluateBtDevice(c: Condition, s: Snapshot): ConditionOutcome {
-        // The connected-device list comes from the bridge: with no bridge, we do not know.
-        if (!s.bridgeAvailable) return ConditionOutcome.UNAVAILABLE
+        // Radio off or unreadable: we do not know what is connected. The vehicle layer is
+        // irrelevant here — Bluetooth is context, not a vehicle signal.
+        if (!s.btAvailable) return ConditionOutcome.UNAVAILABLE
         if (c.text.isBlank()) return ConditionOutcome.UNAVAILABLE
         val connected = s.btMacs.any { it.equals(c.text, ignoreCase = true) }
         return match(connected == c.flag)
@@ -68,7 +69,7 @@ object ConditionEvaluator {
 
     private fun evaluateBool(c: Condition, s: Snapshot): ConditionOutcome {
         if (c.type == ConditionType.ANY_BT_CONNECTED) {
-            if (!s.bridgeAvailable) return ConditionOutcome.UNAVAILABLE
+            if (!s.btAvailable) return ConditionOutcome.UNAVAILABLE
             return match(s.btMacs.isNotEmpty() == c.flag)
         }
         val key = c.type.snapshotKey ?: return ConditionOutcome.UNAVAILABLE

@@ -51,6 +51,8 @@ object Diagnostics {
         NONE,
         /** The vehicle layer answered, but this signal is not in the snapshot. */
         NOT_READABLE,
+        /** Bluetooth radio off or unreadable: nothing can be said about connected devices. */
+        BLUETOOTH_OFF,
         /** MG4Hardware is not ready at all: every vehicle signal and write is out. */
         LAYER_NOT_READY,
         /** Standstill gate: the car is moving. */
@@ -111,7 +113,7 @@ object Diagnostics {
                 Entry(
                     name = type.name,
                     status = Status.BLOCKED,
-                    reason = if (!snapshot.bridgeAvailable) Reason.LAYER_NOT_READY else Reason.NOT_READABLE,
+                    reason = unavailableReason(type, snapshot),
                     hidden = hidden
                 )
             } else {
@@ -140,6 +142,21 @@ object Diagnostics {
                 hidden = hidden
             )
         }
+
+    /**
+     * Why a condition could not be evaluated.
+     *
+     * The Bluetooth entries are context, not vehicle signals: naming the vehicle layer for
+     * them would point whoever reads the report at the wrong subsystem.
+     */
+    private fun unavailableReason(type: ConditionType, snapshot: Snapshot): Reason = when {
+        type in BLUETOOTH_CONDITIONS -> Reason.BLUETOOTH_OFF
+        !snapshot.bridgeAvailable -> Reason.LAYER_NOT_READY
+        else -> Reason.NOT_READABLE
+    }
+
+    private val BLUETOOTH_CONDITIONS =
+        setOf(ConditionType.BT_DEVICE_CONNECTED, ConditionType.ANY_BT_CONNECTED)
 
     /** The first check [com.mg4.tasker.vehicle.DirectExecutor] would fail on, in its own order. */
     private fun blockingReason(type: ActionType, caps: Capabilities): Reason = when (type) {

@@ -29,7 +29,8 @@ class TaskerRunService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground(Notifier.FOREGROUND_NOTIFICATION_ID, Notifier.buildForegroundNotification(this))
         thread(name = "mg4-tasker-manual") {
-            MG4Hardware.init(applicationContext)   // idempotent
+            MG4Hardware.init(applicationContext)      // idempotent
+            MG4Hardware.initAudio(applicationContext) // idempotent; binds the vendor audio helper
             RuleCycle.run(this, "MANUAL")
             stopSelf(startId)
         }

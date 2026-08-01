@@ -34,8 +34,12 @@ android.permission.BLUETOOTH_CONNECT
 # apply an MG4Control profile when MG4Control is installed.
 com.mg4.control.permission.CONTROL_PROFILES
 
-# --- Network / OTA — UNSTABLE flavor only ---
-# Declared solely in src/unstable/AndroidManifest.xml. The unstable channel self-updates
-# (checks GitHub pre-releases, https + host allowlist + signature check). The stable APK
-# has neither this permission nor any updater code, by construction.
+# --- Network ---
+# Two uses, both explicit:
+#   • Console → Share uploads the diagnostic report to a PrivateBin paste
+#     (paste.chapril.org): encrypted client-side, password-protected, 1-hour expiry, and
+#     only after the user confirms. Both flavors.
+#   • The unstable channel self-updates (GitHub pre-releases, https + host allowlist +
+#     same-signature check). Unstable only — stable contains no updater code.
+# No background traffic in either flavor.
 android.permission.INTERNET

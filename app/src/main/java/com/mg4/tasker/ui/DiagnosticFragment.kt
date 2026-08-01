@@ -179,10 +179,20 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.SUPPORT_CACHE -> R.string.diag_env_cache
             DiagnosticProbe.Env.MG4CONTROL -> R.string.diag_env_mg4control
             DiagnosticProbe.Env.TTS -> R.string.diag_env_tts
+            DiagnosticProbe.Env.BLUETOOTH -> R.string.diag_env_bluetooth
         }
     )
 
-    private fun envValue(check: DiagnosticProbe.EnvCheck): String = getString(
+    private fun envValue(check: DiagnosticProbe.EnvCheck): String {
+        // The connected MACs are the value, not a decoration: comparing them with the one a
+        // rule names is the whole point of the row.
+        if (check.id == DiagnosticProbe.Env.BLUETOOTH) {
+            return if (!check.ok) getString(R.string.diag_bt_off) else check.detail
+        }
+        return getString(envValueRes(check))
+    }
+
+    private fun envValueRes(check: DiagnosticProbe.EnvCheck): Int = (
         when (check.id) {
             DiagnosticProbe.Env.VEHICLE_LAYER ->
                 if (check.ok) R.string.diag_state_ready else R.string.diag_state_not_ready
@@ -199,6 +209,8 @@ class DiagnosticFragment : Fragment() {
                 else R.string.diag_absent
             DiagnosticProbe.Env.TTS ->
                 if (check.ok) R.string.diag_installed else R.string.diag_absent
+            // Rendered by envValue() from the detail — never reached.
+            DiagnosticProbe.Env.BLUETOOTH -> R.string.diag_bt_off
         }
     )
 
@@ -253,6 +265,7 @@ class DiagnosticFragment : Fragment() {
     private fun reason(entry: Diagnostics.Entry): String = getString(
         when (entry.reason) {
             Diagnostics.Reason.NOT_READABLE -> R.string.diag_reason_not_readable
+            Diagnostics.Reason.BLUETOOTH_OFF -> R.string.diag_reason_bluetooth_off
             Diagnostics.Reason.LAYER_NOT_READY -> R.string.diag_reason_layer
             Diagnostics.Reason.GATE_MOVING -> R.string.verdict_moving
             Diagnostics.Reason.GATE_UNKNOWN_SPEED -> R.string.verdict_unknown_speed
