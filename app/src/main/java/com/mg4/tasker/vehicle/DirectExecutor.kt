@@ -8,6 +8,7 @@ import com.mg4.hardware.MG4Hardware
 import com.mg4.hardware.VehicleWriteGate
 import com.mg4.hardware.model.DriveMode
 import com.mg4.hardware.model.RegenLevel
+import com.mg4.hardware.saic.RadioFrequency
 import com.mg4.hardware.saic.SaicCharging
 import com.mg4.hardware.saic.SaicClimate
 import com.mg4.hardware.saic.SaicPhone
@@ -43,6 +44,7 @@ class DirectExecutor(
         ActionType.SHOW_NOTIFICATION -> notify(action)
         ActionType.SPEAK_TEXT        -> speak(action)
         ActionType.NAVIGATE_TO       -> navigate(action)
+        ActionType.TUNE_RADIO        -> tuneRadio(action)
         else                         -> applyVehicle(action)
     }
 
@@ -129,13 +131,34 @@ class DirectExecutor(
             // Media and telephony — vendor services too.
             ActionType.PLAY_RADIO           -> SaicRadio.play()
             ActionType.CALL_NUMBER          -> callNumber(a)
-            // Not vehicle writes — handled by execute() before it ever gets here.
+            // Handled by execute() before it ever gets here. The first four are not vehicle
+            // writes at all; TUNE_RADIO is one, but it carries a frequency the driver typed,
+            // and "103,5 FM" that parsed to nothing must be reported as that rather than as
+            // a radio that refused.
             ActionType.APPLY_PROFILE,
             ActionType.LAUNCH_APP,
             ActionType.SHOW_NOTIFICATION,
             ActionType.SPEAK_TEXT,
-            ActionType.NAVIGATE_TO -> null
+            ActionType.NAVIGATE_TO,
+            ActionType.TUNE_RADIO -> null
         }
+    }
+
+    /**
+     * A frequency the driver typed. Text that names no station is unsupported, not an error:
+     * retrying "FM 250" three times with backoff will not make it a station, and the history
+     * showing what was typed is what lets the user find the typo.
+     */
+    private fun tuneRadio(a: Action): ActionResult {
+        val station = RadioFrequency.parse(a.text)
+            ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "not a frequency: ${a.text}")
+        val ok = SaicRadio.tune(station.band, station.frequencyKhz)
+        return ActionResult(
+            a.type,
+            ok,
+            if (ok) BridgeContract.VERDICT_ALLOWED else BridgeContract.VERDICT_ERROR,
+            "${station.frequencyKhz} kHz"
+        )
     }
 
     /** Digits, `+`, `*` and `#` only: anything else is not a number the car can dial. */
@@ -145,7 +168,7 @@ class DirectExecutor(
         return SaicPhone.placeCall(number)
     }
 
-    private fun gateVerdict(): String = when (VehicleWriteGate.decide(MG4Hardware.getVehicleSpeedKmh())) {
+    private fun gateVerdict(): String = when (VehicleWriteGate.decideNow()) {
         VehicleWriteGate.Decision.ALLOWED               -> BridgeContract.VERDICT_ALLOWED
         VehicleWriteGate.Decision.REFUSED_MOVING        -> BridgeContract.VERDICT_MOVING
         VehicleWriteGate.Decision.REFUSED_UNKNOWN_SPEED -> BridgeContract.VERDICT_UNKNOWN_SPEED

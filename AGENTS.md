@@ -61,6 +61,21 @@ stores the user's choice and pushes it in wherever the vehicle layer is initiali
 invariants are not negotiable and are unit-tested: an unreadable or negative speed refuses at
 any threshold, and the shared layer clamps the value. Default is 0.
 
+Park is the **only** thing that can rescue a refusal, and only the unreadable-speed one
+(`decide(speed, threshold, parked)`). It must never override a speed that did read: park at
+30 km/h means a signal is wrong, and trusting the gear there would unlock writes at speed.
+`decideNow()` is the live form and reads the gear only after the speed came back unreadable —
+one property read on the normal path.
+
+## A gate refusal is "not now", so it is kept
+
+`DeferredWrites` holds writes refused for MOVING or UNKNOWN_SPEED and re-applies them at the
+next standstill. What keeps it honest: only those two verdicts (an unsupported action will
+still be unsupported in ten minutes), a 15-minute expiry, dropped at IGNITION_OFF rather than
+applied, one attempt each, and a history entry per drain. The poller is a single thread that
+exists only while the queue does — `stopIfEmpty()` clears the flag under the lock `offer`
+takes, otherwise an entry can be stranded with no poller running.
+
 ## Vehicle writes go in MG4Control, reads too
 
 MG4Tasker adds no vehicle access code. When a new action needs a new capability, implement

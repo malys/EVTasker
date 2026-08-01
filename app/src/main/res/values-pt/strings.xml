@@ -109,6 +109,8 @@
     <string name="history_clear">Limpar histórico</string>
     <string name="history_trigger_ignition">Arranque do veículo</string>
     <string name="history_trigger_manual">Teste manual</string>
+    <string name="history_trigger_ignition_off">Desligar do veículo</string>
+    <string name="history_trigger_deferred">Aplicado em paragem</string>
     <string name="history_no_bridge">A camada do veículo não estava pronta — nenhuma regra pôde ser aplicada.</string>
 
     <string name="outcome_fired">Aplicada</string>

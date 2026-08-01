@@ -314,6 +314,7 @@ object ValueEditorDialog {
 
             ValueKind.TEXT -> {
                 binding.textBlock.visibility = View.VISIBLE
+                spec.hintRes.takeIf { it != 0 }?.let { binding.textInput.hint = context.getString(it) }
                 binding.textInput.setText(initialText)
                 binding.textInput.addTextChangedListener { text = it }
             }

@@ -126,6 +126,8 @@
     <string name="history_clear">Vider l\'historique</string>
     <string name="history_trigger_ignition">Démarrage véhicule</string>
     <string name="history_trigger_manual">Test manuel</string>
+    <string name="history_trigger_ignition_off">Extinction véhicule</string>
+    <string name="history_trigger_deferred">Appliqué à l\'arrêt</string>
     <string name="history_no_bridge">La couche véhicule n\'était pas prête — aucune règle n\'a pu s\'appliquer.</string>
 
     <string name="outcome_fired">Appliquée</string>

@@ -109,6 +109,8 @@
     <string name="history_clear">Cancella cronologia</string>
     <string name="history_trigger_ignition">Avvio del veicolo</string>
     <string name="history_trigger_manual">Prova manuale</string>
+    <string name="history_trigger_ignition_off">Spegnimento del veicolo</string>
+    <string name="history_trigger_deferred">Applicato da fermo</string>
     <string name="history_no_bridge">Il livello veicolo non era pronto — nessuna regola è stata applicata.</string>
 
     <string name="outcome_fired">Applicata</string>

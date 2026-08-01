@@ -82,6 +82,9 @@ object RuleCycle {
             val result = RuleEngine(DirectExecutor(context, profileBridge))
                 .run(rules, snapshot, trigger, System.currentTimeMillis())
             HistoryStore(context).append(result)
+            // A gate refusal is "not now", not "no": keep it for the next standstill. Done
+            // here rather than in the engine, which stays Android-free and stateless.
+            DeferredWrites.offer(context, result, rules)
             // Timed, because "the car must stay responsive" is a claim that needs a number.
             // The line lands in the log and therefore in every exported and shared report.
             AppLogger.i(

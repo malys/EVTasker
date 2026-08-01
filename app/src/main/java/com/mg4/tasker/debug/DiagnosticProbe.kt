@@ -19,6 +19,7 @@ import com.mg4.tasker.util.CarLocation
 import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.util.SpeechEngines
 import com.mg4.tasker.vehicle.BtTracker
+import com.mg4.tasker.vehicle.DeferredWrites
 import com.mg4.tasker.vehicle.VendorServices
 import com.mg4.tasker.vehicle.ProfileBridge
 import com.mg4.tasker.vehicle.VehicleReader
@@ -215,10 +216,15 @@ object DiagnosticProbe {
                 }
             ),
             // Reported, never judged: zero is the safe value and any other one was chosen.
+            // The gear comes along because it is the gate's fallback when the speed property
+            // is silent — "park=?" is the difference between a rule that will be refused for
+            // an unreadable speed and one that will not.
             EnvCheck(
                 Env.WRITE_THRESHOLD,
                 ok = true,
-                detail = "${VehicleWriteGate.allowUpToKmh.toInt()} km/h"
+                detail = "${VehicleWriteGate.allowUpToKmh.toInt()} km/h, park=" +
+                    (MG4Hardware.isVehicleInPark()?.let { if (it) "yes" else "no" } ?: "?") +
+                    ", deferred=${DeferredWrites.size}"
             ),
             EnvCheck(
                 Env.GLASS_AND_LOCKS,
@@ -240,7 +246,7 @@ object DiagnosticProbe {
     }
 
     private fun gateVerdict(): String =
-        when (VehicleWriteGate.decide(MG4Hardware.getVehicleSpeedKmh())) {
+        when (VehicleWriteGate.decideNow()) {
             VehicleWriteGate.Decision.ALLOWED -> BridgeContract.VERDICT_ALLOWED
             VehicleWriteGate.Decision.REFUSED_MOVING -> BridgeContract.VERDICT_MOVING
             VehicleWriteGate.Decision.REFUSED_UNKNOWN_SPEED -> BridgeContract.VERDICT_UNKNOWN_SPEED

@@ -15,6 +15,7 @@ import com.mg4.tasker.model.RuleTrigger
 import com.mg4.tasker.store.AppState
 import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.vehicle.BtTracker
+import com.mg4.tasker.vehicle.DeferredWrites
 import com.mg4.tasker.vehicle.ProfileBridge
 import com.mg4.tasker.vehicle.RuleCycle
 import com.mg4.tasker.vehicle.VendorServices
@@ -124,6 +125,9 @@ class TaskerVehicleService : Service() {
             }
             if (trigger != null && trigger != lastTrigger) {
                 lastTrigger = trigger
+                // The drive is over: writes held back for a red light that never came do not
+                // belong to the next one.
+                if (trigger == RuleTrigger.IGNITION_OFF) DeferredWrites.clear()
                 if (AppState.isAutomationEnabled(this)) {
                     AppLogger.i(TAG, "Ignition $state → evaluating ${trigger.name} rules")
                     thread(name = "mg4-tasker-cycle") { RuleCycle.run(this, trigger.name) }

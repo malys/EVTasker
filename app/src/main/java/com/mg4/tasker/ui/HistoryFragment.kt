@@ -13,7 +13,10 @@ import com.mg4.tasker.databinding.ItemHistoryRunBinding
 import com.mg4.tasker.model.EngineRun
 import com.mg4.tasker.model.RuleOutcome
 import com.mg4.tasker.model.RuleStatus
+import com.mg4.tasker.model.RuleTrigger
 import com.mg4.tasker.store.HistoryStore
+import com.mg4.tasker.vehicle.DeferredWrites
+import com.mg4.tasker.vehicle.RuleCycle
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -80,9 +83,16 @@ class HistoryFragment : Fragment() {
             val run = runs[position]
             val context = holder.itemView.context
 
+            // Named individually now that a run has four possible origins. "Vehicle start"
+            // over a switch-off cycle, or over a write applied later at a red light, would
+            // put the reader on the wrong end of the drive.
             val trigger = context.getString(
-                if (run.trigger == "MANUAL") R.string.history_trigger_manual
-                else R.string.history_trigger_ignition
+                when (run.trigger) {
+                    RuleCycle.MANUAL -> R.string.history_trigger_manual
+                    DeferredWrites.TRIGGER -> R.string.history_trigger_deferred
+                    RuleTrigger.IGNITION_OFF.name -> R.string.history_trigger_ignition_off
+                    else -> R.string.history_trigger_ignition
+                }
             )
             holder.binding.runHeader.text = "${timeFormat.format(Date(run.timestamp))} — $trigger"
 

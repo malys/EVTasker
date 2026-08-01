@@ -152,6 +152,40 @@ Two things do not change when you raise it:
 The threshold in force is reported on the Diagnostic tab and in every exported report, so a
 report from a car that had it raised says so.
 
+### When the speed cannot be read at all
+
+Failing closed is right, and it is also the most frustrating refusal there is: nothing was
+wrong, the car simply did not answer. So one other signal is consulted, and only in that
+case — **the gear**. A car in P is not moving whatever the speedometer failed to say, and
+the gear arrives by a different route from `PERF_VEHICLE_SPEED`, so one can answer when the
+other is silent.
+
+It is never allowed to contradict a speed that *did* read. Park while the speedometer says
+30 km/h means one of the two is wrong, and a gate that trusted the gear there would let a
+stale signal unlock writes at speed — the single outcome it exists to prevent.
+
+The Diagnostic tab prints `park=yes/no/?` next to the threshold.
+
+### Refused because you were moving? It waits for the next red light
+
+Rules fire when the ignition comes on, and by then the car is usually already rolling. "Eco
+mode when my phone connects" was therefore refused about as often as it worked, for a rule
+with nothing wrong with it — it was asked one moment too late.
+
+Gate refusals are now kept and re-attempted at the first standstill. Three limits:
+
+- **Only gate refusals.** "Moving" and "speed unreadable" mean *not now*. An unsupported
+  action or a failed write is not retried — waiting adds no missing firmware feature.
+- **15 minutes, and never across an ignition cycle.** A rule that fired for this drive
+  belongs to this drive. At switch-off the queue is dropped, not applied: the car is stopped
+  then, which is exactly what makes it the wrong moment to change the setting the next
+  driver will find.
+- **Nothing is hidden.** Each one writes a history entry marked *Applied at a standstill*,
+  and the Diagnostic tab reports how many are waiting.
+
+Applying a profile is never deferred: it needs a live MG4Control bind belonging to the cycle
+that opened it.
+
 `VEHICLE_POWER_OFF` is **deliberately absent** from the catalogue, and a unit test enforces
 that no catalogue entry can reach it. Cutting the vehicle stays an explicit human gesture.
 
@@ -237,8 +271,8 @@ there were no write actions.
 They now go through the **SAIC vendor services** instead: the same binder interfaces the
 car's own HVAC, charging, radio and hands-free apps use, read off the decompiled head-unit
 APKs in [`apks/`](../apks). One bound service (`com.saicmotor.service.vehicle`) exposes a hub
-that hands out `aircondition` and `vehiclecharging`; radio and telephony are their own
-services. What those calls do is not in doubt — they are what the car does to itself.
+that hands out `aircondition`, `vehiclecharging`, `vehiclecontrol` and `vehiclecondition`;
+radio and telephony are their own services. What those calls do is not in doubt — they are what the car does to itself.
 
 That buys four things the property ids could not:
 
@@ -246,9 +280,11 @@ That buys four things the property ids could not:
   the stock UI), A/C, AUTO, recirculation, fan level, front and rear defrosters.
 - **Battery and charging** — charge limit in percent, allow/deny charging, the scheduled
   charging window, and battery pre-heating.
-- **Radio** — resume the last station as the current audio source. It does not open the
-  radio screen: a rule firing at ignition wants the sound, not a screen in front of the
-  driver.
+- **Radio** — resume the last station, or tune one. It does not open the radio screen: a
+  rule firing at ignition wants the sound, not a screen in front of the driver. The
+  frequency is typed the way a driver says it — `103.5`, `FM 103,5`, `1080 AM` all land —
+  and text naming no station is reported as that rather than tuned to something near it.
+  DAB is out: `tuneDab` takes a service and ensemble id, not a frequency.
 - **Calls** — placed by the car's hands-free stack on the paired phone. The head unit has no
   SIM and no dialer, so `ACTION_CALL` would find nothing to handle it.
 

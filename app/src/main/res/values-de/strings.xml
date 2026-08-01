@@ -109,6 +109,8 @@
     <string name="history_clear">Verlauf löschen</string>
     <string name="history_trigger_ignition">Fahrzeugstart</string>
     <string name="history_trigger_manual">Manueller Test</string>
+    <string name="history_trigger_ignition_off">Fahrzeug ausgeschaltet</string>
+    <string name="history_trigger_deferred">Im Stand angewendet</string>
     <string name="history_no_bridge">Fahrzeugebene war nicht bereit — keine Regel konnte angewendet werden.</string>
 
     <string name="outcome_fired">Angewendet</string>
