@@ -231,4 +231,5 @@
     <string name="diag_reason_no_navigation">aucune application de navigation</string>
     <string name="diag_reason_no_location">aucune position disponible</string>
     <string name="paste_header">**Mot de passe :** `%1$s` · expire une heure après l’envoi.\n\nHébergé gracieusement par [April](https://www.april.org) sur %2$s. Si cela vous a évité un passage au garage, [faites un don](https://www.april.org/adherer).</string>
+    <string name="diag_env_glass">Vitres et verrouillage</string>
 </resources>

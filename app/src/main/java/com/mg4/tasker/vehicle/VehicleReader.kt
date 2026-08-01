@@ -5,6 +5,7 @@ import com.mg4.hardware.MG4Hardware
 import com.mg4.hardware.catalog.SnapshotKeys
 import com.mg4.hardware.saic.SaicCharging
 import com.mg4.hardware.saic.SaicClimate
+import com.mg4.hardware.saic.SaicVehicleControl
 import com.mg4.tasker.model.Snapshot
 import com.mg4.tasker.util.CarLocation
 import java.util.Calendar
@@ -122,6 +123,14 @@ object VehicleReader {
         SaicClimate.recirculationOn()?.let { put(SnapshotKeys.KEY_RECIRC, it) }
         SaicClimate.fanLevel()?.let { put(SnapshotKeys.KEY_FAN_SPEED, it) }
         SaicClimate.driverTemp()?.let { put(SnapshotKeys.KEY_TEMPERATURE_SET, it) }
+
+        // Windows: the vendor read is a measured position, unlike the AOSP window id above
+        // which no MG4 confirmed. Where it answers it also settles WINDOW_OPEN.
+        SaicVehicleControl.widestWindowPercent()?.let {
+            put(SnapshotKeys.KEY_WINDOW_PERCENT, it)
+            put(SnapshotKeys.KEY_WINDOW_OPEN, it > 0)
+        }
+        SaicVehicleControl.doorsLocked()?.let { put(SnapshotKeys.KEY_DOORS_LOCKED, it) }
 
         SaicCharging.stateOfChargePercent()?.let { put(SnapshotKeys.KEY_BATTERY_PERCENT, it) }
         SaicCharging.chargeLimitPercent()?.let { put(SnapshotKeys.KEY_CHARGE_LIMIT, it) }

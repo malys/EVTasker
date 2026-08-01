@@ -9,6 +9,7 @@ import com.mg4.hardware.saic.SaicCharging
 import com.mg4.hardware.saic.SaicClimate
 import com.mg4.hardware.saic.SaicPhone
 import com.mg4.hardware.saic.SaicRadio
+import com.mg4.hardware.saic.SaicVehicleControl
 import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.service.TaskerVehicleService
 import com.mg4.tasker.store.AppState
@@ -80,6 +81,13 @@ object DiagnosticProbe {
         LOCATION,
         /** Standstill threshold in force — 0 means writes only when stopped. */
         WRITE_THRESHOLD,
+        /**
+         * Each window's raw position and the door-lock state, exactly as the vendor service
+         * returns them. Printed unrounded on purpose: the 0–100 scale is inferred from the
+         * launcher's constants, not documented, and one look at a car with a window half
+         * open is what confirms it.
+         */
+        GLASS_AND_LOCKS,
     }
 
     data class Report(
@@ -211,6 +219,13 @@ object DiagnosticProbe {
                 Env.WRITE_THRESHOLD,
                 ok = true,
                 detail = "${VehicleWriteGate.allowUpToKmh.toInt()} km/h"
+            ),
+            EnvCheck(
+                Env.GLASS_AND_LOCKS,
+                ok = caps.climateService,
+                detail = SaicVehicleControl.windowPercents()
+                    .joinToString(" ", prefix = "windows[FL FR RL RR]=") { it?.toString() ?: "?" } +
+                    " locked=" + (SaicVehicleControl.doorsLocked()?.toString() ?: "?")
             ),
         )
     }

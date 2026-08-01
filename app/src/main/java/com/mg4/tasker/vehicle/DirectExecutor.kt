@@ -12,6 +12,7 @@ import com.mg4.hardware.saic.SaicCharging
 import com.mg4.hardware.saic.SaicClimate
 import com.mg4.hardware.saic.SaicPhone
 import com.mg4.hardware.saic.SaicRadio
+import com.mg4.hardware.saic.SaicVehicleControl
 import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.engine.ActionExecutor
 import com.mg4.tasker.engine.ConditionEvaluator
@@ -114,6 +115,10 @@ class DirectExecutor(
             ActionType.SET_FAN_LEVEL        -> SaicClimate.setFanLevel(i)
             ActionType.SET_FRONT_DEFROST    -> SaicClimate.setFrontDefrost(b)
             ActionType.SET_REAR_DEFROST     -> SaicClimate.setRearDefrost(b)
+            // Glass and locks: the vehicle applies its own speed limit, so these are not
+            // standstill-gated here — a refusal it makes is reported, not pre-empted.
+            ActionType.SET_WINDOWS          -> SaicVehicleControl.setAllWindows(i)
+            ActionType.SET_DOOR_LOCK        -> SaicVehicleControl.setDoorsLocked(b)
             // Energy — vendor charging service.
             ActionType.SET_CHARGE_LIMIT      -> SaicCharging.setChargeLimitPercent(i)
             ActionType.SET_CHARGING_ENABLED  -> SaicCharging.setChargingEnabled(b)

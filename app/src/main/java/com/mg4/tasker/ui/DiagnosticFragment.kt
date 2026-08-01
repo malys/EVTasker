@@ -183,6 +183,7 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.VENDOR_SERVICES -> R.string.diag_env_vendor
             DiagnosticProbe.Env.LOCATION -> R.string.diag_env_location
             DiagnosticProbe.Env.WRITE_THRESHOLD -> R.string.diag_env_threshold
+            DiagnosticProbe.Env.GLASS_AND_LOCKS -> R.string.diag_env_glass
         }
     )
 
@@ -219,7 +220,8 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.BLUETOOTH,
             DiagnosticProbe.Env.VENDOR_SERVICES,
             DiagnosticProbe.Env.LOCATION,
-            DiagnosticProbe.Env.WRITE_THRESHOLD -> R.string.diag_bt_off
+            DiagnosticProbe.Env.WRITE_THRESHOLD,
+            DiagnosticProbe.Env.GLASS_AND_LOCKS -> R.string.diag_bt_off
         }
     )
 
@@ -350,6 +352,7 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.VENDOR_SERVICES,
             DiagnosticProbe.Env.LOCATION,
             DiagnosticProbe.Env.WRITE_THRESHOLD,
+            DiagnosticProbe.Env.GLASS_AND_LOCKS,
         )
     }
 }

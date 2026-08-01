@@ -231,4 +231,5 @@
     <string name="diag_reason_no_navigation">no navigation app</string>
     <string name="diag_reason_no_location">no position available</string>
     <string name="paste_header">**Password:** `%1$s` · expires one hour after upload.\n\nHosted free of charge by [April](https://www.april.org) on %2$s. If this saved you a trip to the garage, [make a donation](https://www.april.org/adherer).</string>
+    <string name="diag_env_glass">Windows and locks</string>
 </resources>

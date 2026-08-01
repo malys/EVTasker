@@ -214,4 +214,5 @@
     <string name="diag_reason_no_navigation">keine Navigations-App</string>
     <string name="diag_reason_no_location">keine Position verfügbar</string>
     <string name="paste_header">**Passwort:** `%1$s` · verfällt eine Stunde nach dem Hochladen.\n\nKostenlos gehostet von [April](https://www.april.org) auf %2$s. Wenn Ihnen das einen Werkstattbesuch erspart hat, [spenden Sie etwas](https://www.april.org/adherer).</string>
+    <string name="diag_env_glass">Fenster und Verriegelung</string>
 </resources>

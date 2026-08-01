@@ -221,7 +221,9 @@ object Diagnostics {
     private val CLIMATE_ACTIONS = setOf(
         ActionType.SET_CLIMATE_POWER, ActionType.SET_CABIN_TEMP, ActionType.SET_AC,
         ActionType.SET_CLIMATE_AUTO, ActionType.SET_RECIRCULATION, ActionType.SET_FAN_LEVEL,
-        ActionType.SET_FRONT_DEFROST, ActionType.SET_REAR_DEFROST
+        ActionType.SET_FRONT_DEFROST, ActionType.SET_REAR_DEFROST,
+        // Different sub-service, same hub and same bind, so the same capability answers.
+        ActionType.SET_WINDOWS, ActionType.SET_DOOR_LOCK
     )
 
     private val CHARGING_ACTIONS = setOf(
