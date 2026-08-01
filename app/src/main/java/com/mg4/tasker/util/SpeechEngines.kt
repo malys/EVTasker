@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
+import com.mg4.hardware.saic.SaicTts
 
 /**
  * Which text-to-speech engines this app can see on the head unit.
@@ -39,5 +40,18 @@ object SpeechEngines {
         return listOfNotNull(default?.takeIf { it.isNotBlank() })
     }
 
-    fun any(context: Context): Boolean = list(context).isNotEmpty()
+    /**
+     * Whether anything can speak — the vehicle's own voice counts.
+     *
+     * [list] only knows about Android TTS engines, and the MG4 has none: it talks through a
+     * SAIC vendor service. Answering "no engine" there hid the speak action from the editor
+     * on a car that speaks perfectly well, which is the bug this distinction exists to fix.
+     */
+    fun any(context: Context): Boolean = SaicTts.isAvailable || list(context).isNotEmpty()
+
+    /** Engine names for the report, the vehicle voice service included when it is bound. */
+    fun describe(context: Context): List<String> =
+        (if (SaicTts.isAvailable) listOf(VEHICLE_VOICE) else emptyList()) + list(context)
+
+    const val VEHICLE_VOICE = "com.saicmotor.voicetts (vehicle)"
 }

@@ -7,19 +7,28 @@ import android.media.AudioManager
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import com.mg4.hardware.AppLogger
+import com.mg4.hardware.saic.SaicTts
 import java.util.Locale
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 /**
- * Speaks a rule message through the platform TTS engine.
+ * Speaks a rule message.
  *
- * The engine is created per utterance and released once it has spoken: rules fire a few
- * times per drive at most, and a resident engine would hold an audio focus client alive
- * for the whole ignition cycle for nothing.
+ * **The car's own voice first.** The head unit talks — it announces tyre faults and
+ * navigation — but through a SAIC vendor service, not through `android.speech.tts`. Probing
+ * for a platform engine and finding none was the right answer to the wrong question: the
+ * vehicle has no Android TTS engine installed and does not need one. [SaicTts] is therefore
+ * tried first, and it is also the cheaper path — a one-way binder call, no engine to spin
+ * up, no audio focus to take, nothing to block on.
  *
- * ⚠️ Blocks until the engine has spoken (or the timeout expires); call off the main
- * thread — which is where the rule engine already runs.
+ * The platform engine stays as the fallback, for a bench emulator or a head unit whose
+ * vendor service is absent. There it is created per utterance and released once it has
+ * spoken: rules fire a few times per drive at most, and a resident engine would hold an
+ * audio focus client alive for the whole ignition cycle for nothing.
+ *
+ * ⚠️ The fallback blocks until the engine has spoken (or the timeout expires); call off the
+ * main thread — which is where the rule engine already runs.
  */
 object Speaker {
 
@@ -58,6 +67,12 @@ object Speaker {
     /** @return null when the message was spoken, otherwise why it was not. */
     fun speak(context: Context, message: String): Failure? {
         if (message.isBlank()) return Failure.EMPTY_MESSAGE
+
+        // Queued, not interrupting: a tyre warning outranks "profile applied".
+        if (SaicTts.isAvailable && SaicTts.speak(message)) {
+            AppLogger.d(TAG, "spoken by the vehicle voice service")
+            return null
+        }
 
         val appContext = context.applicationContext
         val ready = CountDownLatch(1)

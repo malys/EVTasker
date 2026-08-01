@@ -4,6 +4,7 @@ import android.content.Context
 import com.mg4.hardware.saic.SaicHub
 import com.mg4.hardware.saic.SaicPhone
 import com.mg4.hardware.saic.SaicRadio
+import com.mg4.hardware.saic.SaicTts
 
 /**
  * Binds the SAIC vendor services the catalogue depends on.
@@ -21,5 +22,8 @@ object VendorServices {
         SaicHub.connect(appContext)
         SaicRadio.connect(appContext)
         SaicPhone.connect(appContext)
+        // The vehicle's own voice — what the "speak" action uses in preference to an Android
+        // TTS engine, which this head unit does not have.
+        SaicTts.connect(appContext)
     }
 }

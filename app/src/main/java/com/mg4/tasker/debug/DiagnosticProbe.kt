@@ -117,7 +117,7 @@ object DiagnosticProbe {
         val bridge = ProfileBridge(appContext)
         val bridgeReachable = try { bridge.connect() } finally { bridge.disconnect() }
 
-        val engines = SpeechEngines.list(appContext)
+        val engines = SpeechEngines.describe(appContext)
         val caps = Diagnostics.Capabilities(
             vehicleLayerReady = MG4Hardware.isCarPropertyManagerReady(),
             gateVerdict = gateVerdict(),
