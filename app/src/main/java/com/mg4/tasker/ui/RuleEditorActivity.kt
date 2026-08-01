@@ -15,6 +15,7 @@ import com.mg4.tasker.databinding.ItemEditorRowBinding
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.Condition
 import com.mg4.tasker.model.MatchMode
+import com.mg4.tasker.model.RuleTrigger
 import com.mg4.tasker.model.Rule
 import com.mg4.hardware.catalog.ValueKind
 import com.mg4.tasker.store.RuleStore
@@ -83,6 +84,10 @@ class RuleEditorActivity : AppCompatActivity() {
         }
         binding.matchGroup.check(
             if (existing?.match == MatchMode.ANY) R.id.matchAny else R.id.matchAll
+        )
+        binding.triggerGroup.check(
+            if (existing?.firesOn == RuleTrigger.IGNITION_OFF) R.id.triggerIgnitionOff
+            else R.id.triggerIgnitionOn
         )
 
         binding.addConditionButton.setOnClickListener {
@@ -282,6 +287,8 @@ class RuleEditorActivity : AppCompatActivity() {
             name = name,
             enabled = ruleId?.let { store.getById(it)?.enabled } ?: true,
             match = if (binding.matchGroup.checkedButtonId == R.id.matchAny) MatchMode.ANY else MatchMode.ALL,
+            trigger = if (binding.triggerGroup.checkedButtonId == R.id.triggerIgnitionOff)
+                RuleTrigger.IGNITION_OFF else RuleTrigger.IGNITION_ON,
             conditions = conditions.toList(),
             actions = actions.toList()
         )

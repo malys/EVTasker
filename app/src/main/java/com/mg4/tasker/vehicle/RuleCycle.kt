@@ -56,21 +56,40 @@ object RuleCycle {
 
     private const val TAG = "MG4Tasker.Cycle"
 
-    fun run(context: Context, trigger: String) {
-        val rules = RuleStore(context).getAll()
-        if (rules.isEmpty()) { AppLogger.i(TAG, "no rules: $trigger skipped"); return }
+    /** A manual test runs every rule, whatever it is wired to — that is what testing means. */
+    const val MANUAL = "MANUAL"
 
+    fun run(context: Context, trigger: String) {
+        val all = RuleStore(context).getAll()
+        // Rules wired to a different event are not "skipped", they were never addressed: the
+        // history would otherwise fill with a line per rule per ignition saying nothing.
+        val rules = if (trigger == MANUAL) all else all.filter { it.firesOn.name == trigger }
+        if (rules.isEmpty()) {
+            AppLogger.i(TAG, "no rules for $trigger (${all.size} total) — skipped")
+            return
+        }
+
+        val startedAt = System.currentTimeMillis()
         val profileBridge = ProfileBridge(context).takeIf { it.connect() }
         try {
+            val snapshotStartedAt = System.currentTimeMillis()
             val snapshot = VehicleReader.read(
                 btMacs = BtTracker.snapshot(context),
                 btAvailable = BtDevices.isAvailable(context),
                 fix = CarLocation.lastKnown(context)
             )
+            val snapshotMs = System.currentTimeMillis() - snapshotStartedAt
             val result = RuleEngine(DirectExecutor(context, profileBridge))
                 .run(rules, snapshot, trigger, System.currentTimeMillis())
             HistoryStore(context).append(result)
-            AppLogger.i(TAG, "cycle $trigger — ${result.ruleRuns.size} rules evaluated")
+            // Timed, because "the car must stay responsive" is a claim that needs a number.
+            // The line lands in the log and therefore in every exported and shared report.
+            AppLogger.i(
+                TAG,
+                "cycle $trigger — ${result.ruleRuns.size} rules evaluated in " +
+                    "${System.currentTimeMillis() - startedAt} ms " +
+                    "(snapshot ${snapshotMs} ms)"
+            )
             CycleReporter.publish(result)
         } finally {
             profileBridge?.disconnect()

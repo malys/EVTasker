@@ -41,6 +41,19 @@ per-generation routing in `MG4Hardware`. It is the single source of truth for:
 
 Adding a vehicle entry without `@SupportedOn` fails `FirmwareSupportTest`.
 
+## Triggers are events already received, not new listeners
+
+`TaskerVehicleService` gets every ignition transition from one MG4Hardware listener. The
+switch-off trigger reads the other end of that same stream — no second listener, no bind, no
+poll. Keep it that way: before adding a trigger, check whether something already delivers the
+event. Repeats are filtered in the service (`lastTrigger`), because the bus re-asserts states
+and a rule that locks the doors must not run four times.
+
+`Rule.trigger` is **nullable on purpose**. Gson builds instances without calling the
+constructor, so a Kotlin default never applies to a key absent from stored JSON; a non-null
+enum would be null at runtime for every pre-existing rule. Read it through `firesOn`, export
+the raw field. Same trap as the TypeToken bug — see `ShrinkerSafeGsonTest`.
+
 ## The standstill gate is configurable, and still fails closed
 
 `VehicleWriteGate.allowUpToKmh` moves the "moving" boundary from 0 up to 50 km/h; the app

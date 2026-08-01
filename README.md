@@ -83,8 +83,16 @@ MG4Tasker runs its **own** persistent service: it initialises MG4Hardware, liste
 ignition directly (no dependency on MG4Control), reads the vehicle and applies the rules'
 actions through MG4Hardware. Started at boot and on app open.
 
-**Trigger: ignition.** The "Test now" button replays the exact same path on demand, and a
-master switch on the Rules screen disables automation without deleting rules.
+**Triggers: vehicle start and vehicle switch-off.** Each rule chooses one; a rule written
+before triggers existed runs at start, as it always did. Switching off costs nothing extra —
+the service already received every ignition transition and simply stopped reading at RUN, so
+there is no second listener, no extra bind and no polling. At switch-off the car is powering
+down: settings that persist (charge limit, locks, windows) land, and anything the vehicle
+drops with the ignition is reported by the history rather than assumed.
+
+The "Test now" button replays the whole path on demand and addresses **every** rule whatever
+it is wired to — that is what testing means. A master switch on the Rules screen disables
+automation without deleting rules.
 
 ---
 

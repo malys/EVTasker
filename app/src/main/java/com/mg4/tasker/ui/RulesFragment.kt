@@ -201,7 +201,10 @@ class RulesFragment : Fragment() {
         binding.detailScroll.visibility = View.VISIBLE
 
         val labels = Labels(requireContext(), btNames = BtDevices.bondedNamesByMac(requireContext()))
-        binding.detailName.text = current.name
+        binding.detailName.text = current.name + "  ·  " + getString(
+            if (current.firesOn == com.mg4.tasker.model.RuleTrigger.IGNITION_OFF)
+                R.string.editor_trigger_off else R.string.editor_trigger_on
+        )
         binding.detailConditions.text = current.conditions.joinToString("\n") { "• " + labels.describe(it) }
         binding.detailActions.text = current.actions.joinToString("\n") { "• " + labels.describe(it) }
     }

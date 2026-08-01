@@ -9,6 +9,7 @@ import com.mg4.tasker.model.Condition
 import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.MatchMode
 import com.mg4.tasker.model.Rule
+import com.mg4.tasker.model.RuleTrigger
 import com.mg4.tasker.model.RuleOutcome
 import com.mg4.tasker.model.RuleStatus
 import com.mg4.tasker.model.Snapshot
@@ -277,5 +278,43 @@ class RuleEngineTest {
         val result = run(warm, Snapshot(bridgeAvailable = false), executor)
 
         assertEquals(RuleStatus.SKIPPED, result.status)
+    }
+
+    // -------------------------------------------------------------------------
+    // Triggers
+    // -------------------------------------------------------------------------
+
+    /**
+     * The routing itself, kept out of [com.mg4.tasker.vehicle.RuleCycle] so it can be tested
+     * without a vehicle: a rule is addressed by the event it was wired to, and a manual test
+     * addresses every rule whatever it says.
+     */
+    private fun addressed(rules: List<Rule>, trigger: String): List<Rule> =
+        if (trigger == "MANUAL") rules else rules.filter { it.firesOn.name == trigger }
+
+    @Test
+    fun `un declencheur n adresse que les regles qui lui sont cablees`() {
+        val onStart = Rule(name = "start", trigger = RuleTrigger.IGNITION_ON)
+        val onStop = Rule(name = "stop", trigger = RuleTrigger.IGNITION_OFF)
+        val legacy = Rule(name = "legacy")   // écrite avant les déclencheurs
+
+        assertEquals(
+            listOf("start", "legacy"),
+            addressed(listOf(onStart, onStop, legacy), "IGNITION_ON").map { it.name }
+        )
+        assertEquals(
+            listOf("stop"),
+            addressed(listOf(onStart, onStop, legacy), "IGNITION_OFF").map { it.name }
+        )
+    }
+
+    @Test
+    fun `le test manuel adresse toutes les regles`() {
+        val rules = listOf(
+            Rule(name = "start", trigger = RuleTrigger.IGNITION_ON),
+            Rule(name = "stop", trigger = RuleTrigger.IGNITION_OFF)
+        )
+
+        assertEquals(2, addressed(rules, "MANUAL").size)
     }
 }

@@ -8,6 +8,7 @@ import com.mg4.tasker.model.CompareOp
 import com.mg4.tasker.model.Condition
 import com.mg4.tasker.model.MatchMode
 import com.mg4.tasker.model.Rule
+import com.mg4.tasker.model.RuleTrigger
 
 /**
  * The rules file format — what an export writes and an import reads back.
@@ -55,6 +56,10 @@ object RuleTransfer {
                     name = rule.name,
                     enabled = rule.enabled,
                     match = rule.match.name,
+                    // The raw field, not firesOn: a rule that never chose a trigger exports
+                    // without the key, so the round trip is an identity and a file written
+                    // before triggers existed comes back unchanged.
+                    trigger = rule.trigger?.name,
                     conditions = rule.conditions.map {
                         ConditionDto(
                             type = it.type.name,
@@ -152,11 +157,26 @@ object RuleTransfer {
                 type = type,
                 number = raw.number ?: 0,
                 flag = raw.flag ?: true,
-                text = raw.text.orEmpty()
+                text = raw.text.orEmpty(),
+                minutesFrom = raw.minutesFrom ?: 0,
+                minutesTo = raw.minutesTo ?: 0
             )
         }
 
-        val rule = Rule(id, name, dto.enabled ?: true, match, conditions, actions)
+        // An unknown trigger name is malformed, not "assume start": a rule imported from a
+        // newer build would otherwise fire at the wrong moment, silently.
+        val trigger = dto.trigger?.let {
+            enumByName<RuleTrigger>(it) ?: return Result.Invalid(Reason.MALFORMED)
+        }
+        val rule = Rule(
+            id = id,
+            name = name,
+            enabled = dto.enabled ?: true,
+            match = match,
+            trigger = trigger,
+            conditions = conditions,
+            actions = actions
+        )
         // Same bar the editor enforces: no condition means "always", no action means nothing.
         if (!rule.isComplete()) return Result.Invalid(Reason.MALFORMED)
 
@@ -181,6 +201,8 @@ object RuleTransfer {
         val name: String? = null,
         val enabled: Boolean? = null,
         val match: String? = null,
+        /** Absent in files written before triggers existed — those rules fire at start. */
+        val trigger: String? = null,
         val conditions: List<ConditionDto?>? = null,
         val actions: List<ActionDto?>? = null
     )
@@ -200,6 +222,8 @@ object RuleTransfer {
         val type: String? = null,
         val number: Int? = null,
         val flag: Boolean? = null,
-        val text: String? = null
+        val text: String? = null,
+        val minutesFrom: Int? = null,
+        val minutesTo: Int? = null
     )
 }

@@ -215,4 +215,7 @@
     <string name="diag_reason_no_location">nessuna posizione disponibile</string>
     <string name="paste_header">**Password:** `%1$s` · scade un’ora dopo l’invio.\n\nOspitato gratuitamente da [April](https://www.april.org) su %2$s. Se ti ha evitato un giro dal meccanico, [fai una donazione](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Finestrini e blocco</string>
+    <string name="editor_trigger">Si attiva</string>
+    <string name="editor_trigger_on">All’avvio</string>
+    <string name="editor_trigger_off">Allo spegnimento</string>
 </resources>

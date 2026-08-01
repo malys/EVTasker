@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import com.mg4.hardware.AppLogger
 import com.mg4.hardware.MG4Hardware
 import com.mg4.hardware.VehicleWriteGate
+import com.mg4.tasker.model.RuleTrigger
 import com.mg4.tasker.store.AppState
 import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.vehicle.BtTracker
@@ -53,6 +54,10 @@ class TaskerVehicleService : Service() {
     private var ignitionListener: ((Int) -> Unit)? = null
     private var btReceiver: BroadcastReceiver? = null
 
+    /** Last transition acted on, so a re-asserted ignition state does not re-run a cycle. */
+    @Volatile
+    private var lastTrigger: RuleTrigger? = null
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -60,10 +65,16 @@ class TaskerVehicleService : Service() {
         startForeground(Notifier.FOREGROUND_NOTIFICATION_ID, Notifier.buildForegroundNotification(this))
         AppLogger.i(TAG, "onCreate — initialising vehicle layer")
 
+        // The application context, captured deliberately. `getString` here would resolve on
+        // the Service, and messageProvider is a field on a singleton in the shared library —
+        // it would hold this Service, and everything it references, for the life of the
+        // process. START_STICKY means the Service is destroyed and recreated; each
+        // generation would be retained.
+        val strings = applicationContext
         VehicleWriteGate.messageProvider = { decision ->
             when (decision) {
-                VehicleWriteGate.Decision.REFUSED_MOVING        -> getString(com.mg4.tasker.R.string.verdict_moving)
-                VehicleWriteGate.Decision.REFUSED_UNKNOWN_SPEED -> getString(com.mg4.tasker.R.string.verdict_unknown_speed)
+                VehicleWriteGate.Decision.REFUSED_MOVING        -> strings.getString(com.mg4.tasker.R.string.verdict_moving)
+                VehicleWriteGate.Decision.REFUSED_UNKNOWN_SPEED -> strings.getString(com.mg4.tasker.R.string.verdict_unknown_speed)
                 VehicleWriteGate.Decision.ALLOWED               -> null
             }
         }
@@ -94,14 +105,30 @@ class TaskerVehicleService : Service() {
         btReceiver?.let { runCatching { unregisterReceiver(it) } }
     }
 
+    /**
+     * One listener, both transitions.
+     *
+     * The stream already carried OFF; the service simply stopped reading at RUN. Acting on
+     * the other end costs no second listener, no bind and no polling — which is why the
+     * switch-off trigger is free where a geofence or a battery threshold would not be.
+     *
+     * Repeats are ignored. The vehicle re-asserts its ignition state, and a rule that locked
+     * the doors must not run four times because the bus said OFF four times.
+     */
     private fun registerIgnitionListener() {
         val listener: (Int) -> Unit = { state ->
-            if (state == MG4Hardware.CarIgnitionItem.RUN) {
+            val trigger = when (state) {
+                MG4Hardware.CarIgnitionItem.RUN -> RuleTrigger.IGNITION_ON
+                MG4Hardware.CarIgnitionItem.OFF -> RuleTrigger.IGNITION_OFF
+                else -> null
+            }
+            if (trigger != null && trigger != lastTrigger) {
+                lastTrigger = trigger
                 if (AppState.isAutomationEnabled(this)) {
-                    AppLogger.i(TAG, "Ignition RUN → evaluating rules")
-                    thread(name = "mg4-tasker-cycle") { RuleCycle.run(this, "IGNITION_ON") }
+                    AppLogger.i(TAG, "Ignition $state → evaluating ${trigger.name} rules")
+                    thread(name = "mg4-tasker-cycle") { RuleCycle.run(this, trigger.name) }
                 } else {
-                    AppLogger.i(TAG, "Ignition RUN but automation disabled — ignored")
+                    AppLogger.i(TAG, "Ignition $state but automation disabled — ignored")
                 }
             }
         }
