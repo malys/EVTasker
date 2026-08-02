@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_xs"
             android:textAppearance="@style/Text.MG4.Secondary"
-            android:textColor="@color/mg4_refused"
+            android:textColor="@color/mg4_warn"
             android:visibility="gone" />
 
         <!-- Detail as text rather than a nested list: a run fits in a few lines, and a

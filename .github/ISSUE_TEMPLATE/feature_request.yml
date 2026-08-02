@@ -1,26 +1,149 @@
-name: Feature request
-description: Suggest a condition, action, or behaviour
-labels: ["enhancement"]
+name: ✨ Feature Request
+description: Suggest a new automation rule type or feature
+title: "[FEATURE] "
+labels: [enhancement, needs-review]
+assignees: []
+
 body:
+  - type: markdown
+    attributes:
+      value: |
+        # Feature Request
+
+        Have an idea to improve automation? We'd love to hear it!
+
+        **Before requesting:** Please check existing issues/discussions for similar requests.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "Pre-submission checks"
+      description: "Ensure you've done these before submitting"
+      options:
+        - label: I've checked existing issues/discussions and found no duplicate
+          required: true
+        - label: This is an automation/rule feature (not vehicle control — that's MG4Control)
+          required: true
+        - label: I understand this feature must have no safety issues
+          required: true
+        - label: I'm not requesting remote control (offline automation only)
+          required: true
+
+  - type: input
+    id: title
+    attributes:
+      label: "Feature Title"
+      description: "Clear, concise name for the feature"
+      placeholder: "Add geofence trigger type for location-based automation"
+    validations:
+      required: true
+
   - type: textarea
     id: problem
     attributes:
-      label: What problem does this solve?
-      description: Describe the situation in the car, not the solution you have in mind.
+      label: "Problem or Use Case"
+      description: |
+        What problem does this solve? Why is it needed?
+        - Current limitation
+        - User workflow
+        - How this improves automation
+      placeholder: |
+        Users want to automate profile changes based on specific locations (home, office, favorite route).
+        Currently can only trigger by time or speed.
+        A geofence trigger would enable: "When arriving at office (9:00-17:00), apply office profile."
+      rows: 6
     validations:
       required: true
+
   - type: textarea
-    id: idea
+    id: solution
     attributes:
-      label: What you would like it to do
+      label: "Proposed Solution"
+      description: |
+        How should this feature work?
+        - New rule type or trigger
+        - Conditions that apply
+        - Actions that follow
+        - State/sequencing requirements
+      placeholder: |
+        1. New trigger type: "geofence" with radius (e.g., 500m)
+        2. Define locations in settings (home, office, custom)
+        3. Rule: "When near office (500m) + time 09:00-17:00 → apply office profile"
+        4. Exit geofence: optional "restore previous profile" action
+      rows: 8
     validations:
       required: true
-  - type: checkboxes
-    id: constraints
+
+  - type: textarea
+    id: alternatives
     attributes:
-      label: Please confirm
+      label: "Alternative Approaches"
+      description: "Have you considered other ways to solve this?"
+      placeholder: |
+        - Alternative 1: Manual trigger in-app + button press
+        - Pro: no background location tracking
+        - Con: requires user action, not truly automated
+      rows: 4
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: "Estimated Complexity"
+      description: "How much work is this?"
       options:
-        - label: If this writes to the vehicle, MG4Control must expose it — a verified read comes before any write.
-          required: true
-        - label: I have considered that automated writes happen with no one looking at the screen.
+        - "Small (< 1 day)"
+        - "Medium (1–3 days)"
+        - "Large (1–2 weeks)"
+        - "Unknown"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: automation_impact
+    attributes:
+      label: "Automation Impact"
+      description: "What does this affect?"
+      options:
+        - "Trigger type only (new way to start rules)"
+        - "Condition type (new way to gate rules)"
+        - "Action type (new things to do)"
+        - "State management (affects task sequencing)"
+        - "Multiple components"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: safety_level
+    attributes:
+      label: "Safety Consideration"
+      description: "Does this feature create safety concerns?"
+      options:
+        - "No safety impact — UI/data only"
+        - "Low risk — non-critical vehicle action"
+        - "Medium risk — could affect driving behavior"
+        - "High risk — safety system impact (ADAS, braking, steering)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      description: "How will we know this feature is done?"
+      placeholder: |
+        - [ ] Geofence trigger type defined in rule schema
+        - [ ] Location data persisted securely
+        - [ ] Rule engine correctly evaluates geofence + time conditions
+        - [ ] Exit geofence action reverses entry action (if applicable)
+        - [ ] No false positives from GPS drift
+        - [ ] Battery impact < 1% per hour
+        - [ ] Works offline (no network required)
+      rows: 6
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: "Consent"
+      options:
+        - label: I understand this project is not affiliated with SAIC/MG Motor and carries no warranty (see DISCLAIMER.md)
           required: true

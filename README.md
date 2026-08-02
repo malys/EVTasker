@@ -1,4 +1,4 @@
-# MG4Tasker
+# MG4 Tasker
 
 <p align="center"><img src="docs/logo.svg" width="440" alt="MG4Tasker"></p>
 
@@ -35,18 +35,15 @@ profile* — becomes available.
 - [Firmware compatibility](#firmware-compatibility)
 - [Vehicle services: climate, charging, radio, calls](#vehicle-services-climate-charging-radio-calls)
 - [Diagnostic](#diagnostic)
-  - [Testing a rule](#testing-a-rule)
-  - [Exporting the diagnostic and the logs](#exporting-the-diagnostic-and-the-logs)
-  - [Sharing the logs from the car](#sharing-the-logs-from-the-car)
-  - [When a rule will not save](#when-a-rule-will-not-save)
 - [Import and export (USB stick)](#import-and-export-usb-stick)
+- [Install](#install)
 - [Building](#building)
+- [Project documents](#project-documents)
 - [Security](#security)
-
----
+- [Contributing](#contributing)
+- [Legal](#legal)
 
 ## Screenshots
-
 <p align="center">
   <img src="screenshots/mg4Tasker_rules1.png" width="200" alt="MG4Tasker rules screenshot 1">
   <img src="screenshots/mg4Tasker_rules2.png" width="200" alt="MG4Tasker rules screenshot 2">
@@ -60,7 +57,6 @@ profile* — becomes available.
 ---
 
 ## How it works
-
 ```
                     ┌──────────────────────────────────────┐
    Ignition ON  ──► │ MG4Tasker (system app)               │
@@ -97,7 +93,6 @@ automation without deleting rules.
 ---
 
 ## Requirements
-
 - Signed with the ROM **platform key** and `sharedUserId="android.uid.system"` — the car
   permissions are `signature|privileged`, so this is what grants direct vehicle access (the
   same footing as MG4Control). The Diagnostic tab shows whether the vehicle layer came up.
@@ -107,7 +102,6 @@ That's it. MG4Control is **not** required.
 ---
 
 ## MG4Control (optional)
-
 If [MG4Control](https://github.com/malys/MG4Control) is installed (and signed with the same
 key), one extra action appears: **apply an MG4Control profile**. It reaches MG4Control's
 `applyProfile` over the signature-protected bridge. It is the *only* MG4Control-dependent
@@ -121,7 +115,6 @@ can only ever fail has no business in the picker — and everything else works.
 ---
 
 ## The speed gate
-
 MG4Hardware refuses any write that changes road behaviour while the car is moving, or when
 its speed is unreadable (*fail closed*) — the gate lives in the shared layer, so MG4Tasker
 and MG4Control enforce the identical rule.
@@ -192,7 +185,6 @@ that no catalogue entry can reach it. Cutting the vehicle stays an explicit huma
 ---
 
 ## Conditions and actions
-
 An unreadable condition makes the rule **not evaluable** — it does not fire, and the
 history names the missing signal. Unreadable is never treated as false.
 
@@ -227,7 +219,6 @@ below.
 ---
 
 ## Firmware compatibility
-
 Every vehicle catalogue entry carries a `@SupportedOn(...)` annotation naming the firmware
 generations it works on, derived from MG4Hardware's `FirmwareInfo` and per-generation
 routing. That annotation is the single source of truth for three things:
@@ -263,7 +254,6 @@ Highlights (see the generated matrix for the full grid):
 ---
 
 ## Vehicle services: climate, charging, radio, calls
-
 Climate and charging used to be read-only and unverified — standard AOSP property ids the
 R69 sources name, that no MG4 confirmed. Writing one of those would have been a guess, so
 there were no write actions.
@@ -299,7 +289,6 @@ intent, then `google.navigation:`, and reports honestly when the head unit has n
 ---
 
 ## Diagnostic
-
 The Diagnostic tab answers one question: **would a rule using this entry work on this car,
 right now?** An entry marked OK is one the rule engine will not refuse.
 
@@ -408,7 +397,6 @@ unparsed. Import stays the deliberate way to replace the set.
 ---
 
 ## Import and export (USB stick)
-
 **Export** and **Import** on the Rules screen move the whole rule set to and from a JSON
 file — a backup before a reinstall, or the same rules on a second car, without retyping
 anything on the on-screen keyboard.
@@ -488,8 +476,7 @@ import reports the unknown entry rather than guessing.
 
 ---
 
-## Installing on the MG4
-
+## Install
 The MG4 head unit has no visible way to open Settings or install an APK. The known route
 in (via the on-screen keyboard) is:
 
@@ -507,7 +494,6 @@ in (via the on-screen keyboard) is:
 > only with an APK you trust. See [DISCLAIMER.md](DISCLAIMER.md).
 
 ## Building
-
 ```bash
 mise install        # JDK 17 (AGP 9.1.1)
 mise run test       # JVM unit tests (also regenerates docs/firmware-matrix.md)
@@ -569,8 +555,18 @@ mise run test            # both flavors
 ./gradlew assembleStableDebug assembleUnstableDebug
 ```
 
-## Security
+## Project documents
+| Document | What it covers |
+|---|---|
+| [DESIGN.md](DESIGN.md) | The MG4Suite design system — colour, type, touch targets, icons |
+| [AGENTS.md](AGENTS.md) | Context for AI agents working in this repository |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How to build, test and submit a change |
+| [SECURITY.md](SECURITY.md) | Threat model and vulnerability disclosure |
+| [DISCLAIMER.md](DISCLAIMER.md) | Vehicle-safety disclaimer — read before installing |
+| [CHANGELOG.md](CHANGELOG.md) | Release history |
+| [LICENSE.md](LICENSE.md) | Licence text |
 
+## Security
 See [SECURITY.md](SECURITY.md) for reporting and scope. Three structural decisions:
 
 1. **The speed gate lives in MG4Hardware.** MG4Tasker writes the vehicle directly, but the
@@ -582,6 +578,11 @@ See [SECURITY.md](SECURITY.md) for reporting and scope. Three structural decisio
 
 See also [DISCLAIMER.md](DISCLAIMER.md) — this software runs on a vehicle.
 
-## License
+## Contributing
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. In short: this
+code runs in a moving vehicle, so changes stay small, carry tests, and say in the diff
+what would break without them. Anything touching the interface follows
+[DESIGN.md](DESIGN.md).
 
+## Legal
 MIT — see [LICENSE](LICENSE) and [LICENSE.md](LICENSE.md).

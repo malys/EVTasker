@@ -20,7 +20,7 @@
             android:layout_marginBottom="@dimen/spacing_md"
             android:text="@string/editor_gated_explain"
             android:textAppearance="@style/Text.MG4.Secondary"
-            android:textColor="@color/mg4_refused"
+            android:textColor="@color/mg4_warn"
             android:visibility="gone" />
 
         <!-- Operator — comparable numeric conditions only -->
