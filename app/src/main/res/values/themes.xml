@@ -1,87 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Thème sombre imposé, pas « suivre le système » : l'écran fait face au conducteur
-         de nuit. Un fond clair en plein pare-brise est un éblouissement, pas une préférence. -->
-    <style name="Theme.MG4Tasker" parent="Theme.Material3.Dark.NoActionBar">
+    <!-- DayNight, not a forced dark theme: the suite follows the vehicle's day/night
+         setting. Dark is still the mode that matters - a light background filling the
+         windscreen at night is glare - which is why the light palette was raised to
+         the same 7:1 floor as the dark one rather than the other way round.
+         Shared component styles live in styles_mg4.xml. -->
+    <style name="Theme.MG4Tasker" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/mg4_accent</item>
         <item name="colorOnPrimary">@color/mg4_on_accent</item>
         <item name="colorSurface">@color/mg4_surface</item>
         <item name="colorSurfaceContainer">@color/mg4_surface_raised</item>
         <item name="android:colorBackground">@color/mg4_background</item>
+        <item name="android:windowBackground">@color/mg4_background</item>
         <item name="colorError">@color/mg4_error</item>
         <item name="android:statusBarColor">@color/mg4_background</item>
-        <!-- Material3 Dark propose un « on surface » gris-mauve (#E6E1E5) confortable en
-             intérieur et trop faible en plein soleil : on impose un blanc franc. -->
-        <item name="colorOnSurface">@color/mg4_text</item>
+        <!-- Material3's "on surface" is a grey-mauve that is comfortable indoors and
+             too weak in full sun: a hard contrast is imposed instead. -->
+        <item name="colorOnSurface">@color/mg4_text_primary</item>
         <item name="colorOnSurfaceVariant">@color/mg4_text_secondary</item>
-        <item name="colorOnBackground">@color/mg4_text</item>
+        <item name="colorOnBackground">@color/mg4_text_primary</item>
         <item name="colorOutline">@color/mg4_outline</item>
-        <item name="android:textColorPrimary">@color/mg4_text</item>
+        <item name="android:textColorPrimary">@color/mg4_text_primary</item>
         <item name="android:textColorSecondary">@color/mg4_text_secondary</item>
-        <!-- Les boîtes de dialogue (choix de valeur, confirmations) héritent du même
-             contraste : sans ça elles retombent sur la palette Material par défaut. -->
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.MG4.Dialog</item>
     </style>
 
-    <!-- Sélecteur de condition / action : une boîte de dialogue qui occupe tout l'écran.
-         L'ancien bandeau inférieur ne laissait qu'un tiers de la hauteur en paysage, donc
-         une seule colonne et un défilement dès la cinquième entrée. Ici il n'y a rien
-         derrière qui mérite d'être vu, donc la fenêtre ne flotte pas et n'assombrit rien. -->
+    <!-- Condition / action picker: a dialog that fills the screen. The old bottom
+         sheet left only a third of the height in landscape, so one column and a
+         scrollbar by the fifth entry. There is nothing behind a picker worth seeing,
+         so the window does not float and dims nothing. -->
     <style name="Theme.MG4.Picker" parent="Theme.MG4Tasker">
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowBackground">@color/mg4_background</item>
         <item name="android:backgroundDimEnabled">false</item>
-    </style>
-
-    <style name="ThemeOverlay.MG4.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <item name="colorSurface">@color/mg4_surface_raised</item>
-        <item name="colorOnSurface">@color/mg4_text</item>
-        <item name="colorOnSurfaceVariant">@color/mg4_text_secondary</item>
-        <item name="android:textColorPrimary">@color/mg4_text</item>
-        <item name="buttonBarPositiveButtonStyle">@style/Widget.MG4.DialogButton</item>
-        <item name="buttonBarNegativeButtonStyle">@style/Widget.MG4.DialogButton</item>
-    </style>
-
-    <!-- Les boutons d'une boîte de dialogue sont les plus petits de l'application : ils
-         sont ramenés à la même cible tactile que le reste. -->
-    <style name="Widget.MG4.DialogButton" parent="Widget.Material3.Button.TextButton.Dialog">
-        <item name="android:minHeight">@dimen/touch_target</item>
-        <item name="android:minWidth">140dp</item>
-        <item name="android:textSize">@dimen/text_body</item>
-    </style>
-
-    <!-- Cible tactile de 64 dp : le doigt vise mal sur route, et l'écran est loin.
-         C'est la taille minimale utilisée partout dans l'application. -->
-    <style name="Widget.MG4.Button" parent="Widget.Material3.Button">
-        <item name="android:minHeight">@dimen/touch_target</item>
-        <item name="android:textSize">@dimen/text_body</item>
-        <item name="android:paddingStart">@dimen/spacing_lg</item>
-        <item name="android:paddingEnd">@dimen/spacing_lg</item>
-    </style>
-
-    <style name="Widget.MG4.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
-        <item name="android:minHeight">@dimen/touch_target</item>
-        <item name="android:textSize">@dimen/text_body</item>
-    </style>
-
-    <style name="Text.MG4.SectionHeader" parent="TextAppearance.Material3.LabelLarge">
-        <item name="android:textSize">@dimen/text_label</item>
-        <item name="android:textColor">@color/mg4_accent</item>
-        <item name="android:letterSpacing">0.12</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
-    <style name="Text.MG4.Title" parent="TextAppearance.Material3.TitleLarge">
-        <item name="android:textSize">@dimen/text_title</item>
-    </style>
-
-    <style name="Text.MG4.Body" parent="TextAppearance.Material3.BodyLarge">
-        <item name="android:textSize">@dimen/text_body</item>
-    </style>
-
-    <style name="Text.MG4.Secondary" parent="TextAppearance.Material3.BodyMedium">
-        <item name="android:textSize">@dimen/text_secondary</item>
-        <item name="android:textColor">@color/mg4_text_secondary</item>
     </style>
 </resources>

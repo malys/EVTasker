@@ -29,6 +29,6 @@
         android:maxLines="1"
         android:ellipsize="end"
         android:textAppearance="@style/Text.MG4.Secondary"
-        android:textColor="@color/mg4_refused"
+        android:textColor="@color/mg4_warn"
         android:visibility="gone" />
 </LinearLayout>
