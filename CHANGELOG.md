@@ -8,6 +8,10 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Wait** action (1 to 60 seconds), and reordering of a rule's actions with the arrows
+  on each row. Actions run one after the other in the order shown, so a wait placed
+  between two of them lets the first write land before the second is asked for
+  (climate on, then fan level). A rule made only of waits is refused at save time.
 - Configuration tab. The speed threshold, the language and the rules file
   (export / import) moved there from the rules pane; the Rules tab is now the rule
   list and nothing else.

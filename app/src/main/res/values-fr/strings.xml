@@ -256,4 +256,6 @@
     <string name="value_editor_instruction">Choisissez la valeur à utiliser dans cette règle.</string>
     <string name="editor_trigger_on">Au démarrage</string>
     <string name="editor_trigger_off">À l’extinction</string>
+    <string name="editor_move_up">Monter</string>
+    <string name="editor_move_down">Descendre</string>
 </resources>

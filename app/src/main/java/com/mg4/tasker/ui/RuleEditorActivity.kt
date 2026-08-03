@@ -313,9 +313,21 @@ class RuleEditorActivity : AppCompatActivity() {
                         }
                     }
                 },
-                onRemove = { actions.removeAt(index); renderActions() }
+                onRemove = { actions.removeAt(index); renderActions() },
+                // Actions run in the order shown, so the order is part of the rule: a wait
+                // is only useful where the user puts it.
+                reorderable = true,
+                canMoveUp = index > 0,
+                canMoveDown = index < actions.lastIndex,
+                onMoveUp = { move(index, index - 1) },
+                onMoveDown = { move(index, index + 1) }
             )
         }
+    }
+
+    private fun move(from: Int, to: Int) {
+        actions.add(to, actions.removeAt(from))
+        renderActions()
     }
 
     private fun addRow(
@@ -323,13 +335,26 @@ class RuleEditorActivity : AppCompatActivity() {
         label: String,
         gated: Boolean,
         onEdit: () -> Unit,
-        onRemove: () -> Unit
+        onRemove: () -> Unit,
+        reorderable: Boolean = false,
+        canMoveUp: Boolean = false,
+        canMoveDown: Boolean = false,
+        onMoveUp: () -> Unit = {},
+        onMoveDown: () -> Unit = {}
     ) {
         val row = ItemEditorRowBinding.inflate(LayoutInflater.from(this), container, false)
         row.rowLabel.text = label
         row.rowGated.visibility = if (gated) View.VISIBLE else View.GONE
         row.rowClickArea.setOnClickListener { onEdit() }
         row.rowRemove.setOnClickListener { onRemove() }
+        // Kept in place and disabled at the ends rather than hidden: buttons that disappear
+        // move every other row's controls under the finger already reaching for them.
+        row.rowUp.visibility = if (reorderable) View.VISIBLE else View.GONE
+        row.rowDown.visibility = if (reorderable) View.VISIBLE else View.GONE
+        row.rowUp.isEnabled = canMoveUp
+        row.rowDown.isEnabled = canMoveDown
+        row.rowUp.setOnClickListener { onMoveUp() }
+        row.rowDown.setOnClickListener { onMoveDown() }
         container.addView(row.root)
     }
 

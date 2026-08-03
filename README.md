@@ -184,6 +184,14 @@ Gate refusals are now kept and re-attempted at the first standstill. Three limit
 Transient action failures are different: each failed action is retried independently up to
 three times with exponential backoff (250 ms, then 500 ms). Actions that already succeeded
 are never replayed.
+
+A rule's actions run **one after the other, in the order shown in the editor**, and each one
+is finished before the next starts. That order is part of the rule: the arrows on every
+action row move it up or down. Where one write must land before the next is asked for —
+switching the climate on, then setting the fan level — the **Wait** action (1 to 60 seconds)
+holds the sequence in between. It touches nothing in the car, and appears in the history at
+its place in the sequence. A rule made only of waits is refused at save time: it would hold
+the cycle and change nothing.
 - **15 minutes, and never across an ignition cycle.** A rule that fired for this drive
   belongs to this drive. At switch-off the queue is dropped, not applied: the car is stopped
   then, which is exactly what makes it the wrong moment to change the setting the next
@@ -215,7 +223,7 @@ temperature, A/C, AUTO, recirculation, fan level, front and rear defrosters), **
 (charge limit, allow charging, scheduled charging and its window, battery pre-heating),
 **audio** (volume, the fine controls, play the radio), **driver assistance**, and **system**
 (launch an app, show a message, speak through the head unit's text-to-speech engine,
-navigate to a destination, call a number). ADAS state — AEB, ELK, ACC/TJA, TSR, overspeed and
+navigate to a destination, call a number, wait). ADAS state — AEB, ELK, ACC/TJA, TSR, overspeed and
 so on — is fully covered as gated actions.
 
 **Near a place** compares the car's last known fix with a point stored in the rule and a

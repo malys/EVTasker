@@ -239,4 +239,6 @@
     <string name="value_editor_instruction">Elija el valor que se usará en esta regla.</string>
     <string name="editor_trigger_on">Al arrancar</string>
     <string name="editor_trigger_off">Al apagar</string>
+    <string name="editor_move_up">Subir</string>
+    <string name="editor_move_down">Bajar</string>
 </resources>

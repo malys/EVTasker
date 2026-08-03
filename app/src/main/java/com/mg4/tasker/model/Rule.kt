@@ -91,8 +91,12 @@ data class Rule(
      * A rule with no condition would apply on every start without the user asking; a rule
      * with no action does nothing. Both are refused at save time rather than silently
      * ignored at run time.
+     *
+     * A rule made only of waits counts as having no action: it holds the cycle for its
+     * duration and changes nothing.
      */
-    fun isComplete(): Boolean = conditions.isNotEmpty() && actions.isNotEmpty()
+    fun isComplete(): Boolean =
+        conditions.isNotEmpty() && actions.any { it.type != ActionType.DELAY }
 
     /** [trigger], defaulting to vehicle start — what every rule written before this did. */
     val firesOn: RuleTrigger get() = trigger ?: RuleTrigger.IGNITION_ON

@@ -256,4 +256,10 @@
     <string name="value_editor_instruction">Choose the value to use in this rule.</string>
     <string name="editor_trigger_on">Vehicle start</string>
     <string name="editor_trigger_off">Vehicle switch-off</string>
+    <string name="editor_move_up">Move up</string>
+    <string name="editor_move_down">Move down</string>
+    <!-- Arrows, not words: the row is narrow and the meaning is the same in every
+         language. The spoken label is on contentDescription. -->
+    <string name="editor_move_up_glyph" translatable="false">▲</string>
+    <string name="editor_move_down_glyph" translatable="false">▼</string>
 </resources>

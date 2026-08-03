@@ -48,6 +48,40 @@
                 android:visibility="gone" />
         </LinearLayout>
 
+        <!-- Reordering: shown for actions, which run in the order listed, and hidden for
+             conditions, which are all evaluated regardless of order. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/rowUp"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="@dimen/touch_target"
+            android:minHeight="@dimen/touch_target"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:paddingStart="@dimen/spacing_sm"
+            android:paddingEnd="@dimen/spacing_sm"
+            android:textSize="@dimen/text_body"
+            android:text="@string/editor_move_up_glyph"
+            android:contentDescription="@string/editor_move_up"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/rowDown"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="@dimen/touch_target"
+            android:minHeight="@dimen/touch_target"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:paddingStart="@dimen/spacing_sm"
+            android:paddingEnd="@dimen/spacing_sm"
+            android:textSize="@dimen/text_body"
+            android:text="@string/editor_move_down_glyph"
+            android:contentDescription="@string/editor_move_down"
+            android:visibility="gone" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/rowRemove"
             style="@style/Widget.Material3.Button.TextButton"

@@ -239,4 +239,6 @@
     <string name="value_editor_instruction">Wählen Sie den Wert für diese Regel.</string>
     <string name="editor_trigger_on">Fahrzeugstart</string>
     <string name="editor_trigger_off">Fahrzeug aus</string>
+    <string name="editor_move_up">Nach oben</string>
+    <string name="editor_move_down">Nach unten</string>
 </resources>

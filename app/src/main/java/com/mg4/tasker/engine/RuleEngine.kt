@@ -4,6 +4,7 @@ import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.ActionResult
 import com.mg4.tasker.model.ConditionOutcome
+import com.mg4.hardware.catalog.ActionType
 import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.EngineRun
 import com.mg4.tasker.model.MatchMode
@@ -75,8 +76,28 @@ class RuleEngine(
             }
         }
 
-        val results = rule.actions.map { executeWithBackoff(it) }
+        // Sequential on purpose: two writes to the same subsystem sent at once are answered
+        // from the state the car had before either landed, and the user's order is the order
+        // they meant — a [ActionType.DELAY] between two of them only means anything if what
+        // follows it really waits.
+        val results = rule.actions.map {
+            if (it.type == ActionType.DELAY) pause(it) else executeWithBackoff(it)
+        }
         return RuleRun(rule.id, rule.name, RuleOutcome.FIRED, results)
+    }
+
+    /**
+     * The wait, run here rather than in the executor.
+     *
+     * Nothing is written, so there is no verdict to obtain from the vehicle; and the engine
+     * is what runs the actions one after the other, so it is also what can hold the line
+     * between two of them. Reusing the injectable [sleep] keeps tests from actually waiting.
+     */
+    private fun pause(action: Action): ActionResult {
+        val spec = ActionType.DELAY.spec
+        val seconds = action.number.coerceIn(spec.min, spec.max)
+        sleep(seconds * 1000L)
+        return ActionResult(ActionType.DELAY, true, BridgeContract.VERDICT_ALLOWED, "$seconds s")
     }
 
     private fun executeWithBackoff(action: Action): ActionResult {
