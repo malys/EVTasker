@@ -256,8 +256,7 @@ Highlights (see the generated matrix for the full grid):
 - **Lane-departure sound + vibration** — SWI132 only.
 - **Fine audio** (Bose, balance, fader, tone, 3D, speed volume) — SWI69, SWI131, SWI132: the
   SAIC `caradapter` audio helper these go through is bound on the A9 platform only.
-- **Climate, charging, radio and calls** — SWI68 and SWI165, the generations represented by
-  the decompiled R69 head-unit applications. They run on SAIC vendor services rather than on
+- **Climate, charging, radio and calls** — SWI68 and SWI165. They run on SAIC vendor services rather than on
   property ids, and whether a given car answers is a bind, not a table: the Diagnostic tab's
   *Vehicle services* row reports which of the four responded, and the matrix widens once a
   car outside that set reports one.
@@ -266,12 +265,12 @@ Highlights (see the generated matrix for the full grid):
 
 ## Vehicle services: climate, charging, radio, calls
 Climate and charging used to be read-only and unverified — standard AOSP property ids the
-R69 sources name, that no MG4 confirmed. Writing one of those would have been a guess, so
+that no MG4 confirmed. Writing one of those would have been a guess, so
 there were no write actions.
 
 They now go through the **SAIC vendor services** instead: the same binder interfaces the
-car's own HVAC, charging, radio and hands-free apps use, read from the decompiled R69
-head-unit applications. One bound service (`com.saicmotor.service.vehicle`) exposes a hub
+car's own HVAC, charging, radio and hands-free apps use. One bound service
+(`com.saicmotor.service.vehicle`) exposes a hub
 that hands out `aircondition`, `vehiclecharging`, `vehiclecontrol` and `vehiclecondition`;
 radio and telephony are their own services. What those calls do is not in doubt — they are what the car does to itself.
 

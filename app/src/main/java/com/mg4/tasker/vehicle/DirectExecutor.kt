@@ -8,7 +8,6 @@ import com.mg4.hardware.MG4Hardware
 import com.mg4.hardware.VehicleWriteGate
 import com.mg4.hardware.model.DriveMode
 import com.mg4.hardware.model.RegenLevel
-import com.mg4.hardware.saic.RadioFrequency
 import com.mg4.hardware.saic.SaicCharging
 import com.mg4.hardware.saic.SaicClimate
 import com.mg4.hardware.saic.SaicPhone
@@ -22,6 +21,7 @@ import com.mg4.tasker.model.ActionResult
 import com.mg4.hardware.catalog.ActionType
 import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.util.Speaker
+import com.mg4.tasker.util.WebhookClient
 
 /**
  * Executes actions by calling MG4Hardware **directly** — MG4Tasker's own vehicle access,
@@ -44,7 +44,8 @@ class DirectExecutor(
         ActionType.SHOW_NOTIFICATION -> notify(action)
         ActionType.SPEAK_TEXT        -> speak(action)
         ActionType.NAVIGATE_TO       -> navigate(action)
-        ActionType.TUNE_RADIO        -> tuneRadio(action)
+        ActionType.WEBHOOK_GET       -> webhook(action, "GET")
+        ActionType.WEBHOOK_POST      -> webhook(action, "POST")
         else                         -> applyVehicle(action)
     }
 
@@ -140,7 +141,8 @@ class DirectExecutor(
             ActionType.SHOW_NOTIFICATION,
             ActionType.SPEAK_TEXT,
             ActionType.NAVIGATE_TO,
-            ActionType.TUNE_RADIO -> null
+            ActionType.WEBHOOK_GET,
+            ActionType.WEBHOOK_POST -> null
         }
     }
 
@@ -149,18 +151,6 @@ class DirectExecutor(
      * retrying "FM 250" three times with backoff will not make it a station, and the history
      * showing what was typed is what lets the user find the typo.
      */
-    private fun tuneRadio(a: Action): ActionResult {
-        val station = RadioFrequency.parse(a.text)
-            ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "not a frequency: ${a.text}")
-        val ok = SaicRadio.tune(station.band, station.frequencyKhz)
-        return ActionResult(
-            a.type,
-            ok,
-            if (ok) BridgeContract.VERDICT_ALLOWED else BridgeContract.VERDICT_ERROR,
-            "${station.frequencyKhz} kHz"
-        )
-    }
-
     /** Digits, `+`, `*` and `#` only: anything else is not a number the car can dial. */
     private fun callNumber(a: Action): Boolean {
         val number = a.text.filter { it.isDigit() || it in "+*#" }
@@ -225,9 +215,9 @@ class DirectExecutor(
         val encoded = Uri.encode(a.text)
         val uris = if (point != null) {
             val (lat, lon) = point
-            listOf("google.navigation:q=$lat,$lon", "geo:$lat,$lon?q=$lat,$lon")
+            listOf("geo:$lat,$lon?q=$lat,$lon", "google.navigation:q=$lat,$lon")
         } else {
-            listOf("google.navigation:q=$encoded", "geo:0,0?q=$encoded")
+            listOf("geo:0,0?q=$encoded", "google.navigation:q=$encoded")
         }
         for (uri in uris) {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
@@ -242,6 +232,19 @@ class DirectExecutor(
             }
         }
         return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no navigation app")
+    }
+
+    private fun webhook(a: Action, method: String): ActionResult {
+        if (a.text.isBlank()) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no URL")
+        }
+        val response = WebhookClient.call(method, a.text, a.payload)
+        return ActionResult(
+            a.type,
+            response.ok,
+            if (response.ok) BridgeContract.VERDICT_ALLOWED else BridgeContract.VERDICT_ERROR,
+            response.detail
+        )
     }
 
     private fun notify(a: Action): ActionResult {

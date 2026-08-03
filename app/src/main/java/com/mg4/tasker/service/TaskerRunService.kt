@@ -21,8 +21,12 @@ import kotlin.concurrent.thread
 class TaskerRunService : Service() {
 
     companion object {
-        fun start(context: Context) {
-            context.startForegroundService(Intent(context, TaskerRunService::class.java))
+        private const val EXTRA_RULE_ID = "ruleId"
+
+        fun start(context: Context, ruleId: String) {
+            context.startForegroundService(
+                Intent(context, TaskerRunService::class.java).putExtra(EXTRA_RULE_ID, ruleId)
+            )
         }
     }
 
@@ -35,7 +39,7 @@ class TaskerRunService : Service() {
             MG4Hardware.initAudio(applicationContext) // idempotent; binds the vendor audio helper
             VendorServices.connect(applicationContext)
             AppState.applyWriteThreshold(this)
-            RuleCycle.run(this, "MANUAL")
+            RuleCycle.run(this, "MANUAL", ruleId = intent?.getStringExtra(EXTRA_RULE_ID))
             stopSelf(startId)
         }
         return START_NOT_STICKY

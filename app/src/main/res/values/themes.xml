@@ -23,7 +23,29 @@
         <item name="colorOutline">@color/mg4_outline</item>
         <item name="android:textColorPrimary">@color/mg4_text_primary</item>
         <item name="android:textColorSecondary">@color/mg4_text_secondary</item>
-        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MG4.Dialog</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MG4Tasker.Dialog</item>
+    </style>
+
+    <!-- Dialog text at the same sizes as the rest of the app. Material's defaults are
+         14sp body / 24sp title, sized for a phone held at arm's length; a test result or
+         a language list read at 70 cm through a windscreen reflection needs the suite's
+         floor. The shared overlay in styles_mg4.xml is generated, so the sizes are added
+         here rather than edited there. -->
+    <style name="ThemeOverlay.MG4Tasker.Dialog" parent="ThemeOverlay.MG4.Dialog">
+        <item name="materialAlertDialogTitleTextStyle">@style/MG4Tasker.Dialog.Title</item>
+        <!-- Also the type of the list items: single-choice rows read this attribute. -->
+        <item name="materialAlertDialogBodyTextStyle">@style/MG4Tasker.Dialog.Body</item>
+    </style>
+
+    <style name="MG4Tasker.Dialog.Title" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textSize">@dimen/text_title</item>
+        <item name="android:textColor">@color/mg4_text_primary</item>
+    </style>
+
+    <style name="MG4Tasker.Dialog.Body" parent="MaterialAlertDialog.Material3.Body.Text">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/mg4_text_primary</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
     </style>
 
     <!-- Condition / action picker: a dialog that fills the screen. The old bottom

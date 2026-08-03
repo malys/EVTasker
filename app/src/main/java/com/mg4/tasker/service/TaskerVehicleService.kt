@@ -35,6 +35,8 @@ class TaskerVehicleService : Service() {
 
     companion object {
         private const val TAG = "MG4Tasker.Vehicle"
+        private const val HARDKEY_ACTION = "com.saic.keyevent.hardkey.report"
+        const val HARDKEY_PERMISSION = "com.mg4.tasker.permission.RECEIVE_HARDKEY"
 
         /**
          * Whether the ignition listener is live, for the diagnostic screen.
@@ -54,6 +56,8 @@ class TaskerVehicleService : Service() {
 
     private var ignitionListener: ((Int) -> Unit)? = null
     private var btReceiver: BroadcastReceiver? = null
+    private var hardkeyReceiver: BroadcastReceiver? = null
+    private val physicalButtons = PhysicalButtonTracker()
 
     /** Last transition acted on, so a re-asserted ignition state does not re-run a cycle. */
     @Volatile
@@ -92,6 +96,7 @@ class TaskerVehicleService : Service() {
         // threshold the user chose before any rule can be evaluated.
         AppState.applyWriteThreshold(this)
         registerBtReceiver()
+        registerHardkeyReceiver()
         registerIgnitionListener()
         warnIfMG4ControlPresent()
         isRunning = true
@@ -104,6 +109,7 @@ class TaskerVehicleService : Service() {
         isRunning = false
         ignitionListener?.let { MG4Hardware.unregisterVehicleConditionListener(it) }
         btReceiver?.let { runCatching { unregisterReceiver(it) } }
+        hardkeyReceiver?.let { runCatching { unregisterReceiver(it) } }
     }
 
     /**
@@ -156,6 +162,44 @@ class TaskerVehicleService : Service() {
             addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
         }
         ContextCompat.registerReceiver(this, btReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+    }
+
+    /**
+     * The R69 OEM apps read these exact extras from this broadcast. The action itself is
+     * unprotected, so the receiver requires a signature permission from its sender.
+     */
+    private fun registerHardkeyReceiver() {
+        hardkeyReceiver = object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context, intent: Intent) {
+                val keyCode = intent.getIntExtra("android.intent.extra.hardkey.keycode", -1)
+                    .takeIf { it >= 0 }
+                    ?: intent.getIntExtra("keycode", -1).takeIf { it >= 0 }
+                    ?: intent.getIntExtra("keyCode", -1)
+                val down = intent.getBooleanExtra("android.intent.extra.hardkey.down", false) ||
+                    intent.getBooleanExtra("down", false)
+                val longPress = intent.getBooleanExtra("android.intent.extra.hardkey.longpress", false) ||
+                    intent.getBooleanExtra("longpress", false)
+                val event = physicalButtons.accept(keyCode, down, longPress) ?: return
+                AppLogger.i(TAG, "Physical button ${event.button} ${event.press}")
+                if (AppState.isAutomationEnabled(this@TaskerVehicleService)) {
+                    thread(name = "mg4-tasker-button-cycle") {
+                        RuleCycle.run(
+                            this@TaskerVehicleService,
+                            RuleTrigger.PHYSICAL_BUTTON.name,
+                            event.readings()
+                        )
+                    }
+                }
+            }
+        }
+        ContextCompat.registerReceiver(
+            this,
+            hardkeyReceiver,
+            IntentFilter(HARDKEY_ACTION),
+            HARDKEY_PERMISSION,
+            null,
+            ContextCompat.RECEIVER_EXPORTED
+        )
     }
 
     private fun warnIfMG4ControlPresent() {

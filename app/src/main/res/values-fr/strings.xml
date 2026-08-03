@@ -6,6 +6,13 @@
     <string name="tab_rules">Règles</string>
     <string name="tab_history">Historique</string>
     <string name="tab_diagnostic">Diagnostic</string>
+    <string name="tab_config">Configuration</string>
+
+    <!-- Configuration screen -->
+    <string name="config_section_speed">VITESSE</string>
+    <string name="config_section_language">LANGUE</string>
+    <string name="config_section_rules_file">FICHIER DE RÈGLES</string>
+    <string name="config_rules_file_explain">L’export écrit toutes les règles dans un fichier sur le stockage. L’import remplace toutes les règles actuelles par celles du fichier.</string>
 
     <!-- Groupes du catalogue -->
 
@@ -86,6 +93,8 @@
     <string name="editor_cancel">Annuler</string>
     <string name="editor_name_required">Donnez un nom à la règle</string>
     <string name="editor_incomplete">Il faut au moins une condition et une action</string>
+    <string name="editor_button_condition_required">Une règle de bouton physique nécessite une condition d’appui</string>
+    <string name="editor_button_trigger_required">Les conditions d’appui nécessitent le déclencheur Bouton physique</string>
     <string name="editor_save_failed">Échec de l\'enregistrement : la règle n\'a pas pu être écrite. Voir l\'onglet Console.</string>
     <string name="editor_store_unreadable">Les règles enregistrées sont illisibles : sauvegarder les écraserait. Importez un fichier de règles pour les restaurer.</string>
     <string name="editor_remove">Retirer</string>
@@ -127,6 +136,7 @@
     <string name="history_trigger_ignition">Démarrage véhicule</string>
     <string name="history_trigger_manual">Test manuel</string>
     <string name="history_trigger_ignition_off">Extinction véhicule</string>
+    <string name="history_trigger_button">Bouton physique</string>
     <string name="history_trigger_deferred">Appliqué à l\'arrêt</string>
     <string name="history_no_bridge">La couche véhicule n\'était pas prête — aucune règle n\'a pu s\'appliquer.</string>
 
@@ -220,6 +230,10 @@
     <string name="channel_name">MG4Tasker</string>
     <string name="notif_running_title">Application des règles…</string>
     <string name="value_location_hint">latitude, longitude</string>
+    <string name="value_location_current">Position actuelle</string>
+    <string name="value_location_map">Ouvrir la carte</string>
+    <string name="value_webhook_url">URL HTTPS du webhook</string>
+    <string name="value_webhook_body">Corps POST (facultatif)</string>
     <string name="rules_threshold_standstill">Appliquer à l’arrêt uniquement</string>
     <string name="rules_threshold_value">Appliquer jusqu’à %1$d km/h</string>
     <string name="rules_threshold_title">Vitesse maximale d’application</string>
@@ -237,4 +251,5 @@
     <string name="editor_trigger">Se déclenche</string>
     <string name="editor_trigger_on">Au démarrage</string>
     <string name="editor_trigger_off">À l’extinction</string>
+    <string name="editor_trigger_button">Bouton physique</string>
 </resources>

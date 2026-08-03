@@ -6,6 +6,13 @@
     <string name="tab_rules">Regole</string>
     <string name="tab_history">Cronologia</string>
     <string name="tab_diagnostic">Diagnostica</string>
+    <string name="tab_config">Configurazione</string>
+
+    <!-- Configuration screen -->
+    <string name="config_section_speed">VELOCITÀ</string>
+    <string name="config_section_language">LINGUA</string>
+    <string name="config_section_rules_file">FILE DELLE REGOLE</string>
+    <string name="config_rules_file_explain">L’esportazione scrive tutte le regole in un file sull’archivio. L’importazione sostituisce tutte le regole attuali con quelle del file.</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automazione attivata</string>

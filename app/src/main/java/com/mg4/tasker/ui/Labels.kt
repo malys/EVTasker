@@ -84,6 +84,9 @@ class Labels(
             ValueKind.TEXT ->
                 "$name : ${action.text}"
 
+            ValueKind.WEBHOOK ->
+                "$name : ${action.text}"
+
             else -> name
         }
     }

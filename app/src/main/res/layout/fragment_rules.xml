@@ -23,16 +23,6 @@
             android:textAppearance="@style/Text.MG4.Body"
             android:text="@string/rules_automation_switch" />
 
-        <!-- Standstill threshold. A button rather than an inline slider: the value is set
-             once and then forgotten, and the left pane is the rule list's space. -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/thresholdButton"
-            style="@style/Widget.MG4.Button.Outlined"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="@dimen/touch_target"
-            android:layout_marginBottom="@dimen/spacing_sm" />
-
         <com.google.android.material.button.MaterialButton
             android:id="@+id/newRuleButton"
             style="@style/Widget.MG4.Button"
@@ -40,55 +30,6 @@
             android:layout_height="wrap_content"
             android:text="@string/rules_new"
             android:layout_marginBottom="@dimen/spacing_md" />
-
-        <!-- Langue, export et import sur une seule ligne : ce sont des gestes rares, et la
-             pleine largeur qu'ils occupaient manquait à la liste des règles, elle
-             consultée en permanence. -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="@dimen/spacing_md">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/languageButton"
-                style="@style/Widget.MG4.Button.Outlined"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:paddingStart="@dimen/spacing_sm"
-                android:paddingEnd="@dimen/spacing_sm"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/exportButton"
-                style="@style/Widget.MG4.Button.Outlined"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_sm"
-                android:paddingStart="@dimen/spacing_sm"
-                android:paddingEnd="@dimen/spacing_sm"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:text="@string/rules_export" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/importButton"
-                style="@style/Widget.MG4.Button.Outlined"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_sm"
-                android:paddingStart="@dimen/spacing_sm"
-                android:paddingEnd="@dimen/spacing_sm"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
-                android:text="@string/rules_import" />
-        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rulesList"

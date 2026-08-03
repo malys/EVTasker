@@ -6,6 +6,7 @@ import com.mg4.tasker.model.Condition
 import com.mg4.tasker.model.ConditionOutcome
 import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.Snapshot
+import com.mg4.tasker.service.PhysicalButtonTracker
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.util.Calendar
@@ -14,6 +15,29 @@ class ConditionEvaluatorTest {
 
     private fun snapshot(vararg readings: Pair<String, Any>) =
         Snapshot(readings = readings.toMap())
+
+    @Test
+    fun `physical button condition is unavailable outside a button event`() {
+        val condition = Condition(ConditionType.STAR_LEFT_LONG_PRESS)
+        assertEquals(ConditionOutcome.UNAVAILABLE, ConditionEvaluator.evaluate(condition, snapshot()))
+    }
+
+    @Test
+    fun `only the matching physical button condition matches`() {
+        val event = PhysicalButtonTracker.Event(
+            PhysicalButtonTracker.Button.STAR_LEFT,
+            PhysicalButtonTracker.Press.LONG
+        )
+        val current = snapshot(*event.readings().map { it.key to it.value }.toTypedArray())
+        assertEquals(
+            ConditionOutcome.MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.STAR_LEFT_LONG_PRESS), current)
+        )
+        assertEquals(
+            ConditionOutcome.NO_MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.STAR_RIGHT_LONG_PRESS), current)
+        )
+    }
 
     // -------------------------------------------------------------------------
     // La distinction centrale : illisible ≠ faux

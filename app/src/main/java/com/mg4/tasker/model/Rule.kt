@@ -21,7 +21,7 @@ enum class MatchMode { ALL, ANY }
  * locks, windows) land; anything the vehicle drops with the ignition may not, and the
  * history reports what each action returned rather than assuming.
  */
-enum class RuleTrigger { IGNITION_ON, IGNITION_OFF }
+enum class RuleTrigger { IGNITION_ON, IGNITION_OFF, PHYSICAL_BUTTON }
 
 /**
  * One configured condition.
@@ -55,6 +55,8 @@ data class Action(
     val flag: Boolean = true,
     /** Profile id, package name, notification text, destination or phone number. */
     val text: String = "",
+    /** Optional webhook POST body. Nullable so rules saved before this field remain safe. */
+    val payload: String? = null,
     /** [ActionType.SET_CHARGE_WINDOW] — minutes since midnight, start and end. */
     val minutesFrom: Int = 0,
     val minutesTo: Int = 0

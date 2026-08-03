@@ -85,10 +85,11 @@ class RuleEditorActivity : AppCompatActivity() {
         binding.matchGroup.check(
             if (existing?.match == MatchMode.ANY) R.id.matchAny else R.id.matchAll
         )
-        binding.triggerGroup.check(
-            if (existing?.firesOn == RuleTrigger.IGNITION_OFF) R.id.triggerIgnitionOff
-            else R.id.triggerIgnitionOn
-        )
+        binding.triggerGroup.check(when (existing?.firesOn) {
+            RuleTrigger.IGNITION_OFF -> R.id.triggerIgnitionOff
+            RuleTrigger.PHYSICAL_BUTTON -> R.id.triggerPhysicalButton
+            else -> R.id.triggerIgnitionOn
+        })
 
         binding.addConditionButton.setOnClickListener {
             CatalogPicker.pickCondition(this, firmware) { type ->
@@ -287,8 +288,11 @@ class RuleEditorActivity : AppCompatActivity() {
             name = name,
             enabled = ruleId?.let { store.getById(it)?.enabled } ?: true,
             match = if (binding.matchGroup.checkedButtonId == R.id.matchAny) MatchMode.ANY else MatchMode.ALL,
-            trigger = if (binding.triggerGroup.checkedButtonId == R.id.triggerIgnitionOff)
-                RuleTrigger.IGNITION_OFF else RuleTrigger.IGNITION_ON,
+            trigger = when (binding.triggerGroup.checkedButtonId) {
+                R.id.triggerIgnitionOff -> RuleTrigger.IGNITION_OFF
+                R.id.triggerPhysicalButton -> RuleTrigger.PHYSICAL_BUTTON
+                else -> RuleTrigger.IGNITION_ON
+            },
             conditions = conditions.toList(),
             actions = actions.toList()
         )
@@ -296,6 +300,19 @@ class RuleEditorActivity : AppCompatActivity() {
         // A rule with no condition would apply on every start without being asked.
         if (!rule.isComplete()) {
             toast(getString(R.string.editor_incomplete)); return
+        }
+        val buttonTypes = setOf(
+            com.mg4.hardware.catalog.ConditionType.STAR_LEFT_SHORT_PRESS,
+            com.mg4.hardware.catalog.ConditionType.STAR_LEFT_LONG_PRESS,
+            com.mg4.hardware.catalog.ConditionType.STAR_RIGHT_SHORT_PRESS,
+            com.mg4.hardware.catalog.ConditionType.STAR_RIGHT_LONG_PRESS
+        )
+        val hasButtonCondition = rule.conditions.any { it.type in buttonTypes }
+        if (rule.firesOn == RuleTrigger.PHYSICAL_BUTTON && !hasButtonCondition) {
+            toast(getString(R.string.editor_button_condition_required)); return
+        }
+        if (rule.firesOn != RuleTrigger.PHYSICAL_BUTTON && hasButtonCondition) {
+            toast(getString(R.string.editor_button_trigger_required)); return
         }
         // A write that does not reach disk must say so on screen. Closing the editor on a
         // failed save is what made the rule look like it had been accepted and then lost.

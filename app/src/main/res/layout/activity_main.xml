@@ -58,6 +58,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/tab_console" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/tabConfig"
+                style="@style/Widget.MG4.Button.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tab_config" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
     </LinearLayout>
 

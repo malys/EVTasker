@@ -24,6 +24,14 @@ class MG4TaskerApp : Application() {
         // filled from a stored list instead of reflecting the catalogue on every open. Off
         // the main thread: MG4Hardware init and system-property reads block.
         kotlin.concurrent.thread(name = "mg4-tasker-support-check") {
+            com.mg4.hardware.FirmwareInfo.initWithContext(this)
+            val firmware = com.mg4.hardware.FirmwareInfo.getGeneration()
+            val exact = com.mg4.hardware.FirmwareInfo.getDetectedString()
+            AppLogger.i(
+                "App",
+                "MG4Tasker ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) — " +
+                    "firmware=$firmware exact=$exact"
+            )
             runCatching { com.mg4.tasker.store.SupportChecker.ensureChecked(this) }
         }
     }

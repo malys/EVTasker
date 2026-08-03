@@ -2,12 +2,14 @@ package com.mg4.tasker.ui
 
 import android.app.TimePickerDialog
 import android.content.Context
+import android.util.TypedValue
 import android.view.View
 import android.widget.ArrayAdapter
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mg4.tasker.R
 import com.mg4.tasker.bridge.BridgeContract
+import com.mg4.tasker.engine.ConditionEvaluator
 import com.mg4.tasker.databinding.DialogValueEditorBinding
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.CompareOp
@@ -127,6 +129,7 @@ object ValueEditorDialog {
             initialNumber = seedNumber(action, currentValue),
             initialFlag = action.flag,
             initialText = action.text,
+            initialPayload = action.payload.orEmpty(),
             firmwareEnum = false,
             choices = choices,
             emptyChoiceMessage = context.getString(
@@ -148,6 +151,7 @@ object ValueEditorDialog {
                         number = state.number().toInt(),
                         flag = state.flag(),
                         text = state.text(),
+                        payload = state.payload(),
                         minutesFrom = state.minutesFrom,
                         minutesTo = state.minutesTo
                     )
@@ -177,6 +181,7 @@ object ValueEditorDialog {
         val number: () -> Float,
         val flag: () -> Boolean,
         val text: () -> String,
+        val payload: () -> String,
         val days: () -> List<Int>,
         var minutesFrom: Int,
         var minutesTo: Int
@@ -191,6 +196,7 @@ object ValueEditorDialog {
         initialNumber: Float,
         initialFlag: Boolean,
         initialText: String,
+        initialPayload: String = "",
         currentPoint: String? = null,
         firmwareEnum: Boolean,
         choices: List<Choice>,
@@ -204,9 +210,10 @@ object ValueEditorDialog {
         var number = initialNumber
         var flag = initialFlag
         var text = initialText
+        var payload = initialPayload
         val selectedDays = initialDays.toMutableList()
         val state = State(
-            number = { number }, flag = { flag }, text = { text },
+            number = { number }, flag = { flag }, text = { text }, payload = { payload },
             days = { selectedDays.toList() },
             minutesFrom = initialMinutesFrom, minutesTo = initialMinutesTo
         )
@@ -304,6 +311,11 @@ object ValueEditorDialog {
                         isCheckable = true
                         isChecked = day in selectedDays
                         minHeight = context.resources.getDimensionPixelSize(R.dimen.touch_target)
+                        // A Chip's default 14sp is below the suite's reading floor.
+                        setTextSize(
+                            TypedValue.COMPLEX_UNIT_PX,
+                            context.resources.getDimension(R.dimen.text_body)
+                        )
                         setOnCheckedChangeListener { _, checked ->
                             if (checked) selectedDays.add(day) else selectedDays.remove(day)
                         }
@@ -319,6 +331,18 @@ object ValueEditorDialog {
                 binding.textInput.addTextChangedListener { text = it }
             }
 
+            ValueKind.WEBHOOK -> {
+                binding.textBlock.visibility = View.VISIBLE
+                binding.textInput.hint = context.getString(R.string.value_webhook_url)
+                binding.textInput.inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                    android.text.InputType.TYPE_TEXT_VARIATION_URI
+                binding.textInput.setText(initialText)
+                binding.textInput.addTextChangedListener { text = it.trim() }
+                binding.payloadBlock.visibility = View.VISIBLE
+                binding.payloadInput.setText(initialPayload)
+                binding.payloadInput.addTextChangedListener { payload = it }
+            }
+
             /**
              * Two of the existing controls at once: the text field holds the point, the
              * slider the radius. Prefilling the field with the car's current position is
@@ -332,6 +356,31 @@ object ValueEditorDialog {
                 binding.textInput.setText(start)
                 text = start
                 binding.textInput.addTextChangedListener { text = it }
+                binding.locationActions.visibility = View.VISIBLE
+                binding.locationCurrent.setOnClickListener {
+                    binding.locationCurrent.isEnabled = false
+                    com.mg4.tasker.util.CarLocation.requestCurrent(context) { fix ->
+                        binding.locationCurrent.isEnabled = true
+                        if (fix != null) {
+                            val point = String.format(
+                                java.util.Locale.US, "%.6f,%.6f", fix.latitude, fix.longitude
+                            )
+                            binding.textInput.setText(point)
+                        }
+                    }
+                }
+                binding.locationMap.setOnClickListener {
+                    val centre = text.ifBlank { currentPoint.orEmpty() }
+                    val point = ConditionEvaluator.parsePoint(centre)
+                    val uri = if (point != null) {
+                        android.net.Uri.parse("geo:${point.first},${point.second}?q=${point.first},${point.second}")
+                    } else {
+                        android.net.Uri.parse("geo:0,0?q=${android.net.Uri.encode(centre)}")
+                    }
+                    runCatching {
+                        context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, uri))
+                    }
+                }
 
                 binding.numberBlock.visibility = View.VISIBLE
                 binding.numberSlider.valueFrom = spec.min.toFloat()

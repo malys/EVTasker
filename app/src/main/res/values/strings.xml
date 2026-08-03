@@ -6,6 +6,13 @@
     <string name="tab_rules">Rules</string>
     <string name="tab_history">History</string>
     <string name="tab_diagnostic">Diagnostic</string>
+    <string name="tab_config">Configuration</string>
+
+    <!-- Configuration screen -->
+    <string name="config_section_speed">SPEED</string>
+    <string name="config_section_language">LANGUAGE</string>
+    <string name="config_section_rules_file">RULES FILE</string>
+    <string name="config_rules_file_explain">Export writes every rule to a file on storage. Import replaces all current rules with those in the file.</string>
 
     <!-- Catalogue groups -->
 
@@ -86,6 +93,8 @@
     <string name="editor_cancel">Cancel</string>
     <string name="editor_name_required">Give the rule a name</string>
     <string name="editor_incomplete">At least one condition and one action are required</string>
+    <string name="editor_button_condition_required">A physical-button rule needs a button press condition</string>
+    <string name="editor_button_trigger_required">Button press conditions require the Physical button trigger</string>
     <string name="editor_save_failed">Save failed: the rule could not be written to storage. See the Console tab.</string>
     <string name="editor_store_unreadable">The stored rules cannot be read, so saving would overwrite them. Import a rules file to restore them.</string>
     <string name="editor_remove">Remove</string>
@@ -127,6 +136,7 @@
     <string name="history_trigger_ignition">Vehicle start</string>
     <string name="history_trigger_manual">Manual test</string>
     <string name="history_trigger_ignition_off">Vehicle switch-off</string>
+    <string name="history_trigger_button">Physical button</string>
     <string name="history_trigger_deferred">Applied at a standstill</string>
     <string name="history_no_bridge">Vehicle layer was not ready — no rule could be applied.</string>
 
@@ -220,6 +230,10 @@
     <string name="channel_name">MG4Tasker</string>
     <string name="notif_running_title">Applying rules…</string>
     <string name="value_location_hint">latitude, longitude</string>
+    <string name="value_location_current">Use current position</string>
+    <string name="value_location_map">Open map</string>
+    <string name="value_webhook_url">HTTPS webhook URL</string>
+    <string name="value_webhook_body">POST body (optional)</string>
     <string name="rules_threshold_standstill">Apply only when stopped</string>
     <string name="rules_threshold_value">Apply up to %1$d km/h</string>
     <string name="rules_threshold_title">Speed limit for applying settings</string>
@@ -237,4 +251,5 @@
     <string name="editor_trigger">Runs at</string>
     <string name="editor_trigger_on">Vehicle start</string>
     <string name="editor_trigger_off">Vehicle switch-off</string>
+    <string name="editor_trigger_button">Physical button</string>
 </resources>

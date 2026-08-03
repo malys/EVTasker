@@ -289,8 +289,9 @@ class RuleEngineTest {
      * without a vehicle: a rule is addressed by the event it was wired to, and a manual test
      * addresses every rule whatever it says.
      */
-    private fun addressed(rules: List<Rule>, trigger: String): List<Rule> =
-        if (trigger == "MANUAL") rules else rules.filter { it.firesOn.name == trigger }
+    private fun addressed(rules: List<Rule>, trigger: String, ruleId: String? = null): List<Rule> =
+        if (trigger == "MANUAL") rules.filter { it.id == ruleId }
+        else rules.filter { it.firesOn.name == trigger }
 
     @Test
     fun `un declencheur n adresse que les regles qui lui sont cablees`() {
@@ -309,12 +310,12 @@ class RuleEngineTest {
     }
 
     @Test
-    fun `le test manuel adresse toutes les regles`() {
+    fun `le test manuel adresse uniquement la regle selectionnee`() {
         val rules = listOf(
             Rule(name = "start", trigger = RuleTrigger.IGNITION_ON),
             Rule(name = "stop", trigger = RuleTrigger.IGNITION_OFF)
         )
 
-        assertEquals(2, addressed(rules, "MANUAL").size)
+        assertEquals(listOf(rules[1]), addressed(rules, "MANUAL", rules[1].id))
     }
 }
