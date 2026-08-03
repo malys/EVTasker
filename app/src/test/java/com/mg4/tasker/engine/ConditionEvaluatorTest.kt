@@ -6,6 +6,7 @@ import com.mg4.tasker.model.Condition
 import com.mg4.tasker.model.ConditionOutcome
 import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.Snapshot
+import com.mg4.hardware.PhysicalButtonEventDecoder
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.util.Calendar
@@ -14,6 +15,32 @@ class ConditionEvaluatorTest {
 
     private fun snapshot(vararg readings: Pair<String, Any>) =
         Snapshot(readings = readings.toMap())
+
+    @Test
+    fun `physical button condition is unavailable outside a button event`() {
+        val condition = Condition(ConditionType.PHYSICAL_BUTTON, number =
+            PhysicalButtonEventDecoder.Button.STAR_LEFT.codes.first().toFloat(), text = "LONG")
+        assertEquals(ConditionOutcome.UNAVAILABLE, ConditionEvaluator.evaluate(condition, snapshot()))
+    }
+
+    @Test
+    fun `only the matching physical button condition matches`() {
+        val event = PhysicalButtonEventDecoder.Event(
+            PhysicalButtonEventDecoder.Button.STAR_LEFT,
+            PhysicalButtonEventDecoder.Press.LONG
+        )
+        val current = snapshot(*event.readings().map { it.key to it.value }.toTypedArray())
+        assertEquals(
+            ConditionOutcome.MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.PHYSICAL_BUTTON,
+                number = PhysicalButtonEventDecoder.Button.STAR_LEFT.codes.first().toFloat(), text = "LONG"), current)
+        )
+        assertEquals(
+            ConditionOutcome.NO_MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.PHYSICAL_BUTTON,
+                number = PhysicalButtonEventDecoder.Button.STAR_RIGHT.codes.first().toFloat(), text = "LONG"), current)
+        )
+    }
 
     // -------------------------------------------------------------------------
     // La distinction centrale : illisible ≠ faux
@@ -233,6 +260,38 @@ class ConditionEvaluatorTest {
         assertEquals(
             ConditionOutcome.UNAVAILABLE,
             ConditionEvaluator.evaluate(empty, Snapshot(dayOfWeek = Calendar.MONDAY))
+        )
+    }
+
+    @Test
+    fun `date precise correspond uniquement au jour configure`() {
+        val condition = Condition(ConditionType.DATE, text = "2026-07-22")
+
+        assertEquals(
+            ConditionOutcome.MATCH,
+            ConditionEvaluator.evaluate(condition, Snapshot(localDate = "2026-07-22"))
+        )
+        assertEquals(
+            ConditionOutcome.NO_MATCH,
+            ConditionEvaluator.evaluate(condition, Snapshot(localDate = "2026-07-23"))
+        )
+    }
+
+    @Test
+    fun `date absente ou invalide est indisponible`() {
+        assertEquals(
+            ConditionOutcome.UNAVAILABLE,
+            ConditionEvaluator.evaluate(
+                Condition(ConditionType.DATE, text = "2026-02-30"),
+                Snapshot(localDate = "2026-07-22")
+            )
+        )
+        assertEquals(
+            ConditionOutcome.UNAVAILABLE,
+            ConditionEvaluator.evaluate(
+                Condition(ConditionType.DATE, text = "2026-07-22"),
+                Snapshot(localDate = "")
+            )
         )
     }
 

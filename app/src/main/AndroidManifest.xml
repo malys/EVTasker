@@ -24,9 +24,18 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- The SAIC hard-key report is otherwise forgeable by any app. Requiring this from
+         the sender admits the platform-signed OEM hard-key service only. -->
+    <permission
+        android:name="com.mg4.tasker.permission.RECEIVE_HARDKEY"
+        android:protectionLevel="signature" />
+
     <!-- Bluetooth: paired list for the editor, and live connection tracking for rules. -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Requested only when the user chooses "Call a contact". The OEM PBAP client
+         publishes the paired phone's downloaded phone book through ContactsContract. -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <!-- Position, for the "near a place" condition only. Last known fix, never a live
          request, never sent anywhere: it is compared to a point stored in the rule and the
@@ -56,6 +65,14 @@
              would report "no speech engine" on a car that has one installed. -->
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="geo" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="google.navigation" />
         </intent>
     </queries>
 

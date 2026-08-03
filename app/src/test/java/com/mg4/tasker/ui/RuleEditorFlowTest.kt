@@ -1,7 +1,6 @@
 package com.mg4.tasker.ui
 
 import android.app.Dialog
-import android.content.DialogInterface
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -65,9 +64,9 @@ class RuleEditorFlowTest {
         idle()
 
         // The value dialog must be the dialog now on screen, and its OK button must commit.
-        val valueDialog = ShadowDialog.getLatestDialog() as? androidx.appcompat.app.AlertDialog
+        val valueDialog = ShadowDialog.getLatestDialog()
         assertNotNull("value editor never opened for the condition", valueDialog)
-        valueDialog!!.getButton(DialogInterface.BUTTON_POSITIVE).performClick()
+        valueDialog!!.findViewById<View>(R.id.editorSave).performClick()
         idle()
 
         assertTrue(
@@ -82,8 +81,7 @@ class RuleEditorFlowTest {
         assertNotNull("action picker showed no entry", actionEntry)
         actionEntry!!.performClick()
         idle()
-        (ShadowDialog.getLatestDialog() as? androidx.appcompat.app.AlertDialog)
-            ?.getButton(DialogInterface.BUTTON_POSITIVE)?.performClick()
+        ShadowDialog.getLatestDialog().findViewById<View>(R.id.editorSave).performClick()
         idle()
 
         assertTrue(

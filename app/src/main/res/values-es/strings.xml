@@ -6,6 +6,13 @@
     <string name="tab_rules">Reglas</string>
     <string name="tab_history">Historial</string>
     <string name="tab_diagnostic">Diagnóstico</string>
+    <string name="tab_config">Configuración</string>
+
+    <!-- Configuration screen -->
+    <string name="config_section_speed">VELOCIDAD</string>
+    <string name="config_section_language">IDIOMA</string>
+    <string name="config_section_rules_file">ARCHIVO DE REGLAS</string>
+    <string name="config_rules_file_explain">La exportación escribe todas las reglas en un archivo del almacenamiento. La importación sustituye todas las reglas actuales por las del archivo.</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automatización activada</string>
@@ -85,6 +92,8 @@
     <string name="value_to">a</string>
     <string name="value_ok">Confirmar</string>
     <string name="value_no_bt_devices">Ningún dispositivo Bluetooth emparejado</string>
+    <string name="value_no_contacts">No hay contactos sincronizados. Permite compartir contactos en el teléfono emparejado.</string>
+    <string name="value_contact_hint">Buscar contacto o número</string>
     <string name="value_no_profiles">Ningún perfil de MG4Control accesible</string>
     <string name="value_notification_hint">Mensaje a mostrar</string>
 
@@ -108,6 +117,7 @@
     <string name="history_empty_body">El historial se llena al arrancar el vehículo o tras una prueba manual.</string>
     <string name="history_clear">Borrar historial</string>
     <string name="history_trigger_ignition">Arranque del vehículo</string>
+    <string name="history_trigger_button">Botón físico</string>
     <string name="history_trigger_manual">Prueba manual</string>
     <string name="history_trigger_ignition_off">Apagado del vehículo</string>
     <string name="history_trigger_deferred">Aplicado en parada</string>
@@ -203,6 +213,10 @@
     <string name="channel_name">MG4Tasker</string>
     <string name="notif_running_title">Aplicando reglas…</string>
     <string name="value_location_hint">latitud, longitud</string>
+    <string name="value_location_current">Posición actual</string>
+    <string name="value_location_map">Abrir el mapa</string>
+    <string name="value_webhook_url">URL HTTPS del webhook</string>
+    <string name="value_webhook_body">Cuerpo POST (opcional)</string>
     <string name="rules_threshold_standstill">Aplicar solo en parado</string>
     <string name="rules_threshold_value">Aplicar hasta %1$d km/h</string>
     <string name="rules_threshold_title">Velocidad máxima de aplicación</string>
@@ -218,6 +232,13 @@
     <string name="paste_header">**Contraseña:** `%1$s` · caduca una hora después del envío.\n\nAlojado gratuitamente por [April](https://www.april.org) en %2$s. Si esto te ha ahorrado un viaje al taller, [haz una donación](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Ventanillas y bloqueo</string>
     <string name="editor_trigger">Se ejecuta</string>
+    <string name="physical_press_short">Pulsación corta</string>
+    <string name="physical_press_long">Pulsación larga</string>
+    <string name="physical_button_label">BOTÓN</string>
+    <string name="physical_event_label">TIPO DE PULSACIÓN</string>
+    <string name="value_editor_instruction">Elija el valor que se usará en esta regla.</string>
     <string name="editor_trigger_on">Al arrancar</string>
     <string name="editor_trigger_off">Al apagar</string>
+    <string name="editor_move_up">Subir</string>
+    <string name="editor_move_down">Bajar</string>
 </resources>

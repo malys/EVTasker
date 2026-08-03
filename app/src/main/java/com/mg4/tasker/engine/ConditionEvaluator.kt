@@ -33,11 +33,22 @@ object ConditionEvaluator {
             ValueKind.LOCATION   -> evaluateLocation(condition, snapshot)
             ValueKind.TIME_RANGE -> evaluateTimeRange(condition, snapshot)
             ValueKind.DAYS       -> evaluateDays(condition, snapshot)
+            ValueKind.DATE       -> evaluateDate(condition, snapshot)
+            ValueKind.PHYSICAL_BUTTON -> evaluatePhysicalButton(condition, snapshot)
             ValueKind.BOOL       -> evaluateBool(condition, snapshot)
             ValueKind.NUMBER     -> evaluateNumber(condition, snapshot)
             ValueKind.ENUM       -> evaluateEnum(condition, snapshot)
             else                 -> ConditionOutcome.UNAVAILABLE
         }
+
+    private fun evaluatePhysicalButton(c: Condition, s: Snapshot): ConditionOutcome {
+        val actual = s.string(com.mg4.hardware.catalog.SnapshotKeys.KEY_PHYSICAL_BUTTON_EVENT)
+            ?: return ConditionOutcome.UNAVAILABLE
+        val button = com.mg4.hardware.PhysicalButtonEventDecoder.Button.entries
+            .firstOrNull { c.number.toInt() in it.codes } ?: return ConditionOutcome.UNAVAILABLE
+        val expected = "${button.name}:${c.text}"
+        return if (actual == expected) ConditionOutcome.MATCH else ConditionOutcome.NO_MATCH
+    }
 
     // -------------------------------------------------------------------------
     // Context — independent of the vehicle
@@ -109,6 +120,16 @@ object ConditionEvaluator {
         if (c.days.isEmpty()) return ConditionOutcome.UNAVAILABLE
         return match(s.dayOfWeek in c.days)
     }
+
+    private fun evaluateDate(c: Condition, s: Snapshot): ConditionOutcome {
+        if (!isIsoDate(c.text) || !isIsoDate(s.localDate)) return ConditionOutcome.UNAVAILABLE
+        val equal = c.text == s.localDate
+        return match(if (c.op == CompareOp.NE) !equal else equal)
+    }
+
+    private fun isIsoDate(value: String): Boolean = runCatching {
+        java.time.LocalDate.parse(value).toString() == value
+    }.getOrDefault(false)
 
     // -------------------------------------------------------------------------
     // Vehicle

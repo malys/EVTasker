@@ -46,11 +46,27 @@ class RuleStore(context: Context) {
     private fun read(): Stored {
         val json = prefs.getString(KEY_RULES, null) ?: return Stored.Rules(emptyList())
         return try {
-            Stored.Rules(gson.fromJson(json, Array<Rule>::class.java)?.toList() ?: emptyList())
+            val parsed = gson.fromJson(json, Array<Rule>::class.java)?.toList() ?: emptyList()
+            Stored.Rules(parsed.filter { it.isHonourable() })
         } catch (e: Exception) {
             AppLogger.w(TAG, "getAll unreadable (${json.length} chars): ${e.javaClass.simpleName}: ${e.message}")
             Stored.Unreadable
         }
+    }
+
+    /**
+     * False for a rule naming a catalog entry this build no longer has.
+     *
+     * Same Gson property as [Rule.trigger]: an unknown enum name deserialises to null, whatever
+     * the Kotlin type says. A condition or action whose type is gone cannot be evaluated, shown
+     * or repaired, and letting it through hands a null [com.mg4.hardware.catalog.ConditionType]
+     * to the engine and the rule list — a crash on the first run after the update.
+     */
+    @Suppress("SENSELESS_COMPARISON")
+    private fun Rule.isHonourable(): Boolean {
+        val honourable = conditions.all { it.type != null } && actions.all { it.type != null }
+        if (!honourable) AppLogger.w(TAG, "rule '$name' dropped: it uses a catalog entry this build removed")
+        return honourable
     }
 
     /** Unreadable storage reads as zero rules: that beats crashing at vehicle start. */

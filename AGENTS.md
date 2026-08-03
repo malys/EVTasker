@@ -45,9 +45,18 @@ Adding a vehicle entry without `@SupportedOn` fails `FirmwareSupportTest`.
 
 `TaskerVehicleService` gets every ignition transition from one MG4Hardware listener. The
 switch-off trigger reads the other end of that same stream — no second listener, no bind, no
-poll. Keep it that way: before adding a trigger, check whether something already delivers the
-event. Repeats are filtered in the service (`lastTrigger`), because the bus re-asserts states
-and a rule that locks the doors must not run four times.
+poll. Physical buttons are conditions (never a `RuleTrigger`): a rule containing one is
+addressed by that event and excluded from ignition cycles. MG4Hardware owns the OEM keycode
+catalogue and short/long-press state machine; the app only receives the broadcast and feeds
+its payload to that decoder. The receiver requires the
+signature sender permission because that action is otherwise forgeable. Long press fires on
+the OEM long event; its following release is suppressed instead of also firing short press.
+Before adding a trigger, check whether something already delivers the event. Ignition repeats
+are filtered in the service (`lastTrigger`), because the bus re-asserts states and a rule that
+locks the doors must not run four times.
+
+The manual test addresses only the selected rule (by id). It ignores that rule's trigger,
+but must never evaluate the rest of the rule store.
 
 `Rule.trigger` is **nullable on purpose**. Gson builds instances without calling the
 constructor, so a Kotlin default never applies to a key absent from stored JSON; a non-null
@@ -84,17 +93,16 @@ assume universal), expose it through `TaskerBridgeService`, then add the catalog
 here. Property ids and per-generation routing live in MG4Control; do not duplicate them.
 
 Climate, charging, radio and hands-free calls do **not** go through property ids. They use
-the SAIC vendor binder services the car's own apps use (`com.mg4.hardware.saic`), with every
-descriptor and transaction code read off the decompiled head-unit APKs in `apks/` — cite the
-APK and class when you add one. That is what made climate writes honest: the earlier AOSP
-climate ids were standard ids the R69 sources name but no MG4 confirmed, so writing them
+the SAIC vendor binder services the car's own apps use (`com.mg4.hardware.saic`). Keep every
+descriptor and transaction code documented as a project implementation detail. The earlier AOSP
+climate ids were standard ids that no MG4 confirmed, so writing them
 would have been a guess.
 
 Window writes remain absent — no vendor service exposes them. The AOSP climate reads stay as
 a fallback where the vendor service does not answer.
 
 Whether a car has a given vendor service is a **bind, not a table**: the `@SupportedOn` set
-records the generations we have evidence for (SWI68/SWI165, the `apks/` platform), and the
+records the generations we have evidence for (SWI68/SWI165, the R69 platform), and the
 Diagnostic tab's *Vehicle services* row is what widens it.
 
 ## Reference patterns (inherited from MG4Control / MG4ABRPUploader)

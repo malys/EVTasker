@@ -18,4 +18,8 @@
     <!-- Minimum tile width, used to compute the column count. Below this, a label like
          "Adaptive cruise control" is cut. -->
     <dimen name="catalog_tile_min_width">240dp</dimen>
+
+    <!-- Keeps editor controls in the driver's central reading cone instead of stretching
+         from bezel to bezel on the 12.8-inch landscape display. -->
+    <dimen name="value_editor_horizontal_inset">64dp</dimen>
 </resources>

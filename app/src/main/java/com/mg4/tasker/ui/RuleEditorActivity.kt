@@ -48,6 +48,7 @@ class RuleEditorActivity : AppCompatActivity() {
 
     /** MG4Control profiles, loaded in the background: the bridge blocks, the editor must not. */
     private var profiles: List<Pair<String, String>> = emptyList()
+    private var contacts: List<com.mg4.tasker.util.ContactDirectory.Entry> = emptyList()
 
     /** Real maximum media volume of the vehicle, if MG4Control could read it. */
     private var mediaVolumeMax: Int? = null
@@ -103,16 +104,23 @@ class RuleEditorActivity : AppCompatActivity() {
         }
         binding.addActionButton.setOnClickListener {
             CatalogPicker.pickAction(this, firmware) { type ->
-                val fresh = Action(type = type)
-                if (type.spec.kind == ValueKind.NONE) {
-                    actions += fresh
-                    renderActions()
-                } else {
-                    ValueEditorDialog.editAction(
-                        this, fresh, mediaVolumeMax, profiles, currentValue(type)
-                    ) { configured ->
-                        actions += configured
+                withContactsIfNeeded(type) {
+                    val fresh = Action(type = type)
+                    if (type.spec.kind == ValueKind.NONE) {
+                        actions += fresh
                         renderActions()
+                    } else {
+                        ValueEditorDialog.editAction(
+                            context = this,
+                            action = fresh,
+                            dynamicMax = mediaVolumeMax,
+                            profiles = profiles,
+                            contacts = contacts,
+                            currentValue = currentValue(type)
+                        ) { configured ->
+                            actions += configured
+                            renderActions()
+                        }
                     }
                 }
             }
@@ -144,6 +152,7 @@ class RuleEditorActivity : AppCompatActivity() {
             } finally {
                 bridge.disconnect()
             }
+            val loadedContacts = com.mg4.tasker.util.ContactDirectory.entries(applicationContext)
 
             val fresh = com.mg4.tasker.vehicle.VehicleReader.read(
                 btMacs = emptySet(),
@@ -153,6 +162,7 @@ class RuleEditorActivity : AppCompatActivity() {
 
             Handler(Looper.getMainLooper()).post {
                 profiles = loadedProfiles
+                contacts = loadedContacts
                 mediaVolumeMax = if (maxVolume >= 0) maxVolume else null
                 firmware = gen
                 snapshot = fresh
@@ -181,6 +191,43 @@ class RuleEditorActivity : AppCompatActivity() {
     }
 
     private var pendingAfterLocation: (() -> Unit)? = null
+
+    private var pendingAfterContacts: (() -> Unit)? = null
+
+    private fun withContactsIfNeeded(
+        type: com.mg4.hardware.catalog.ActionType,
+        next: () -> Unit
+    ) {
+        if (type.spec.kind != ValueKind.CONTACT) return next()
+        pendingAfterContacts = next
+        if (!com.mg4.tasker.util.ContactDirectory.hasPermission(this)) {
+            contactsPermission.launch(android.Manifest.permission.READ_CONTACTS)
+        } else {
+            loadContactsAndContinue()
+        }
+    }
+
+    private val contactsPermission =
+        registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) {
+            loadContactsAndContinue()
+        }
+
+    private fun loadContactsAndContinue() {
+        thread(name = "mg4-tasker-editor-contacts") {
+            val loaded = com.mg4.tasker.util.ContactDirectory.entries(applicationContext)
+            Handler(Looper.getMainLooper()).post {
+                contacts = loaded
+                // The pending step opens a dialog: on an editor the user already left, that
+                // is a BadTokenException rather than a value editor nobody asked for.
+                if (isFinishing || isDestroyed) {
+                    pendingAfterContacts = null
+                    return@post
+                }
+                pendingAfterContacts?.invoke()
+                pendingAfterContacts = null
+            }
+        }
+    }
 
     private val locationPermission =
         registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { granted ->
@@ -236,6 +283,11 @@ class RuleEditorActivity : AppCompatActivity() {
                 onRemove = { conditions.removeAt(index); renderConditions() }
             )
         }
+        val hasButtonCondition = conditions.any {
+            it.type.eventDriven
+        }
+        binding.triggerLabel.visibility = if (hasButtonCondition) View.GONE else View.VISIBLE
+        binding.triggerGroup.visibility = if (hasButtonCondition) View.GONE else View.VISIBLE
     }
 
     private fun renderActions() {
@@ -247,16 +299,35 @@ class RuleEditorActivity : AppCompatActivity() {
                 label = labels.describe(action),
                 gated = action.type.gated,
                 onEdit = {
-                    ValueEditorDialog.editAction(
-                        this, action, mediaVolumeMax, profiles, currentValue(action.type)
-                    ) { updated ->
-                        actions[index] = updated
-                        renderActions()
+                    withContactsIfNeeded(action.type) {
+                        ValueEditorDialog.editAction(
+                            context = this,
+                            action = action,
+                            dynamicMax = mediaVolumeMax,
+                            profiles = profiles,
+                            contacts = contacts,
+                            currentValue = currentValue(action.type)
+                        ) { updated ->
+                            actions[index] = updated
+                            renderActions()
+                        }
                     }
                 },
-                onRemove = { actions.removeAt(index); renderActions() }
+                onRemove = { actions.removeAt(index); renderActions() },
+                // Actions run in the order shown, so the order is part of the rule: a wait
+                // is only useful where the user puts it.
+                reorderable = true,
+                canMoveUp = index > 0,
+                canMoveDown = index < actions.lastIndex,
+                onMoveUp = { move(index, index - 1) },
+                onMoveDown = { move(index, index + 1) }
             )
         }
+    }
+
+    private fun move(from: Int, to: Int) {
+        actions.add(to, actions.removeAt(from))
+        renderActions()
     }
 
     private fun addRow(
@@ -264,13 +335,26 @@ class RuleEditorActivity : AppCompatActivity() {
         label: String,
         gated: Boolean,
         onEdit: () -> Unit,
-        onRemove: () -> Unit
+        onRemove: () -> Unit,
+        reorderable: Boolean = false,
+        canMoveUp: Boolean = false,
+        canMoveDown: Boolean = false,
+        onMoveUp: () -> Unit = {},
+        onMoveDown: () -> Unit = {}
     ) {
         val row = ItemEditorRowBinding.inflate(LayoutInflater.from(this), container, false)
         row.rowLabel.text = label
         row.rowGated.visibility = if (gated) View.VISIBLE else View.GONE
         row.rowClickArea.setOnClickListener { onEdit() }
         row.rowRemove.setOnClickListener { onRemove() }
+        // Kept in place and disabled at the ends rather than hidden: buttons that disappear
+        // move every other row's controls under the finger already reaching for them.
+        row.rowUp.visibility = if (reorderable) View.VISIBLE else View.GONE
+        row.rowDown.visibility = if (reorderable) View.VISIBLE else View.GONE
+        row.rowUp.isEnabled = canMoveUp
+        row.rowDown.isEnabled = canMoveDown
+        row.rowUp.setOnClickListener { onMoveUp() }
+        row.rowDown.setOnClickListener { onMoveDown() }
         container.addView(row.root)
     }
 

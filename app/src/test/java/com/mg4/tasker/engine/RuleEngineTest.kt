@@ -281,6 +281,79 @@ class RuleEngineTest {
     }
 
     // -------------------------------------------------------------------------
+    // Ordre des actions et attente
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `les actions s executent dans l ordre de la regle`() {
+        val executor = RecordingExecutor()
+        val ordered = Rule(
+            name = "ordre",
+            conditions = listOf(Condition(ConditionType.IN_PARK, flag = true)),
+            actions = listOf(
+                Action(ActionType.SET_CLIMATE_POWER, flag = true),
+                Action(ActionType.SET_FAN_LEVEL, number = 3),
+                Action(ActionType.SET_CABIN_TEMP, number = 21)
+            )
+        )
+
+        RuleEngine(executor).run(
+            listOf(ordered), Snapshot(readings = mapOf(BridgeContract.KEY_IN_PARK to true)), "TEST", 0L
+        )
+
+        assertEquals(
+            listOf(ActionType.SET_CLIMATE_POWER, ActionType.SET_FAN_LEVEL, ActionType.SET_CABIN_TEMP),
+            executor.executed
+        )
+    }
+
+    @Test
+    fun `l attente retarde l action suivante sans passer par l executeur`() {
+        val executor = RecordingExecutor()
+        val sleeps = mutableListOf<Long>()
+        val paced = Rule(
+            name = "attente",
+            conditions = listOf(Condition(ConditionType.IN_PARK, flag = true)),
+            actions = listOf(
+                Action(ActionType.SET_CLIMATE_POWER, flag = true),
+                Action(ActionType.DELAY, number = 5),
+                Action(ActionType.SET_FAN_LEVEL, number = 3)
+            )
+        )
+
+        val result = RuleEngine(executor, sleep = { sleeps += it }).run(
+            listOf(paced), Snapshot(readings = mapOf(BridgeContract.KEY_IN_PARK to true)), "TEST", 0L
+        ).ruleRuns.first()
+
+        // L'attente n'est pas une écriture véhicule : elle ne doit rien demander à l'exécuteur.
+        assertEquals(listOf(ActionType.SET_CLIMATE_POWER, ActionType.SET_FAN_LEVEL), executor.executed)
+        assertEquals(listOf(5_000L), sleeps)
+        // Elle reste visible dans l'historique, à sa place dans la séquence.
+        assertEquals(
+            listOf(ActionType.SET_CLIMATE_POWER, ActionType.DELAY, ActionType.SET_FAN_LEVEL),
+            result.actionResults.map { it.actionType }
+        )
+        assertEquals(RuleStatus.APPLIED, result.status)
+    }
+
+    @Test
+    fun `une attente hors bornes est ramenee dans celles du catalogue`() {
+        val sleeps = mutableListOf<Long>()
+        // number = 0 : ce qu'une règle enregistrée sans valeur porterait.
+        val zero = Rule(
+            name = "zero",
+            conditions = listOf(Condition(ConditionType.IN_PARK, flag = true)),
+            actions = listOf(Action(ActionType.DELAY), Action(ActionType.SET_FAN_LEVEL, number = 1))
+        )
+
+        RuleEngine(RecordingExecutor(), sleep = { sleeps += it }).run(
+            listOf(zero), Snapshot(readings = mapOf(BridgeContract.KEY_IN_PARK to true)), "TEST", 0L
+        )
+
+        assertEquals(listOf(ActionType.DELAY.spec.min * 1_000L), sleeps)
+    }
+
+    // -------------------------------------------------------------------------
     // Triggers
     // -------------------------------------------------------------------------
 
@@ -289,8 +362,9 @@ class RuleEngineTest {
      * without a vehicle: a rule is addressed by the event it was wired to, and a manual test
      * addresses every rule whatever it says.
      */
-    private fun addressed(rules: List<Rule>, trigger: String): List<Rule> =
-        if (trigger == "MANUAL") rules else rules.filter { it.firesOn.name == trigger }
+    private fun addressed(rules: List<Rule>, trigger: String, ruleId: String? = null): List<Rule> =
+        if (trigger == "MANUAL") rules.filter { it.id == ruleId }
+        else rules.filter { it.firesOn.name == trigger }
 
     @Test
     fun `un declencheur n adresse que les regles qui lui sont cablees`() {
@@ -309,12 +383,12 @@ class RuleEngineTest {
     }
 
     @Test
-    fun `le test manuel adresse toutes les regles`() {
+    fun `le test manuel adresse uniquement la regle selectionnee`() {
         val rules = listOf(
             Rule(name = "start", trigger = RuleTrigger.IGNITION_ON),
             Rule(name = "stop", trigger = RuleTrigger.IGNITION_OFF)
         )
 
-        assertEquals(2, addressed(rules, "MANUAL").size)
+        assertEquals(listOf(rules[1]), addressed(rules, "MANUAL", rules[1].id))
     }
 }

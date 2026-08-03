@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.tabHistory    -> HistoryFragment()
                     R.id.tabDiagnostic -> DiagnosticFragment()
                     R.id.tabConsole    -> ConsoleFragment()
+                    R.id.tabConfig     -> ConfigFragment()
                     else               -> RulesFragment()
                 }
             )

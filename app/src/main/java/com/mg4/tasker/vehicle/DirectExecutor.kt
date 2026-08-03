@@ -8,9 +8,9 @@ import com.mg4.hardware.MG4Hardware
 import com.mg4.hardware.VehicleWriteGate
 import com.mg4.hardware.model.DriveMode
 import com.mg4.hardware.model.RegenLevel
-import com.mg4.hardware.saic.RadioFrequency
 import com.mg4.hardware.saic.SaicCharging
 import com.mg4.hardware.saic.SaicClimate
+import com.mg4.hardware.saic.RadioFrequency
 import com.mg4.hardware.saic.SaicPhone
 import com.mg4.hardware.saic.SaicRadio
 import com.mg4.hardware.saic.SaicVehicleControl
@@ -22,6 +22,7 @@ import com.mg4.tasker.model.ActionResult
 import com.mg4.hardware.catalog.ActionType
 import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.util.Speaker
+import com.mg4.tasker.util.WebhookClient
 
 /**
  * Executes actions by calling MG4Hardware **directly** — MG4Tasker's own vehicle access,
@@ -44,6 +45,8 @@ class DirectExecutor(
         ActionType.SHOW_NOTIFICATION -> notify(action)
         ActionType.SPEAK_TEXT        -> speak(action)
         ActionType.NAVIGATE_TO       -> navigate(action)
+        ActionType.WEBHOOK_GET       -> webhook(action, "GET")
+        ActionType.WEBHOOK_POST      -> webhook(action, "POST")
         ActionType.TUNE_RADIO        -> tuneRadio(action)
         else                         -> applyVehicle(action)
     }
@@ -130,17 +133,25 @@ class DirectExecutor(
             ActionType.SET_BATTERY_PREHEAT   -> SaicCharging.setBatteryPreheat(b)
             // Media and telephony — vendor services too.
             ActionType.PLAY_RADIO           -> SaicRadio.play()
-            ActionType.CALL_NUMBER          -> callNumber(a)
-            // Handled by execute() before it ever gets here. The first four are not vehicle
-            // writes at all; TUNE_RADIO is one, but it carries a frequency the driver typed,
-            // and "103,5 FM" that parsed to nothing must be reported as that rather than as
-            // a radio that refused.
+            ActionType.CALL_NUMBER,
+            ActionType.CALL_CONTACT         -> callNumber(a)
+            // Handled by execute() before it ever gets here: none of these is a vehicle write,
+            // so a failure is the app's own (no such profile, no such app, webhook refused) and
+            // must be reported as that rather than as a vehicle that would not take the value.
             ActionType.APPLY_PROFILE,
             ActionType.LAUNCH_APP,
             ActionType.SHOW_NOTIFICATION,
             ActionType.SPEAK_TEXT,
             ActionType.NAVIGATE_TO,
+            ActionType.WEBHOOK_GET,
+            ActionType.WEBHOOK_POST,
+            // TUNE_RADIO is a vehicle write, but it carries a frequency the driver typed, and
+            // "103,5 FM" that parsed to nothing must be reported as that rather than as a radio
+            // that refused.
             ActionType.TUNE_RADIO -> null
+            // Waiting between two actions is the engine's business — it is what runs them in
+            // sequence. Reaching here would mean an action ran outside a rule.
+            ActionType.DELAY -> null
         }
     }
 
@@ -225,9 +236,9 @@ class DirectExecutor(
         val encoded = Uri.encode(a.text)
         val uris = if (point != null) {
             val (lat, lon) = point
-            listOf("google.navigation:q=$lat,$lon", "geo:$lat,$lon?q=$lat,$lon")
+            listOf("geo:$lat,$lon?q=$lat,$lon", "google.navigation:q=$lat,$lon")
         } else {
-            listOf("google.navigation:q=$encoded", "geo:0,0?q=$encoded")
+            listOf("geo:0,0?q=$encoded", "google.navigation:q=$encoded")
         }
         for (uri in uris) {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
@@ -242,6 +253,19 @@ class DirectExecutor(
             }
         }
         return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no navigation app")
+    }
+
+    private fun webhook(a: Action, method: String): ActionResult {
+        if (a.text.isBlank()) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no URL")
+        }
+        val response = WebhookClient.call(method, a.text, a.payload)
+        return ActionResult(
+            a.type,
+            response.ok,
+            if (response.ok) BridgeContract.VERDICT_ALLOWED else BridgeContract.VERDICT_ERROR,
+            response.detail
+        )
     }
 
     private fun notify(a: Action): ActionResult {

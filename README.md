@@ -2,9 +2,10 @@
 
 <p align="center"><img src="docs/logo.svg" width="440" alt="MG4Tasker"></p>
 
-[![Tests](../../actions/workflows/tests.yml/badge.svg)](../../actions/workflows/tests.yml)
-[![Security](../../actions/workflows/security.yml/badge.svg)](../../actions/workflows/security.yml)
-[![Release](../../actions/workflows/release.yml/badge.svg)](../../actions/workflows/release.yml)
+[![Tests](https://github.com/malys/MG4Tasker/actions/workflows/tests.yml/badge.svg)](https://github.com/malys/MG4Tasker/actions/workflows/tests.yml)
+[![Security](https://github.com/malys/MG4Tasker/actions/workflows/security.yml/badge.svg)](https://github.com/malys/MG4Tasker/actions/workflows/security.yml)
+[![Unstable](https://github.com/malys/MG4Tasker/actions/workflows/unstable.yml/badge.svg)](https://github.com/malys/MG4Tasker/actions/workflows/unstable.yml)
+[![Release](https://img.shields.io/github/v/release/malys/MG4Tasker?include_prereleases&amp;sort=semver)](https://github.com/malys/MG4Tasker/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 > ⚠️ **This app changes vehicle settings automatically and runs on a car.** Read
@@ -79,15 +80,25 @@ MG4Tasker runs its **own** persistent service: it initialises MG4Hardware, liste
 ignition directly (no dependency on MG4Control), reads the vehicle and applies the rules'
 actions through MG4Hardware. Started at boot and on app open.
 
-**Triggers: vehicle start and vehicle switch-off.** Each rule chooses one; a rule written
-before triggers existed runs at start, as it always did. Switching off costs nothing extra —
+**Triggers: vehicle start and vehicle switch-off.** Physical buttons are conditions, not a
+third “Runs at” choice: adding one makes that rule event-driven and hides the ignition choice.
+Button rules can choose short or long press on phone, center, directional/OK, source,
+volume up/down, next/previous, mute, left star, right star, or assistant. Decoding and press-state handling live in the
+shared MG4Hardware library.
+A long press fires once and suppresses the following short-release event. The known right-button
+codes (`286` and `18`) are both accepted for firmware compatibility; the assistant uses the
+OEM voice keycode `287`. The SAIC broadcast is
+accepted only from a signature-authorized sender because the action itself is not protected.
+
+Each ignition rule chooses one trigger; a rule written before triggers existed runs at start,
+as it always did. Switching off costs nothing extra —
 the service already received every ignition transition and simply stopped reading at RUN, so
 there is no second listener, no extra bind and no polling. At switch-off the car is powering
 down: settings that persist (charge limit, locks, windows) land, and anything the vehicle
 drops with the ignition is reported by the history rather than assumed.
 
-The "Test now" button replays the whole path on demand and addresses **every** rule whatever
-it is wired to — that is what testing means. A master switch on the Rules screen disables
+The "Test now" button replays the whole path on demand for the **selected rule only**, while
+ignoring its ignition trigger. A master switch on the Rules screen disables
 automation without deleting rules.
 
 ---
@@ -129,7 +140,7 @@ an action is refused, the history gives the exact reason instead of staying sile
 
 ### Raising the threshold
 
-The Rules screen lets you move the limit from 0 to 50 km/h. **0 — apply only when stopped —
+The Configuration tab lets you move the limit from 0 to 50 km/h. **0 — apply only when stopped —
 is the default**, and the value that needs no justification: a car creeping in a car park
 reads as moving, and a rule refused there is the most common false negative.
 
@@ -169,6 +180,18 @@ Gate refusals are now kept and re-attempted at the first standstill. Three limit
 
 - **Only gate refusals.** "Moving" and "speed unreadable" mean *not now*. An unsupported
   action or a failed write is not retried — waiting adds no missing firmware feature.
+
+Transient action failures are different: each failed action is retried independently up to
+three times with exponential backoff (250 ms, then 500 ms). Actions that already succeeded
+are never replayed.
+
+A rule's actions run **one after the other, in the order shown in the editor**, and each one
+is finished before the next starts. That order is part of the rule: the arrows on every
+action row move it up or down. Where one write must land before the next is asked for —
+switching the climate on, then setting the fan level — the **Wait** action (1 to 60 seconds)
+holds the sequence in between. It touches nothing in the car, and appears in the history at
+its place in the sequence. A rule made only of waits is refused at save time: it would hold
+the cycle and change nothing.
 - **15 minutes, and never across an ignition cycle.** A rule that fired for this drive
   belongs to this drive. At switch-off the queue is dropped, not applied: the car is stopped
   then, which is exactly what makes it the wrong moment to change the setting the next
@@ -200,7 +223,7 @@ temperature, A/C, AUTO, recirculation, fan level, front and rear defrosters), **
 (charge limit, allow charging, scheduled charging and its window, battery pre-heating),
 **audio** (volume, the fine controls, play the radio), **driver assistance**, and **system**
 (launch an app, show a message, speak through the head unit's text-to-speech engine,
-navigate to a destination, call a number). ADAS state — AEB, ELK, ACC/TJA, TSR, overspeed and
+navigate to a destination, call a number, wait). ADAS state — AEB, ELK, ACC/TJA, TSR, overspeed and
 so on — is fully covered as gated actions.
 
 **Near a place** compares the car's last known fix with a point stored in the rule and a
@@ -224,7 +247,7 @@ generations it works on, derived from MG4Hardware's `FirmwareInfo` and per-gener
 routing. That annotation is the single source of truth for three things:
 
 1. **Self-documenting source** — the support set sits next to the entry.
-2. **The compatibility matrix** — [docs/firmware-matrix.md](docs/firmware-matrix.md) is
+2. **The compatibility matrix** — [MG4Hardware/docs/firmware-matrix.md](MG4Hardware/docs/firmware-matrix.md) is
    *generated* from the annotations by `FirmwareMatrix`, checked by a unit test. It is
    never edited by hand.
 3. **The runtime filter** — the editor offers only the entries supported on the connected
@@ -245,8 +268,7 @@ Highlights (see the generated matrix for the full grid):
 - **Lane-departure sound + vibration** — SWI132 only.
 - **Fine audio** (Bose, balance, fader, tone, 3D, speed volume) — SWI69, SWI131, SWI132: the
   SAIC `caradapter` audio helper these go through is bound on the A9 platform only.
-- **Climate, charging, radio and calls** — SWI68 and SWI165, the generations the decompiled
-  head-unit APKs in `apks/` come from. They run on SAIC vendor services rather than on
+- **Climate, charging, radio and calls** — SWI68 and SWI165. They run on SAIC vendor services rather than on
   property ids, and whether a given car answers is a bind, not a table: the Diagnostic tab's
   *Vehicle services* row reports which of the four responded, and the matrix widens once a
   car outside that set reports one.
@@ -255,12 +277,12 @@ Highlights (see the generated matrix for the full grid):
 
 ## Vehicle services: climate, charging, radio, calls
 Climate and charging used to be read-only and unverified — standard AOSP property ids the
-R69 sources name, that no MG4 confirmed. Writing one of those would have been a guess, so
+that no MG4 confirmed. Writing one of those would have been a guess, so
 there were no write actions.
 
 They now go through the **SAIC vendor services** instead: the same binder interfaces the
-car's own HVAC, charging, radio and hands-free apps use, read off the decompiled head-unit
-APKs in [`apks/`](../apks). One bound service (`com.saicmotor.service.vehicle`) exposes a hub
+car's own HVAC, charging, radio and hands-free apps use. One bound service
+(`com.saicmotor.service.vehicle`) exposes a hub
 that hands out `aircondition`, `vehiclecharging`, `vehiclecontrol` and `vehiclecondition`;
 radio and telephony are their own services. What those calls do is not in doubt — they are what the car does to itself.
 
@@ -277,6 +299,9 @@ That buys four things the property ids could not:
   DAB is out: `tuneDab` takes a service and ensemble id, not a frequency.
 - **Calls** — placed by the car's hands-free stack on the paired phone. The head unit has no
   SIM and no dialer, so `ACTION_CALL` would find nothing to handle it.
+  A rule can store a typed number or select a name/number from the phone book explicitly
+  shared over Bluetooth PBAP. Contact access is requested only while configuring that action;
+  execution uses the stored number and does not need the phone book to remain available.
 
 Climate **conditions** now read from the same service where it answers, falling back to the
 AOSP ids elsewhere — so what a rule tests and what an action writes are the same signal.
@@ -285,6 +310,8 @@ Window **writes** stay absent: no vendor service exposes them.
 
 Navigation is the exception with no vendor API — `NAVIGATE_TO` uses the standard `geo:`
 intent, then `google.navigation:`, and reports honestly when the head unit has neither.
+Its destination can be either `latitude,longitude` or a place name/address. HTTPS webhooks
+are available as GET and POST actions; POST accepts an optional JSON body.
 
 ---
 
@@ -323,7 +350,7 @@ reach it.
 ### Testing a rule
 
 **Test now** on the Rules screen runs one full cycle — the exact ignition path, so a passing
-test proves the real thing — and then **shows what it decided**: one line per rule with its
+test proves the real thing — and then **shows what it decided** for that rule: its
 outcome (applied, conditions not met, cannot be evaluated, failed), the per-action verdict
 behind a failure, and the name of any signal that could not be read. It used to say "test
 running" and stop there, which answers nothing for a button whose whole purpose is to answer
@@ -397,7 +424,7 @@ unparsed. Import stays the deliberate way to replace the set.
 ---
 
 ## Import and export (USB stick)
-**Export** and **Import** on the Rules screen move the whole rule set to and from a JSON
+**Export** and **Import**, on the Configuration tab, move the whole rule set to and from a JSON
 file — a backup before a reinstall, or the same rules on a second car, without retyping
 anything on the on-screen keyboard.
 
@@ -521,7 +548,7 @@ app/src/main/java/com/mg4/tasker/
   model/     Rule, Condition, Action, catalogues, @SupportedOn, FirmwareMatrix
   engine/    condition and rule evaluation — no Android dependency
   store/     JSON persistence of rules and history, rules file format, storage browsing
-  ui/        list, generic editor, history, diagnostic, console, file browser
+  ui/        list, generic editor, configuration, history, diagnostic, console, file browser
   service/   run cycle (foreground service)
   receiver/  ignition wake-up
   debug/     AppLogger ring buffer, CrashLogger, diagnostic verdicts + report export

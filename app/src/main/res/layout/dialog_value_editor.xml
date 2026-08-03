@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/spacing_lg">
+        android:paddingHorizontal="@dimen/value_editor_horizontal_inset"
+        android:paddingVertical="@dimen/spacing_md">
 
         <TextView
             android:id="@+id/gatedExplain"
@@ -72,6 +73,51 @@
             android:minHeight="@dimen/touch_target"
             android:visibility="gone" />
 
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/contactBlock"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/value_contact_hint"
+            android:visibility="gone">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/contactInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:minHeight="@dimen/touch_target"
+                android:textSize="@dimen/text_body" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:id="@+id/physicalButtonBlock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="@dimen/spacing_sm" android:text="@string/physical_button_label" android:textAppearance="@style/Text.MG4.SectionHeader" />
+                <Spinner android:id="@+id/physicalButtonSpinner" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/touch_target" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_lg"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="@dimen/spacing_sm" android:text="@string/physical_event_label" android:textAppearance="@style/Text.MG4.SectionHeader" />
+                <Spinner android:id="@+id/physicalPressSpinner" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/touch_target" />
+            </LinearLayout>
+        </LinearLayout>
+
         <TextView
             android:id="@+id/choiceEmpty"
             android:layout_width="match_parent"
@@ -127,6 +173,15 @@
             app:singleSelection="false"
             android:visibility="gone" />
 
+        <!-- DATE -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/dateButton"
+            style="@style/Widget.MG4.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target"
+            android:visibility="gone" />
+
         <!-- TEXT -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textBlock"
@@ -144,5 +199,50 @@
                 android:textSize="@dimen/text_body"
                 android:inputType="textCapSentences" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/payloadBlock"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:hint="@string/value_webhook_body"
+            android:visibility="gone">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/payloadInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top|start"
+                android:inputType="textMultiLine|textNoSuggestions"
+                android:minHeight="@dimen/touch_target"
+                android:textSize="@dimen/text_body" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:id="@+id/locationActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/locationCurrent"
+                style="@style/Widget.MG4.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/value_location_current" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/locationMap"
+                style="@style/Widget.MG4.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:layout_weight="1"
+                android:text="@string/value_location_map" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

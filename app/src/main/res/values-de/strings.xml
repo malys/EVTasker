@@ -6,6 +6,13 @@
     <string name="tab_rules">Regeln</string>
     <string name="tab_history">Verlauf</string>
     <string name="tab_diagnostic">Diagnose</string>
+    <string name="tab_config">Konfiguration</string>
+
+    <!-- Configuration screen -->
+    <string name="config_section_speed">GESCHWINDIGKEIT</string>
+    <string name="config_section_language">SPRACHE</string>
+    <string name="config_section_rules_file">REGELDATEI</string>
+    <string name="config_rules_file_explain">Der Export schreibt alle Regeln in eine Datei auf dem Speicher. Der Import ersetzt alle aktuellen Regeln durch die aus der Datei.</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automatisierung aktiviert</string>
@@ -85,6 +92,8 @@
     <string name="value_to">bis</string>
     <string name="value_ok">Bestätigen</string>
     <string name="value_no_bt_devices">Kein gekoppeltes Bluetooth-Gerät</string>
+    <string name="value_no_contacts">Keine synchronisierten Kontakte. Kontaktfreigabe am gekoppelten Telefon erlauben.</string>
+    <string name="value_contact_hint">Kontakt oder Nummer suchen</string>
     <string name="value_no_profiles">Kein MG4Control-Profil erreichbar</string>
     <string name="value_notification_hint">Anzuzeigende Nachricht</string>
 
@@ -108,6 +117,7 @@
     <string name="history_empty_body">Der Verlauf füllt sich beim Start des Fahrzeugs oder nach einem manuellen Test.</string>
     <string name="history_clear">Verlauf löschen</string>
     <string name="history_trigger_ignition">Fahrzeugstart</string>
+    <string name="history_trigger_button">Physische Taste</string>
     <string name="history_trigger_manual">Manueller Test</string>
     <string name="history_trigger_ignition_off">Fahrzeug ausgeschaltet</string>
     <string name="history_trigger_deferred">Im Stand angewendet</string>
@@ -203,6 +213,10 @@
     <string name="channel_name">MG4Tasker</string>
     <string name="notif_running_title">Regeln werden angewendet…</string>
     <string name="value_location_hint">Breite, Länge</string>
+    <string name="value_location_current">Aktuelle Position</string>
+    <string name="value_location_map">Karte öffnen</string>
+    <string name="value_webhook_url">HTTPS-Webhook-URL</string>
+    <string name="value_webhook_body">POST-Text (optional)</string>
     <string name="rules_threshold_standstill">Nur im Stand anwenden</string>
     <string name="rules_threshold_value">Bis %1$d km/h anwenden</string>
     <string name="rules_threshold_title">Höchstgeschwindigkeit für Änderungen</string>
@@ -218,6 +232,13 @@
     <string name="paste_header">**Passwort:** `%1$s` · verfällt eine Stunde nach dem Hochladen.\n\nKostenlos gehostet von [April](https://www.april.org) auf %2$s. Wenn Ihnen das einen Werkstattbesuch erspart hat, [spenden Sie etwas](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Fenster und Verriegelung</string>
     <string name="editor_trigger">Läuft bei</string>
+    <string name="physical_press_short">Kurzer Druck</string>
+    <string name="physical_press_long">Langer Druck</string>
+    <string name="physical_button_label">TASTE</string>
+    <string name="physical_event_label">DRUCKART</string>
+    <string name="value_editor_instruction">Wählen Sie den Wert für diese Regel.</string>
     <string name="editor_trigger_on">Fahrzeugstart</string>
     <string name="editor_trigger_off">Fahrzeug aus</string>
+    <string name="editor_move_up">Nach oben</string>
+    <string name="editor_move_down">Nach unten</string>
 </resources>

@@ -73,6 +73,7 @@
 
             <!-- TRIGGER: which vehicle event addresses this rule at all -->
             <TextView
+                android:id="@+id/triggerLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_lg"
@@ -100,6 +101,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/editor_trigger_off" />
+
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
             <!-- WHEN -->

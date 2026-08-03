@@ -40,6 +40,7 @@ data class Condition(
     val flag: Boolean = true,
     /** Bluetooth MAC address, or firmware generation identifier. */
     val text: String = "",
+    // DATE also uses text, as an ISO-8601 local date (yyyy-MM-dd), for stable persistence.
     /** [ConditionType.TIME_OF_DAY] — minutes since midnight. */
     val minutesFrom: Int = 0,
     val minutesTo: Int = 0,
@@ -55,6 +56,10 @@ data class Action(
     val flag: Boolean = true,
     /** Profile id, package name, notification text, destination or phone number. */
     val text: String = "",
+    /** Optional webhook POST body. Nullable so rules saved before this field remain safe. */
+    val payload: String? = null,
+    /** Human-readable contact name; execution deliberately uses [text], the stored number. */
+    val displayName: String? = null,
     /** [ActionType.SET_CHARGE_WINDOW] — minutes since midnight, start and end. */
     val minutesFrom: Int = 0,
     val minutesTo: Int = 0
@@ -86,9 +91,17 @@ data class Rule(
      * A rule with no condition would apply on every start without the user asking; a rule
      * with no action does nothing. Both are refused at save time rather than silently
      * ignored at run time.
+     *
+     * A rule made only of waits counts as having no action: it holds the cycle for its
+     * duration and changes nothing.
      */
-    fun isComplete(): Boolean = conditions.isNotEmpty() && actions.isNotEmpty()
+    fun isComplete(): Boolean =
+        conditions.isNotEmpty() && actions.any { it.type != ActionType.DELAY }
 
     /** [trigger], defaulting to vehicle start — what every rule written before this did. */
     val firesOn: RuleTrigger get() = trigger ?: RuleTrigger.IGNITION_ON
+
+    /** Button conditions are event sources themselves; the ignition trigger is ignored. */
+    val hasPhysicalButtonCondition: Boolean get() =
+        conditions.any { it.type.eventDriven }
 }
