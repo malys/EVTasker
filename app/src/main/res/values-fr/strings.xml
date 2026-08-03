@@ -93,8 +93,6 @@
     <string name="editor_cancel">Annuler</string>
     <string name="editor_name_required">Donnez un nom à la règle</string>
     <string name="editor_incomplete">Il faut au moins une condition et une action</string>
-    <string name="editor_button_condition_required">Une règle de bouton physique nécessite une condition d’appui</string>
-    <string name="editor_button_trigger_required">Les conditions d’appui nécessitent le déclencheur Bouton physique</string>
     <string name="editor_save_failed">Échec de l\'enregistrement : la règle n\'a pas pu être écrite. Voir l\'onglet Console.</string>
     <string name="editor_store_unreadable">Les règles enregistrées sont illisibles : sauvegarder les écraserait. Importez un fichier de règles pour les restaurer.</string>
     <string name="editor_remove">Retirer</string>
@@ -111,6 +109,8 @@
     <string name="value_to">à</string>
     <string name="value_ok">Valider</string>
     <string name="value_no_bt_devices">Aucun appareil Bluetooth appairé</string>
+    <string name="value_no_contacts">Aucun contact synchronisé. Autorisez le partage des contacts sur le téléphone appairé.</string>
+    <string name="value_contact_hint">Rechercher un contact ou un numéro</string>
     <string name="value_no_profiles">Aucun profil MG4Control accessible</string>
     <string name="value_notification_hint">Message à afficher</string>
 
@@ -249,7 +249,11 @@
     <string name="paste_header">**Mot de passe :** `%1$s` · expire une heure après l’envoi.\n\nHébergé gracieusement par [April](https://www.april.org) sur %2$s. Si cela vous a évité un passage au garage, [faites un don](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Vitres et verrouillage</string>
     <string name="editor_trigger">Se déclenche</string>
+    <string name="physical_press_short">Appui court</string>
+    <string name="physical_press_long">Appui long</string>
+    <string name="physical_button_label">BOUTON</string>
+    <string name="physical_event_label">TYPE D’APPUI</string>
+    <string name="value_editor_instruction">Choisissez la valeur à utiliser dans cette règle.</string>
     <string name="editor_trigger_on">Au démarrage</string>
     <string name="editor_trigger_off">À l’extinction</string>
-    <string name="editor_trigger_button">Bouton physique</string>
 </resources>

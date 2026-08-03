@@ -45,7 +45,10 @@ Adding a vehicle entry without `@SupportedOn` fails `FirmwareSupportTest`.
 
 `TaskerVehicleService` gets every ignition transition from one MG4Hardware listener. The
 switch-off trigger reads the other end of that same stream — no second listener, no bind, no
-poll. Physical-button rules consume the existing SAIC hard-key broadcast and require the
+poll. Physical buttons are conditions (never a `RuleTrigger`): a rule containing one is
+addressed by that event and excluded from ignition cycles. MG4Hardware owns the OEM keycode
+catalogue and short/long-press state machine; the app only receives the broadcast and feeds
+its payload to that decoder. The receiver requires the
 signature sender permission because that action is otherwise forgeable. Long press fires on
 the OEM long event; its following release is suppressed instead of also firing short press.
 Before adding a trigger, check whether something already delivers the event. Ignition repeats

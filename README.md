@@ -80,14 +80,18 @@ MG4Tasker runs its **own** persistent service: it initialises MG4Hardware, liste
 ignition directly (no dependency on MG4Control), reads the vehicle and applies the rules'
 actions through MG4Hardware. Started at boot and on app open.
 
-**Triggers: vehicle start, vehicle switch-off, and the steering-wheel star buttons.** Each
-button rule chooses short or long press on the left or right star as a condition. A long
-press fires once and suppresses the following short-release event. The known right-button
-codes (`286` and `18`) are both accepted for firmware compatibility. The SAIC broadcast is
+**Triggers: vehicle start and vehicle switch-off.** Physical buttons are conditions, not a
+third “Runs at” choice: adding one makes that rule event-driven and hides the ignition choice.
+Button rules can choose short or long press on phone, center, directional/OK, source,
+volume up/down, next/previous, mute, left star, right star, or assistant. Decoding and press-state handling live in the
+shared MG4Hardware library.
+A long press fires once and suppresses the following short-release event. The known right-button
+codes (`286` and `18`) are both accepted for firmware compatibility; the assistant uses the
+OEM voice keycode `287`. The SAIC broadcast is
 accepted only from a signature-authorized sender because the action itself is not protected.
 
-Each rule chooses one trigger; a rule written before triggers existed runs at start, as it
-always did. Switching off costs nothing extra —
+Each ignition rule chooses one trigger; a rule written before triggers existed runs at start,
+as it always did. Switching off costs nothing extra —
 the service already received every ignition transition and simply stopped reading at RUN, so
 there is no second listener, no extra bind and no polling. At switch-off the car is powering
 down: settings that persist (charge limit, locks, windows) land, and anything the vehicle
@@ -136,7 +140,7 @@ an action is refused, the history gives the exact reason instead of staying sile
 
 ### Raising the threshold
 
-The Rules screen lets you move the limit from 0 to 50 km/h. **0 — apply only when stopped —
+The Configuration tab lets you move the limit from 0 to 50 km/h. **0 — apply only when stopped —
 is the default**, and the value that needs no justification: a car creeping in a car park
 reads as moving, and a rule refused there is the most common false negative.
 
@@ -287,6 +291,9 @@ That buys four things the property ids could not:
   DAB is out: `tuneDab` takes a service and ensemble id, not a frequency.
 - **Calls** — placed by the car's hands-free stack on the paired phone. The head unit has no
   SIM and no dialer, so `ACTION_CALL` would find nothing to handle it.
+  A rule can store a typed number or select a name/number from the phone book explicitly
+  shared over Bluetooth PBAP. Contact access is requested only while configuring that action;
+  execution uses the stored number and does not need the phone book to remain available.
 
 Climate **conditions** now read from the same service where it answers, falling back to the
 AOSP ids elsewhere — so what a rule tests and what an action writes are the same signal.
@@ -409,7 +416,7 @@ unparsed. Import stays the deliberate way to replace the set.
 ---
 
 ## Import and export (USB stick)
-**Export** and **Import** on the Rules screen move the whole rule set to and from a JSON
+**Export** and **Import**, on the Configuration tab, move the whole rule set to and from a JSON
 file — a backup before a reinstall, or the same rules on a second car, without retyping
 anything on the on-screen keyboard.
 
@@ -533,7 +540,7 @@ app/src/main/java/com/mg4/tasker/
   model/     Rule, Condition, Action, catalogues, @SupportedOn, FirmwareMatrix
   engine/    condition and rule evaluation — no Android dependency
   store/     JSON persistence of rules and history, rules file format, storage browsing
-  ui/        list, generic editor, history, diagnostic, console, file browser
+  ui/        list, generic editor, configuration, history, diagnostic, console, file browser
   service/   run cycle (foreground service)
   receiver/  ignition wake-up
   debug/     AppLogger ring buffer, CrashLogger, diagnostic verdicts + report export

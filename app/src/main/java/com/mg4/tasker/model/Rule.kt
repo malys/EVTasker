@@ -21,7 +21,7 @@ enum class MatchMode { ALL, ANY }
  * locks, windows) land; anything the vehicle drops with the ignition may not, and the
  * history reports what each action returned rather than assuming.
  */
-enum class RuleTrigger { IGNITION_ON, IGNITION_OFF, PHYSICAL_BUTTON }
+enum class RuleTrigger { IGNITION_ON, IGNITION_OFF }
 
 /**
  * One configured condition.
@@ -40,6 +40,7 @@ data class Condition(
     val flag: Boolean = true,
     /** Bluetooth MAC address, or firmware generation identifier. */
     val text: String = "",
+    // DATE also uses text, as an ISO-8601 local date (yyyy-MM-dd), for stable persistence.
     /** [ConditionType.TIME_OF_DAY] — minutes since midnight. */
     val minutesFrom: Int = 0,
     val minutesTo: Int = 0,
@@ -57,6 +58,8 @@ data class Action(
     val text: String = "",
     /** Optional webhook POST body. Nullable so rules saved before this field remain safe. */
     val payload: String? = null,
+    /** Human-readable contact name; execution deliberately uses [text], the stored number. */
+    val displayName: String? = null,
     /** [ActionType.SET_CHARGE_WINDOW] — minutes since midnight, start and end. */
     val minutesFrom: Int = 0,
     val minutesTo: Int = 0
@@ -93,4 +96,8 @@ data class Rule(
 
     /** [trigger], defaulting to vehicle start — what every rule written before this did. */
     val firesOn: RuleTrigger get() = trigger ?: RuleTrigger.IGNITION_ON
+
+    /** Button conditions are event sources themselves; the ignition trigger is ignored. */
+    val hasPhysicalButtonCondition: Boolean get() =
+        conditions.any { it.type.eventDriven }
 }

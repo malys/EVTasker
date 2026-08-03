@@ -33,6 +33,9 @@
     <!-- Bluetooth: paired list for the editor, and live connection tracking for rules. -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Requested only when the user chooses "Call a contact". The OEM PBAP client
+         publishes the paired phone's downloaded phone book through ContactsContract. -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <!-- Position, for the "near a place" condition only. Last known fix, never a live
          request, never sent anywhere: it is compared to a point stored in the rule and the

@@ -10,6 +10,7 @@ import android.os.IBinder
 import androidx.core.content.ContextCompat
 import com.mg4.hardware.AppLogger
 import com.mg4.hardware.MG4Hardware
+import com.mg4.hardware.PhysicalButtonEventDecoder
 import com.mg4.hardware.VehicleWriteGate
 import com.mg4.tasker.model.RuleTrigger
 import com.mg4.tasker.store.AppState
@@ -36,6 +37,7 @@ class TaskerVehicleService : Service() {
     companion object {
         private const val TAG = "MG4Tasker.Vehicle"
         private const val HARDKEY_ACTION = "com.saic.keyevent.hardkey.report"
+        private const val SYSTEMUI_HARDKEY_ACTION = "com.android.systemui.ACTION_HARD_KEY_EVENT"
         const val HARDKEY_PERMISSION = "com.mg4.tasker.permission.RECEIVE_HARDKEY"
 
         /**
@@ -57,7 +59,7 @@ class TaskerVehicleService : Service() {
     private var ignitionListener: ((Int) -> Unit)? = null
     private var btReceiver: BroadcastReceiver? = null
     private var hardkeyReceiver: BroadcastReceiver? = null
-    private val physicalButtons = PhysicalButtonTracker()
+    private val physicalButtons = PhysicalButtonEventDecoder()
 
     /** Last transition acted on, so a re-asserted ignition state does not re-run a cycle. */
     @Volatile
@@ -173,11 +175,14 @@ class TaskerVehicleService : Service() {
             override fun onReceive(ctx: Context, intent: Intent) {
                 val keyCode = intent.getIntExtra("android.intent.extra.hardkey.keycode", -1)
                     .takeIf { it >= 0 }
+                    ?: intent.getIntExtra("KEY_CODE", -1).takeIf { it >= 0 }
                     ?: intent.getIntExtra("keycode", -1).takeIf { it >= 0 }
                     ?: intent.getIntExtra("keyCode", -1)
                 val down = intent.getBooleanExtra("android.intent.extra.hardkey.down", false) ||
+                    intent.getBooleanExtra("DOWN", false) ||
                     intent.getBooleanExtra("down", false)
                 val longPress = intent.getBooleanExtra("android.intent.extra.hardkey.longpress", false) ||
+                    intent.getBooleanExtra("LONG_PRESS", false) ||
                     intent.getBooleanExtra("longpress", false)
                 val event = physicalButtons.accept(keyCode, down, longPress) ?: return
                 AppLogger.i(TAG, "Physical button ${event.button} ${event.press}")
@@ -185,7 +190,7 @@ class TaskerVehicleService : Service() {
                     thread(name = "mg4-tasker-button-cycle") {
                         RuleCycle.run(
                             this@TaskerVehicleService,
-                            RuleTrigger.PHYSICAL_BUTTON.name,
+                            RuleCycle.PHYSICAL_BUTTON,
                             event.readings()
                         )
                     }
@@ -195,7 +200,7 @@ class TaskerVehicleService : Service() {
         ContextCompat.registerReceiver(
             this,
             hardkeyReceiver,
-            IntentFilter(HARDKEY_ACTION),
+            IntentFilter().apply { addAction(HARDKEY_ACTION); addAction(SYSTEMUI_HARDKEY_ACTION) },
             HARDKEY_PERMISSION,
             null,
             ContextCompat.RECEIVER_EXPORTED

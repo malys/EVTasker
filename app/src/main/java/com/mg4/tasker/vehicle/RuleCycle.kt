@@ -58,6 +58,7 @@ object RuleCycle {
 
     /** A manual test ignores the trigger, but addresses only the rule selected by the user. */
     const val MANUAL = "MANUAL"
+    const val PHYSICAL_BUTTON = "PHYSICAL_BUTTON"
 
     fun run(
         context: Context,
@@ -68,10 +69,10 @@ object RuleCycle {
         val all = RuleStore(context).getAll()
         // Rules wired to a different event are not "skipped", they were never addressed: the
         // history would otherwise fill with a line per rule per ignition saying nothing.
-        val rules = if (trigger == MANUAL) {
-            all.filter { it.id == ruleId }
-        } else {
-            all.filter { it.firesOn.name == trigger }
+        val rules = when (trigger) {
+            MANUAL -> all.filter { it.id == ruleId }
+            PHYSICAL_BUTTON -> all.filter { it.hasPhysicalButtonCondition }
+            else -> all.filter { !it.hasPhysicalButtonCondition && it.firesOn.name == trigger }
         }
         if (rules.isEmpty()) {
             AppLogger.i(TAG, "no rules for $trigger (${all.size} total) — skipped")

@@ -93,8 +93,6 @@
     <string name="editor_cancel">Cancel</string>
     <string name="editor_name_required">Give the rule a name</string>
     <string name="editor_incomplete">At least one condition and one action are required</string>
-    <string name="editor_button_condition_required">A physical-button rule needs a button press condition</string>
-    <string name="editor_button_trigger_required">Button press conditions require the Physical button trigger</string>
     <string name="editor_save_failed">Save failed: the rule could not be written to storage. See the Console tab.</string>
     <string name="editor_store_unreadable">The stored rules cannot be read, so saving would overwrite them. Import a rules file to restore them.</string>
     <string name="editor_remove">Remove</string>
@@ -111,6 +109,8 @@
     <string name="value_to">to</string>
     <string name="value_ok">Confirm</string>
     <string name="value_no_bt_devices">No paired Bluetooth device</string>
+    <string name="value_no_contacts">No synchronized contact. Allow contact sharing on the paired phone.</string>
+    <string name="value_contact_hint">Search a contact or number</string>
     <string name="value_no_profiles">No MG4Control profile reachable</string>
     <string name="value_notification_hint">Message to display</string>
 
@@ -249,7 +249,11 @@
     <string name="paste_header">**Password:** `%1$s` · expires one hour after upload.\n\nHosted free of charge by [April](https://www.april.org) on %2$s. If this saved you a trip to the garage, [make a donation](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Windows and locks</string>
     <string name="editor_trigger">Runs at</string>
+    <string name="physical_press_short">Short press</string>
+    <string name="physical_press_long">Long press</string>
+    <string name="physical_button_label">BUTTON</string>
+    <string name="physical_event_label">PRESS TYPE</string>
+    <string name="value_editor_instruction">Choose the value to use in this rule.</string>
     <string name="editor_trigger_on">Vehicle start</string>
     <string name="editor_trigger_off">Vehicle switch-off</string>
-    <string name="editor_trigger_button">Physical button</string>
 </resources>

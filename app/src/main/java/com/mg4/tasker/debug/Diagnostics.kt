@@ -211,7 +211,7 @@ object Diagnostics {
             if (caps.chargingService) gateReason(type, caps) else Reason.NO_VENDOR_SERVICE
         ActionType.PLAY_RADIO ->
             if (caps.radioService) Reason.NONE else Reason.NO_VENDOR_SERVICE
-        ActionType.CALL_NUMBER ->
+        ActionType.CALL_NUMBER, ActionType.CALL_CONTACT ->
             if (caps.phoneService) Reason.NONE else Reason.NO_VENDOR_SERVICE
 
         // Everything else is a direct MG4Hardware write.
@@ -250,6 +250,7 @@ object Diagnostics {
         text = when (type) {
             ConditionType.BT_DEVICE_CONNECTED -> PROBE_MAC
             ConditionType.LOCATION_WITHIN -> PROBE_POINT
+            ConditionType.DATE -> java.time.LocalDate.now().toString()
             else -> ""
         },
         days = ALL_DAYS
@@ -265,6 +266,7 @@ object Diagnostics {
     private fun rawValue(type: ConditionType, snapshot: Snapshot): Any? = when (type) {
         ConditionType.TIME_OF_DAY -> snapshot.minutesOfDay
         ConditionType.DAY_OF_WEEK -> snapshot.dayOfWeek
+        ConditionType.DATE -> snapshot.localDate
         ConditionType.ANY_BT_CONNECTED -> snapshot.btMacs.isNotEmpty()
         ConditionType.BT_DEVICE_CONNECTED -> snapshot.btMacs.sorted().joinToString(", ")
         // Where the car thinks it is, which is the only way to tell a radius that is too

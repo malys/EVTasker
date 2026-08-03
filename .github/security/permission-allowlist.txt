@@ -29,6 +29,14 @@ android.permission.POST_NOTIFICATIONS
 android.permission.BLUETOOTH
 android.permission.BLUETOOTH_CONNECT
 
+# --- Contacts ---
+# Read-only access, requested only while configuring "Call a contact". The OEM PBAP client
+# publishes the paired phone's explicitly shared phone book through ContactsContract.
+android.permission.READ_CONTACTS
+
+# Signature permission defined by MG4Tasker to reject forged OEM hard-key broadcasts.
+com.mg4.tasker.permission.RECEIVE_HARDKEY
+
 # --- Optional MG4Control bridge (profile action only) ---
 # Signature-level, obtained solely because both APKs share the platform key. Used only to
 # apply an MG4Control profile when MG4Control is installed.

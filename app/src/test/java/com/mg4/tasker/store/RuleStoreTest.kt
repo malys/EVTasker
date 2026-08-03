@@ -64,4 +64,32 @@ class RuleStoreTest {
         assertEquals(RuleStore.SaveResult.OK, store.save(rules.first().copy(name = "renamed")))
         assertEquals("renamed", store.getById(rules.first().id)?.name)
     }
+
+    /**
+     * A catalog entry that an update removed leaves rules on disk naming it. Gson builds the
+     * enum field as null there, so reading such a rule back used to hand the engine and the
+     * list a null [ConditionType] and crash on the first upgrade run. The rule cannot be
+     * honoured any more, but the other rules must survive.
+     */
+    @Test
+    fun `a rule naming a catalog entry that no longer exists is dropped, not crashed on`() {
+        val store = RuleStore(context())
+        store.save(sampleRule("still valid"))
+        val json = context().getSharedPreferences("mg4_tasker_rules", android.content.Context.MODE_PRIVATE)
+            .getString("rules_json", null)!!
+        val withRemovedType = json.dropLast(1) + """,{"id":"gone","name":"old button rule",
+            "enabled":true,"match":"ALL","trigger":"PHYSICAL_BUTTON",
+            "conditions":[{"type":"STAR_LEFT_SHORT_PRESS","op":"EQ","number":0.0,"flag":true,
+            "text":"","minutesFrom":0,"minutesTo":0,"days":[]}],
+            "actions":[{"type":"SET_MEDIA_VOLUME","number":5,"flag":false,"text":"",
+            "minutesFrom":0,"minutesTo":0}]}]"""
+        context().getSharedPreferences("mg4_tasker_rules", android.content.Context.MODE_PRIVATE)
+            .edit().putString("rules_json", withRemovedType).commit()
+
+        val all = RuleStore(context()).getAll()
+
+        assertEquals(1, all.size)
+        assertEquals("still valid", all[0].name)
+        all.forEach { rule -> rule.conditions.forEach { it.type.name }; rule.actions.forEach { it.type.name } }
+    }
 }

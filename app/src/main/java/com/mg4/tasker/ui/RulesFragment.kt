@@ -139,11 +139,11 @@ class RulesFragment : Fragment() {
         binding.detailScroll.visibility = View.VISIBLE
 
         val labels = Labels(requireContext(), btNames = BtDevices.bondedNamesByMac(requireContext()))
-        binding.detailName.text = current.name + "  ·  " + getString(when (current.firesOn) {
-            com.mg4.tasker.model.RuleTrigger.IGNITION_OFF -> R.string.editor_trigger_off
-            com.mg4.tasker.model.RuleTrigger.PHYSICAL_BUTTON -> R.string.editor_trigger_button
-            else -> R.string.editor_trigger_on
-        })
+        binding.detailName.text = current.name + "  ·  " + getString(
+            if (current.hasPhysicalButtonCondition) R.string.history_trigger_button
+            else if (current.firesOn == com.mg4.tasker.model.RuleTrigger.IGNITION_OFF)
+                R.string.editor_trigger_off else R.string.editor_trigger_on
+        )
         binding.detailConditions.text = current.conditions.joinToString("\n") { "• " + labels.describe(it) }
         binding.detailActions.text = current.actions.joinToString("\n") { "• " + labels.describe(it) }
     }

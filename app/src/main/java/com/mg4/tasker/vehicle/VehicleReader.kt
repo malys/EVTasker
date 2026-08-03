@@ -26,6 +26,13 @@ object VehicleReader {
         val calendar = Calendar.getInstance()
         val minutes = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
         val day = calendar.get(Calendar.DAY_OF_WEEK)
+        val date = String.format(
+            java.util.Locale.US,
+            "%04d-%02d-%02d",
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
 
         val ready = MG4Hardware.isCarPropertyManagerReady()
         if (!ready) {
@@ -39,6 +46,7 @@ object VehicleReader {
                 btAvailable = btAvailable,
                 minutesOfDay = minutes,
                 dayOfWeek = day,
+                localDate = date,
                 latitude = fix?.latitude,
                 longitude = fix?.longitude,
                 bridgeAvailable = false
@@ -103,6 +111,7 @@ object VehicleReader {
             btAvailable = btAvailable,
             minutesOfDay = minutes,
             dayOfWeek = day,
+            localDate = date,
             latitude = fix?.latitude,
             longitude = fix?.longitude,
             bridgeAvailable = true

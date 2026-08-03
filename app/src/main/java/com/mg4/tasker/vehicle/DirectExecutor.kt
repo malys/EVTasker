@@ -131,11 +131,11 @@ class DirectExecutor(
             ActionType.SET_BATTERY_PREHEAT   -> SaicCharging.setBatteryPreheat(b)
             // Media and telephony — vendor services too.
             ActionType.PLAY_RADIO           -> SaicRadio.play()
-            ActionType.CALL_NUMBER          -> callNumber(a)
-            // Handled by execute() before it ever gets here. The first four are not vehicle
-            // writes at all; TUNE_RADIO is one, but it carries a frequency the driver typed,
-            // and "103,5 FM" that parsed to nothing must be reported as that rather than as
-            // a radio that refused.
+            ActionType.CALL_NUMBER,
+            ActionType.CALL_CONTACT         -> callNumber(a)
+            // Handled by execute() before it ever gets here: none of these is a vehicle write,
+            // so a failure is the app's own (no such profile, no such app, webhook refused) and
+            // must be reported as that rather than as a vehicle that would not take the value.
             ActionType.APPLY_PROFILE,
             ActionType.LAUNCH_APP,
             ActionType.SHOW_NOTIFICATION,

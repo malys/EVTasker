@@ -48,6 +48,7 @@ class RuleEditorActivity : AppCompatActivity() {
 
     /** MG4Control profiles, loaded in the background: the bridge blocks, the editor must not. */
     private var profiles: List<Pair<String, String>> = emptyList()
+    private var contacts: List<com.mg4.tasker.util.ContactDirectory.Entry> = emptyList()
 
     /** Real maximum media volume of the vehicle, if MG4Control could read it. */
     private var mediaVolumeMax: Int? = null
@@ -85,11 +86,10 @@ class RuleEditorActivity : AppCompatActivity() {
         binding.matchGroup.check(
             if (existing?.match == MatchMode.ANY) R.id.matchAny else R.id.matchAll
         )
-        binding.triggerGroup.check(when (existing?.firesOn) {
-            RuleTrigger.IGNITION_OFF -> R.id.triggerIgnitionOff
-            RuleTrigger.PHYSICAL_BUTTON -> R.id.triggerPhysicalButton
-            else -> R.id.triggerIgnitionOn
-        })
+        binding.triggerGroup.check(
+            if (existing?.firesOn == RuleTrigger.IGNITION_OFF) R.id.triggerIgnitionOff
+            else R.id.triggerIgnitionOn
+        )
 
         binding.addConditionButton.setOnClickListener {
             CatalogPicker.pickCondition(this, firmware) { type ->
@@ -104,16 +104,23 @@ class RuleEditorActivity : AppCompatActivity() {
         }
         binding.addActionButton.setOnClickListener {
             CatalogPicker.pickAction(this, firmware) { type ->
-                val fresh = Action(type = type)
-                if (type.spec.kind == ValueKind.NONE) {
-                    actions += fresh
-                    renderActions()
-                } else {
-                    ValueEditorDialog.editAction(
-                        this, fresh, mediaVolumeMax, profiles, currentValue(type)
-                    ) { configured ->
-                        actions += configured
+                withContactsIfNeeded(type) {
+                    val fresh = Action(type = type)
+                    if (type.spec.kind == ValueKind.NONE) {
+                        actions += fresh
                         renderActions()
+                    } else {
+                        ValueEditorDialog.editAction(
+                            context = this,
+                            action = fresh,
+                            dynamicMax = mediaVolumeMax,
+                            profiles = profiles,
+                            contacts = contacts,
+                            currentValue = currentValue(type)
+                        ) { configured ->
+                            actions += configured
+                            renderActions()
+                        }
                     }
                 }
             }
@@ -145,6 +152,7 @@ class RuleEditorActivity : AppCompatActivity() {
             } finally {
                 bridge.disconnect()
             }
+            val loadedContacts = com.mg4.tasker.util.ContactDirectory.entries(applicationContext)
 
             val fresh = com.mg4.tasker.vehicle.VehicleReader.read(
                 btMacs = emptySet(),
@@ -154,6 +162,7 @@ class RuleEditorActivity : AppCompatActivity() {
 
             Handler(Looper.getMainLooper()).post {
                 profiles = loadedProfiles
+                contacts = loadedContacts
                 mediaVolumeMax = if (maxVolume >= 0) maxVolume else null
                 firmware = gen
                 snapshot = fresh
@@ -182,6 +191,43 @@ class RuleEditorActivity : AppCompatActivity() {
     }
 
     private var pendingAfterLocation: (() -> Unit)? = null
+
+    private var pendingAfterContacts: (() -> Unit)? = null
+
+    private fun withContactsIfNeeded(
+        type: com.mg4.hardware.catalog.ActionType,
+        next: () -> Unit
+    ) {
+        if (type.spec.kind != ValueKind.CONTACT) return next()
+        pendingAfterContacts = next
+        if (!com.mg4.tasker.util.ContactDirectory.hasPermission(this)) {
+            contactsPermission.launch(android.Manifest.permission.READ_CONTACTS)
+        } else {
+            loadContactsAndContinue()
+        }
+    }
+
+    private val contactsPermission =
+        registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) {
+            loadContactsAndContinue()
+        }
+
+    private fun loadContactsAndContinue() {
+        thread(name = "mg4-tasker-editor-contacts") {
+            val loaded = com.mg4.tasker.util.ContactDirectory.entries(applicationContext)
+            Handler(Looper.getMainLooper()).post {
+                contacts = loaded
+                // The pending step opens a dialog: on an editor the user already left, that
+                // is a BadTokenException rather than a value editor nobody asked for.
+                if (isFinishing || isDestroyed) {
+                    pendingAfterContacts = null
+                    return@post
+                }
+                pendingAfterContacts?.invoke()
+                pendingAfterContacts = null
+            }
+        }
+    }
 
     private val locationPermission =
         registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { granted ->
@@ -237,6 +283,11 @@ class RuleEditorActivity : AppCompatActivity() {
                 onRemove = { conditions.removeAt(index); renderConditions() }
             )
         }
+        val hasButtonCondition = conditions.any {
+            it.type.eventDriven
+        }
+        binding.triggerLabel.visibility = if (hasButtonCondition) View.GONE else View.VISIBLE
+        binding.triggerGroup.visibility = if (hasButtonCondition) View.GONE else View.VISIBLE
     }
 
     private fun renderActions() {
@@ -248,11 +299,18 @@ class RuleEditorActivity : AppCompatActivity() {
                 label = labels.describe(action),
                 gated = action.type.gated,
                 onEdit = {
-                    ValueEditorDialog.editAction(
-                        this, action, mediaVolumeMax, profiles, currentValue(action.type)
-                    ) { updated ->
-                        actions[index] = updated
-                        renderActions()
+                    withContactsIfNeeded(action.type) {
+                        ValueEditorDialog.editAction(
+                            context = this,
+                            action = action,
+                            dynamicMax = mediaVolumeMax,
+                            profiles = profiles,
+                            contacts = contacts,
+                            currentValue = currentValue(action.type)
+                        ) { updated ->
+                            actions[index] = updated
+                            renderActions()
+                        }
                     }
                 },
                 onRemove = { actions.removeAt(index); renderActions() }
@@ -288,11 +346,8 @@ class RuleEditorActivity : AppCompatActivity() {
             name = name,
             enabled = ruleId?.let { store.getById(it)?.enabled } ?: true,
             match = if (binding.matchGroup.checkedButtonId == R.id.matchAny) MatchMode.ANY else MatchMode.ALL,
-            trigger = when (binding.triggerGroup.checkedButtonId) {
-                R.id.triggerIgnitionOff -> RuleTrigger.IGNITION_OFF
-                R.id.triggerPhysicalButton -> RuleTrigger.PHYSICAL_BUTTON
-                else -> RuleTrigger.IGNITION_ON
-            },
+            trigger = if (binding.triggerGroup.checkedButtonId == R.id.triggerIgnitionOff)
+                RuleTrigger.IGNITION_OFF else RuleTrigger.IGNITION_ON,
             conditions = conditions.toList(),
             actions = actions.toList()
         )
@@ -300,19 +355,6 @@ class RuleEditorActivity : AppCompatActivity() {
         // A rule with no condition would apply on every start without being asked.
         if (!rule.isComplete()) {
             toast(getString(R.string.editor_incomplete)); return
-        }
-        val buttonTypes = setOf(
-            com.mg4.hardware.catalog.ConditionType.STAR_LEFT_SHORT_PRESS,
-            com.mg4.hardware.catalog.ConditionType.STAR_LEFT_LONG_PRESS,
-            com.mg4.hardware.catalog.ConditionType.STAR_RIGHT_SHORT_PRESS,
-            com.mg4.hardware.catalog.ConditionType.STAR_RIGHT_LONG_PRESS
-        )
-        val hasButtonCondition = rule.conditions.any { it.type in buttonTypes }
-        if (rule.firesOn == RuleTrigger.PHYSICAL_BUTTON && !hasButtonCondition) {
-            toast(getString(R.string.editor_button_condition_required)); return
-        }
-        if (rule.firesOn != RuleTrigger.PHYSICAL_BUTTON && hasButtonCondition) {
-            toast(getString(R.string.editor_button_trigger_required)); return
         }
         // A write that does not reach disk must say so on screen. Closing the editor on a
         // failed save is what made the rule look like it had been accepted and then lost.

@@ -57,8 +57,29 @@ class Labels(
             ValueKind.DAYS ->
                 "$name : ${condition.days.sortedBy { weekOrder(it) }.joinToString(", ") { dayLabel(it) }}"
 
+            ValueKind.DATE -> "$name : ${formatDate(condition.text)}"
+
+            ValueKind.PHYSICAL_BUTTON -> {
+                val button = com.mg4.hardware.PhysicalButtonEventDecoder.Button.entries
+                    .firstOrNull { condition.number.toInt() in it.codes }?.name?.lowercase()?.replace('_', ' ')
+                    ?: "?"
+                val press = context.getString(
+                    if (condition.text == com.mg4.hardware.PhysicalButtonEventDecoder.Press.LONG.name)
+                        R.string.physical_press_long else R.string.physical_press_short
+                )
+                "$name : $button — $press"
+            }
+
             else -> name
         }
+    }
+
+    private fun formatDate(isoDate: String): String {
+        val date = runCatching { java.time.LocalDate.parse(isoDate) }.getOrNull() ?: return isoDate
+        val calendar = Calendar.getInstance().apply {
+            set(date.year, date.monthValue - 1, date.dayOfMonth)
+        }
+        return android.text.format.DateFormat.getDateFormat(context).format(calendar.time)
     }
 
     fun describe(action: Action): String {
@@ -86,6 +107,9 @@ class Labels(
 
             ValueKind.WEBHOOK ->
                 "$name : ${action.text}"
+
+            ValueKind.CONTACT ->
+                "$name : ${action.displayName ?: action.text}"
 
             else -> name
         }

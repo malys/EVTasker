@@ -1,16 +1,17 @@
 package com.mg4.tasker.ui
 
 import android.app.TimePickerDialog
+import android.app.DatePickerDialog
 import android.content.Context
 import android.util.TypedValue
 import android.view.View
 import android.widget.ArrayAdapter
 import com.google.android.material.chip.Chip
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mg4.tasker.R
 import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.engine.ConditionEvaluator
 import com.mg4.tasker.databinding.DialogValueEditorBinding
+import com.mg4.tasker.databinding.ScreenValueEditorBinding
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.CompareOp
 import com.mg4.tasker.model.Condition
@@ -45,6 +46,27 @@ object ValueEditorDialog {
         val spec = condition.type.spec
         val labels = Labels(context)
 
+        if (spec.kind == ValueKind.PHYSICAL_BUTTON) {
+            val buttons = com.mg4.hardware.PhysicalButtonEventDecoder.Button.entries
+            val presses = com.mg4.hardware.PhysicalButtonEventDecoder.Press.entries
+            binding.physicalButtonBlock.visibility = View.VISIBLE
+            binding.physicalButtonSpinner.adapter = simpleAdapter(context, buttons.map { buttonLabel(it.name) })
+            binding.physicalPressSpinner.adapter = simpleAdapter(
+                context, listOf(context.getString(R.string.physical_press_short), context.getString(R.string.physical_press_long))
+            )
+            binding.physicalButtonSpinner.setSelection(
+                buttons.indexOfFirst { condition.number.toInt() in it.codes }.coerceAtLeast(0)
+            )
+            binding.physicalPressSpinner.setSelection(presses.indexOfFirst { it.name == condition.text }.coerceAtLeast(0))
+            showEditor(context, condition.type.labelRes, binding) {
+                    onDone(condition.copy(
+                        number = buttons[binding.physicalButtonSpinner.selectedItemPosition].codes.first().toFloat(),
+                        text = presses[binding.physicalPressSpinner.selectedItemPosition].name
+                    ))
+            }
+            return
+        }
+
         // Operator: offered only where ordering means something. On a drive mode,
         // "below Sport" is meaningless — so it is not offered.
         val ops = if (condition.type.comparable) CompareOp.entries else listOf(CompareOp.EQ, CompareOp.NE)
@@ -78,11 +100,7 @@ object ValueEditorDialog {
             initialDays = condition.days
         )
 
-        MaterialAlertDialogBuilder(context)
-            .setTitle(condition.type.labelRes)
-            .setView(binding.root)
-            .setNegativeButton(R.string.editor_cancel, null)
-            .setPositiveButton(R.string.value_ok) { _, _ ->
+        showEditor(context, condition.type.labelRes, binding) {
                 val op = if (binding.opSpinner.visibility == View.VISIBLE)
                     ops[binding.opSpinner.selectedItemPosition] else condition.op
                 onDone(
@@ -96,15 +114,18 @@ object ValueEditorDialog {
                         days = state.days()
                     )
                 )
-            }
-            .show()
+        }
     }
+
+    private fun buttonLabel(name: String): String = name.lowercase()
+        .split('_').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
 
     fun editAction(
         context: Context,
         action: Action,
         dynamicMax: Int?,
         profiles: List<Pair<String, String>>,
+        contacts: List<com.mg4.tasker.util.ContactDirectory.Entry> = emptyList(),
         /** What the car reports for this setting now — see [ActionType.currentKey]. */
         currentValue: Number? = null,
         onDone: (Action) -> Unit
@@ -115,6 +136,7 @@ object ValueEditorDialog {
         val choices = when (spec.kind) {
             ValueKind.PROFILE -> profiles.map { Choice(it.first, it.second) }
             ValueKind.APP     -> launchableApps(context)
+            ValueKind.CONTACT -> contacts.map { Choice(it.number, it.label) }
             else              -> emptyList()
         }
 
@@ -132,32 +154,59 @@ object ValueEditorDialog {
             initialPayload = action.payload.orEmpty(),
             firmwareEnum = false,
             choices = choices,
-            emptyChoiceMessage = context.getString(
-                if (spec.kind == ValueKind.PROFILE) R.string.value_no_profiles
-                else R.string.value_no_bt_devices
-            ),
+            emptyChoiceMessage = context.getString(when (spec.kind) {
+                ValueKind.PROFILE -> R.string.value_no_profiles
+                ValueKind.CONTACT -> R.string.value_no_contacts
+                else -> R.string.value_no_bt_devices
+            }),
             initialMinutesFrom = action.minutesFrom,
             initialMinutesTo = action.minutesTo,
             initialDays = emptyList()
         )
 
-        MaterialAlertDialogBuilder(context)
-            .setTitle(action.type.labelRes)
-            .setView(binding.root)
-            .setNegativeButton(R.string.editor_cancel, null)
-            .setPositiveButton(R.string.value_ok) { _, _ ->
+        showEditor(context, action.type.labelRes, binding) {
                 onDone(
                     action.copy(
                         number = state.number().toInt(),
                         flag = state.flag(),
                         text = state.text(),
                         payload = state.payload(),
+                        displayName = if (spec.kind == ValueKind.CONTACT) state.choiceLabel() else action.displayName,
                         minutesFrom = state.minutesFrom,
                         minutesTo = state.minutesTo
                     )
                 )
-            }
-            .show()
+        }
+    }
+
+    /** Full-screen, touch-first editor. The caller keeps the typed model callback. */
+    private fun showEditor(
+        context: Context,
+        titleRes: Int,
+        content: DialogValueEditorBinding,
+        save: () -> Unit
+    ) {
+        val shell = ScreenValueEditorBinding.inflate(android.view.LayoutInflater.from(context))
+        (content.root.parent as? android.view.ViewGroup)?.removeView(content.root)
+        val placeholder = shell.valueEditorContent.root
+        val parent = placeholder.parent as android.view.ViewGroup
+        val index = parent.indexOfChild(placeholder)
+        parent.removeViewAt(index)
+        parent.addView(content.root, index, android.widget.LinearLayout.LayoutParams(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
+        ))
+        val dialog = android.app.Dialog(context, R.style.Theme_MG4_Picker)
+        shell.editorTitle.setText(titleRes)
+        shell.editorCancel.setOnClickListener { dialog.dismiss() }
+        shell.editorSave.setOnClickListener { save(); dialog.dismiss() }
+        dialog.setContentView(shell.root)
+        dialog.setOnShowListener {
+            dialog.window?.setLayout(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        }
+        dialog.show()
     }
 
     // -------------------------------------------------------------------------
@@ -182,6 +231,7 @@ object ValueEditorDialog {
         val flag: () -> Boolean,
         val text: () -> String,
         val payload: () -> String,
+        val choiceLabel: () -> String,
         val days: () -> List<Int>,
         var minutesFrom: Int,
         var minutesTo: Int
@@ -211,9 +261,11 @@ object ValueEditorDialog {
         var flag = initialFlag
         var text = initialText
         var payload = initialPayload
+        var choiceLabel = ""
         val selectedDays = initialDays.toMutableList()
         val state = State(
             number = { number }, flag = { flag }, text = { text }, payload = { payload },
+            choiceLabel = { choiceLabel },
             days = { selectedDays.toList() },
             minutesFrom = initialMinutesFrom, minutesTo = initialMinutesTo
         )
@@ -279,7 +331,37 @@ object ValueEditorDialog {
                     val index = choices.indexOfFirst { it.value == initialText }.coerceAtLeast(0)
                     binding.choiceSpinner.setSelection(index)
                     text = choices[index].value
-                    binding.choiceSpinner.onItemSelected { i -> text = choices[i].value }
+                    choiceLabel = choices[index].label
+                    binding.choiceSpinner.onItemSelected { i ->
+                        text = choices[i].value
+                        choiceLabel = choices[i].label
+                    }
+                }
+            }
+
+            ValueKind.CONTACT -> {
+                if (choices.isEmpty()) {
+                    binding.choiceEmpty.visibility = View.VISIBLE
+                    binding.choiceEmpty.text = emptyChoiceMessage
+                } else {
+                    binding.contactBlock.visibility = View.VISIBLE
+                    val labels = choices.map { it.label }
+                    binding.contactInput.setAdapter(
+                        ArrayAdapter(context, android.R.layout.simple_dropdown_item_1line, labels)
+                    )
+                    binding.contactInput.threshold = 0
+                    val initial = choices.indexOfFirst { it.value == initialText }.coerceAtLeast(0)
+                    text = choices[initial].value
+                    choiceLabel = choices[initial].label
+                    binding.contactInput.setText(choiceLabel, false)
+                    binding.contactInput.setOnClickListener { binding.contactInput.showDropDown() }
+                    binding.contactInput.setOnItemClickListener { parent, _, index, _ ->
+                        val selectedLabel = parent.getItemAtPosition(index).toString()
+                        choices.firstOrNull { it.label == selectedLabel }?.let { selected ->
+                            text = selected.value
+                            choiceLabel = selected.label
+                        }
+                    }
                 }
             }
 
@@ -321,6 +403,26 @@ object ValueEditorDialog {
                         }
                     }
                     binding.daysGroup.addView(chip)
+                }
+            }
+
+            ValueKind.DATE -> {
+                binding.dateButton.visibility = View.VISIBLE
+                val initial = parseDate(initialText) ?: Calendar.getInstance()
+                text = formatIsoDate(initial)
+                binding.dateButton.text = formatDisplayDate(context, initial)
+                binding.dateButton.setOnClickListener {
+                    DatePickerDialog(
+                        context,
+                        { _, year, month, day ->
+                            val selected = Calendar.getInstance().apply { set(year, month, day) }
+                            text = formatIsoDate(selected)
+                            binding.dateButton.text = formatDisplayDate(context, selected)
+                        },
+                        initial.get(Calendar.YEAR),
+                        initial.get(Calendar.MONTH),
+                        initial.get(Calendar.DAY_OF_MONTH)
+                    ).show()
                 }
             }
 
@@ -397,7 +499,7 @@ object ValueEditorDialog {
                 }
             }
 
-            ValueKind.NONE -> Unit
+            ValueKind.NONE, ValueKind.CONTACT, ValueKind.PHYSICAL_BUTTON -> Unit
         }
 
         return state
@@ -410,6 +512,19 @@ object ValueEditorDialog {
             minutes / 60, minutes % 60, true
         ).show()
     }
+
+    private fun parseDate(value: String): Calendar? {
+        val date = runCatching { java.time.LocalDate.parse(value) }.getOrNull() ?: return null
+        return Calendar.getInstance().apply { set(date.year, date.monthValue - 1, date.dayOfMonth) }
+    }
+
+    private fun formatIsoDate(date: Calendar): String = String.format(
+        java.util.Locale.US, "%04d-%02d-%02d",
+        date.get(Calendar.YEAR), date.get(Calendar.MONTH) + 1, date.get(Calendar.DAY_OF_MONTH)
+    )
+
+    private fun formatDisplayDate(context: Context, date: Calendar): String =
+        android.text.format.DateFormat.getDateFormat(context).format(date.time)
 
     private fun launchableApps(context: Context): List<Choice> {
         val pm = context.packageManager
@@ -425,8 +540,8 @@ object ValueEditorDialog {
     }
 
     private fun simpleAdapter(context: Context, items: List<String>) =
-        ArrayAdapter(context, android.R.layout.simple_spinner_item, items).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        ArrayAdapter(context, R.layout.item_value_choice, items).apply {
+            setDropDownViewResource(R.layout.item_value_choice)
         }
 
     private fun android.widget.Spinner.onItemSelected(onSelect: (Int) -> Unit) {
