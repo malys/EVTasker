@@ -10,6 +10,7 @@ import com.mg4.hardware.model.DriveMode
 import com.mg4.hardware.model.RegenLevel
 import com.mg4.hardware.saic.SaicCharging
 import com.mg4.hardware.saic.SaicClimate
+import com.mg4.hardware.saic.RadioFrequency
 import com.mg4.hardware.saic.SaicPhone
 import com.mg4.hardware.saic.SaicRadio
 import com.mg4.hardware.saic.SaicVehicleControl
@@ -46,6 +47,7 @@ class DirectExecutor(
         ActionType.NAVIGATE_TO       -> navigate(action)
         ActionType.WEBHOOK_GET       -> webhook(action, "GET")
         ActionType.WEBHOOK_POST      -> webhook(action, "POST")
+        ActionType.TUNE_RADIO        -> tuneRadio(action)
         else                         -> applyVehicle(action)
     }
 
@@ -142,7 +144,14 @@ class DirectExecutor(
             ActionType.SPEAK_TEXT,
             ActionType.NAVIGATE_TO,
             ActionType.WEBHOOK_GET,
-            ActionType.WEBHOOK_POST -> null
+            ActionType.WEBHOOK_POST,
+            // TUNE_RADIO is a vehicle write, but it carries a frequency the driver typed, and
+            // "103,5 FM" that parsed to nothing must be reported as that rather than as a radio
+            // that refused.
+            ActionType.TUNE_RADIO -> null
+            // Waiting between two actions is the engine's business — it is what runs them in
+            // sequence. Reaching here would mean an action ran outside a rule.
+            ActionType.DELAY -> null
         }
     }
 
@@ -151,6 +160,18 @@ class DirectExecutor(
      * retrying "FM 250" three times with backoff will not make it a station, and the history
      * showing what was typed is what lets the user find the typo.
      */
+    private fun tuneRadio(a: Action): ActionResult {
+        val station = RadioFrequency.parse(a.text)
+            ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "not a frequency: ${a.text}")
+        val ok = SaicRadio.tune(station.band, station.frequencyKhz)
+        return ActionResult(
+            a.type,
+            ok,
+            if (ok) BridgeContract.VERDICT_ALLOWED else BridgeContract.VERDICT_ERROR,
+            "${station.frequencyKhz} kHz"
+        )
+    }
+
     /** Digits, `+`, `*` and `#` only: anything else is not a number the car can dial. */
     private fun callNumber(a: Action): Boolean {
         val number = a.text.filter { it.isDigit() || it in "+*#" }
