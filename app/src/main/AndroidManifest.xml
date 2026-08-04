@@ -108,6 +108,12 @@
             android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- Long profile-safety guidance needs the whole vehicle display, never a popup. -->
+        <activity
+            android:name=".ui.ProfileAutomationWarningActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
+
         <!-- Persistent vehicle service: inits MG4Hardware, listens for ignition, evaluates
              rules and applies actions directly. connectedDevice matches what it does. -->
         <service

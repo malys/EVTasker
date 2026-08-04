@@ -120,6 +120,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.kotlinx.coroutines.android)
+    implementation("com.google.zxing:core:3.5.3")
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)

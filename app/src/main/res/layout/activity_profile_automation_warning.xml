@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long, safety-relevant confirmations are dedicated full-screen windows. Their actions
+     stay at the upper-right like every other editor, while the explanation owns the
+     remaining landscape surface. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/mg4_background"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/mg4_surface"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_md">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_lg"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="@string/profile_automation_warning_title"
+            android:textAppearance="@style/Text.MG4.Title" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/warningCancel"
+            style="@style/Widget.MG4.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/editor_cancel" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/warningConfirm"
+            style="@style/Widget.MG4.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:text="@string/value_ok" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/warningMessage"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="start|top"
+        android:padding="@dimen/spacing_lg"
+        android:text="@string/profile_automation_warning_message"
+        android:textAppearance="@style/Text.MG4.Body" />
+
+</LinearLayout>

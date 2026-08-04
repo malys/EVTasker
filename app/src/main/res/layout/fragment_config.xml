@@ -116,5 +116,21 @@
                 android:minHeight="@dimen/touch_target"
                 android:text="@string/rules_import" />
         </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_lg"
+            android:text="@string/config_section_about"
+            android:textAppearance="@style/Text.MG4.SectionHeader" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/aboutButton"
+            style="@style/Widget.MG4.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:minHeight="@dimen/touch_target"
+            android:text="@string/about_action" />
     </LinearLayout>
 </ScrollView>

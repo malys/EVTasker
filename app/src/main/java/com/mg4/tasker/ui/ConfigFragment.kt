@@ -1,12 +1,19 @@
 package com.mg4.tasker.ui
 
 import android.os.Bundle
+import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.button.MaterialButton
 import com.mg4.hardware.VehicleWriteGate
 import com.mg4.tasker.R
 import com.mg4.tasker.databinding.DialogValueEditorBinding
@@ -54,6 +61,30 @@ class ConfigFragment : Fragment() {
 
         binding.exportButton.setOnClickListener { exportRules() }
         binding.importButton.setOnClickListener { importRules() }
+        binding.aboutButton.setOnClickListener { showAbout() }
+    }
+
+    private fun showAbout() {
+        val version = try {
+            requireContext().packageManager
+                .getPackageInfo(requireContext().packageName, 0).versionName
+                ?: getString(R.string.about_version_unknown)
+        } catch (_: Exception) {
+            getString(R.string.about_version_unknown)
+        }
+        val repositoryUrl = "https://github.com/malys/MG4Tasker"
+        val content = layoutInflater.inflate(R.layout.dialog_about, null)
+        content.findViewById<TextView>(R.id.about_version).text = getString(R.string.about_version, version)
+        QrCode.generate(repositoryUrl, 416)?.let {
+            content.findViewById<ImageView>(R.id.about_qr_code).setImageBitmap(it)
+        }
+        content.findViewById<View>(R.id.about_repository).setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(repositoryUrl)))
+        }
+        val dialog = MaterialAlertDialogBuilder(requireContext()).setView(content).create()
+        content.findViewById<MaterialButton>(R.id.about_close).setOnClickListener { dialog.dismiss() }
+        dialog.show()
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
     }
 
     // ---------- Speed gate ----------
