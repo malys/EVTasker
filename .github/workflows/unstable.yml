@@ -83,6 +83,7 @@ jobs:
           # Fixed tag, overwritten on every build. The in-app updater no longer reads a
           # version from here — it reads it from the APK asset name.
           tag_name: unstable
+          target_commitish: ${{ github.sha }}
           name: Unstable
           prerelease: true
           files: dist/*.apk
@@ -91,7 +92,7 @@ jobs:
 
             Version `${{ steps.version.outputs.value }}` (run ${{ github.run_number }}).
 
-            Automated build from `master`. **Not tested on a vehicle.**
+            Automated build from `${{ github.ref_name }}`. **Not tested on a vehicle.**
 
             Installed unstable builds update themselves from this channel. The updater
             accepts an APK only over https from a GitHub host, and only if it is signed with
