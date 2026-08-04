@@ -8,16 +8,47 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **"else if" and "else" cases in a rule.** Cases are tried in the order written and exactly
+  one runs: the first whose conditions hold, or the "else" when none did. An unreadable
+  condition stops the rule where it stands instead of falling through to the next case or to
+  the "else" — unreadable is not false, and falling through would write to the vehicle
+  because a reading was missing. Each case is edited in its own window, conditions on one
+  side and actions on the other; the rule screen shows one card per case, in evaluation
+  order, with arrows to reorder the "else if" ones. Up to four "else if" cases per rule. The
+  history names the case that ran, and the wait budget compares the longest case rather than
+  the sum. A rule that names a physical button must name one in every case and takes no
+  "else": the button decides which event stream feeds the whole rule, so a case without one
+  would run on presses it never mentioned. Rules files gain `elseIf` / `elseActions` at format
+  version 2; a file with no case still claims version 1 and stays readable by earlier builds,
+  and a file whose content and version disagree is refused.
+
 - **Wait** action (1 to 60 seconds), and reordering of a rule's actions with the arrows
   on each row. Actions run one after the other in the order shown, so a wait placed
   between two of them lets the first write land before the second is asked for
-  (climate on, then fan level). A rule made only of waits is refused at save time.
+  (climate on, then fan level). A rule made only of waits is refused at save time, and one
+  cycle may wait two minutes in total across all its rules — beyond that the wait is cut
+  short and reported in the history, rather than applying later actions against a stale
+  snapshot.
 - Configuration tab. The speed threshold, the language and the rules file
   (export / import) moved there from the rules pane; the Rules tab is now the rule
   list and nothing else.
 
 ### Changed
 
+- **One "Call" action** instead of two. The same entry now takes a typed number or a name
+  from the phone book; the field is both a search and a number entry. Rules saved with the
+  old "Call a contact" action still load and still call — the entry is deprecated, not
+  removed, because a deleted enum name deserialises to null.
+- **A vehicle action is only attempted on a firmware generation its catalogue entry names.**
+  An unidentified generation reports `firmware support not confirmed` instead of writing to a
+  car nobody could recognise. The editor still offers everything, since hiding entries on a
+  guess would be worse; the Diagnostic tab runs the same check and reports the same verdict.
+- The first launch after an upgrade opens on the Diagnostic tab: a new build's verdicts about
+  this car are what changed.
+- The Diagnostic tab no longer claims "show a message" always reaches the driver: it reports
+  the notification channel being off, which is what the executor does. Radio tuning now
+  checks the vendor radio service, and webhooks and waits stop being reported as blocked by
+  a vehicle layer they never touch.
 - Dialog text raised to the suite's sizes (20sp body, 26sp title) instead of
   Material's phone defaults — the test result, the language list and every
   confirmation. The "Remove" button of a condition or an action and the weekday chips

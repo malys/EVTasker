@@ -111,6 +111,7 @@
     <string name="value_no_bt_devices">No paired Bluetooth device</string>
     <string name="value_no_contacts">No synchronized contact. Allow contact sharing on the paired phone.</string>
     <string name="value_contact_hint">Search a contact or number</string>
+    <string name="value_call_required">Enter a phone number or select a contact</string>
     <string name="value_no_profiles">No MG4Control profile reachable</string>
     <string name="value_notification_hint">Message to display</string>
 
@@ -262,4 +263,23 @@
          language. The spoken label is on contentDescription. -->
     <string name="editor_move_up_glyph" translatable="false">▲</string>
     <string name="editor_move_down_glyph" translatable="false">▼</string>
+    <string name="editor_delay_budget">The waits in this rule add up to more than %1$d seconds. Shorten them: the actions that follow would run long after the vehicle event.</string>
+
+    <!-- Branches: if / else if / else -->
+    <string name="branch_if">IF</string>
+    <string name="branch_else_if">ELSE IF %1$d</string>
+    <string name="branch_else">ELSE</string>
+    <string name="editor_add_else_if">Add an “else if”</string>
+    <string name="editor_add_else">Add an “else”</string>
+    <string name="editor_branch_else_hint">Runs when no case above matched</string>
+    <string name="editor_branch_done">Done</string>
+    <string name="editor_summary_all">all: %1$s</string>
+    <string name="editor_summary_any">any: %1$s</string>
+    <string name="editor_case_incomplete">Every case needs a condition and an action; the “else” needs an action</string>
+    <string name="editor_max_else_if">A rule takes at most %1$d “else if” cases</string>
+    <plurals name="rule_summary_cases">
+        <item quantity="one">%d case</item>
+        <item quantity="other">%d cases</item>
+    </plurals>
+    <string name="editor_button_cases">A rule that names a button must name one in every case, and cannot have an “else”</string>
 </resources>

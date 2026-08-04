@@ -1,25 +1,31 @@
 # AGENTS.md — MG4Tasker
 
-Companion app to [MG4Control](../MG4Control). Rule-based automation for the SAIC MG4:
-at ignition, evaluate rules and apply vehicle settings — **through MG4Control**, never
-directly.
+Rule-based automation for the SAIC MG4 and part of **MG4Suite**. At ignition it evaluates
+rules and applies supported actions directly through the shared MG4Hardware safety layer.
+MG4Control is optional and is used only for the "apply saved profile" action.
+
+The workspace `AGENTS.md` and normative workspace `DESIGN.md` apply; this file contains
+only automation-specific additions.
 
 Commit author: malys.training@gmail.com
 
 ## The one rule that shapes everything
 
-**MG4Tasker never touches the vehicle.** It reads a snapshot from MG4Control and requests
-named actions; MG4Control performs every write and applies the 0 km/h speed gate. So:
+**Automation never bypasses MG4Hardware.** MG4Tasker reads a snapshot and executes named,
+typed catalogue actions through MG4Hardware; it never accepts or sends a raw property ID.
+The low-level safety gate applies regardless of which app invokes the library. So:
 
-- No `sharedUserId`, no `android.car.*` permission. MG4Tasker is an ordinary app.
-- One process writes to the car → no concurrent writes, one place enforces the gate.
-- The IPC surface is 4 methods (`ITaskerBridge`), and none takes a raw property id.
+- Vehicle access code, firmware routing and property/transaction IDs live in MG4Hardware,
+  not in this app.
+- Rule actions are serialized; no two automation writes may interleave.
+- MG4Control IPC is limited to profile discovery/application and takes no raw property ID.
 
-## Boundary = the signature permission
+## MG4Control profile boundary
 
-`com.mg4.control.permission.TASKER_BRIDGE` is declared by MG4Control at
-`protectionLevel="signature"`. Both apps must be signed with the **same platform key** or
-MG4Tasker installs and does nothing. The Diagnostic tab reports the bridge state.
+The MG4Control profile bridge is protected by a signature permission. Both apps must be
+signed with the same key for profile discovery/application; all other Tasker actions work
+without MG4Control. The Diagnostic tab reports profile-bridge and hardware-layer state
+separately.
 
 ## Unreadable ≠ false
 
@@ -31,8 +37,8 @@ Covered by `ConditionEvaluatorTest` and `RuleEngineTest`.
 ## Firmware compatibility is annotation-driven
 
 Every vehicle `ConditionType` / `ActionType` entry carries `@SupportedOn(...)`, derived
-from MG4Control's `FirmwareInfo` (`hasHeatFeatures`, `isVsmBased`, `isNewGenVsm`) and the
-per-generation routing in `MG4Hardware`. It is the single source of truth for:
+from MG4Hardware's `FirmwareInfo` and its per-generation routing. It is the single source
+of truth for:
 
 - `docs/firmware-matrix.md` — **generated** by `FirmwareMatrix`, refreshed by the test
   run. Never hand-edit it.
@@ -63,18 +69,12 @@ constructor, so a Kotlin default never applies to a key absent from stored JSON;
 enum would be null at runtime for every pre-existing rule. Read it through `firesOn`, export
 the raw field. Same trap as the TypeToken bug — see `ShrinkerSafeGsonTest`.
 
-## The standstill gate is configurable, and still fails closed
+## The standstill gate is fixed and fails closed
 
-`VehicleWriteGate.allowUpToKmh` moves the "moving" boundary from 0 up to 50 km/h; the app
-stores the user's choice and pushes it in wherever the vehicle layer is initialised. Two
-invariants are not negotiable and are unit-tested: an unreadable or negative speed refuses at
-any threshold, and the shared layer clamps the value. Default is 0.
-
-Park is the **only** thing that can rescue a refusal, and only the unreadable-speed one
-(`decide(speed, threshold, parked)`). It must never override a speed that did read: park at
-30 km/h means a signal is wrong, and trusting the gear there would unlock writes at speed.
-`decideNow()` is the live form and reads the gear only after the speed came back unreadable —
-one property read on the normal path.
+Vehicle-setting writes are allowed only when a valid speed read is exactly 0 km/h. Unknown,
+negative or moving speed refuses the action; park state does not rescue an unreadable speed.
+Do not expose a user-configurable moving threshold. Any existing `allowUpToKmh` or park-rescue
+path is safety debt to remove, not a pattern to extend.
 
 ## A gate refusal is "not now", so it is kept
 
@@ -85,12 +85,12 @@ applied, one attempt each, and a history entry per drain. The poller is a single
 exists only while the queue does — `stopIfEmpty()` clears the flag under the lock `offer`
 takes, otherwise an entry can be stranded with no poller running.
 
-## Vehicle writes go in MG4Control, reads too
+## Vehicle primitives go in MG4Hardware
 
-MG4Tasker adds no vehicle access code. When a new action needs a new capability, implement
-the read/write in MG4Control's `MG4Hardware` (branched per firmware generation — never
-assume universal), expose it through `TaskerBridgeService`, then add the catalogue entry
-here. Property ids and per-generation routing live in MG4Control; do not duplicate them.
+MG4Tasker adds no low-level vehicle access code. When a new action needs a capability,
+implement it in the standalone MG4Hardware repository (branched per firmware generation),
+update the typed catalogue and tests, then update this app's submodule and executor.
+Property IDs and per-generation routing never live in MG4Tasker or MG4Control app code.
 
 Climate, charging, radio and hands-free calls do **not** go through property ids. They use
 the SAIC vendor binder services the car's own apps use (`com.mg4.hardware.saic`). Keep every

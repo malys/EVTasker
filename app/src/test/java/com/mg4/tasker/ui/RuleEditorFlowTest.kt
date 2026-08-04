@@ -1,11 +1,18 @@
 package com.mg4.tasker.ui
 
+import android.app.Activity
 import android.app.Dialog
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import com.mg4.tasker.R
+import com.mg4.hardware.catalog.ActionType
+import com.mg4.hardware.catalog.ConditionType
+import com.mg4.tasker.model.Action
+import com.mg4.tasker.model.Branch
+import com.mg4.tasker.model.Condition
+import com.mg4.tasker.model.Rule
 import com.mg4.tasker.store.RuleStore
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -19,7 +26,8 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowDialog
 
 /**
- * End-to-end: open the editor, pick one condition, pick one action, save.
+ * End-to-end: pick one condition and one action in a case window, confirm it, and check the
+ * rule screen carries the cases it was given and saves them.
  * This is the path the user reports as "the rule is never saved".
  */
 @RunWith(RobolectricTestRunner::class)
@@ -48,11 +56,11 @@ class RuleEditorFlowTest {
     }
 
     @Test
-    fun `condition and action picked through the pickers end up in a saved rule`() {
-        val activity = Robolectric.buildActivity(RuleEditorActivity::class.java).setup().get()
-
-        // --- name ---
-        activity.findViewById<android.widget.EditText>(R.id.nameInput).setText("flow")
+    fun `condition and action picked through the pickers come back as a case`() {
+        val intent = BranchEditorActivity.intent(
+            context(), BranchEditorActivity.Kind.IF, 0, Branch()
+        )
+        val activity = Robolectric.buildActivity(BranchEditorActivity::class.java, intent).setup().get()
 
         // --- condition ---
         activity.findViewById<View>(R.id.addConditionButton).performClick()
@@ -89,10 +97,65 @@ class RuleEditorFlowTest {
             activity.findViewById<ViewGroup>(R.id.actionContainer).childCount > 0
         )
 
-        // --- save ---
+        // --- confirm ---
+        activity.findViewById<View>(R.id.branchDoneButton).performClick()
+        idle()
+
+        val shadow = shadowOf(activity)
+        assertEquals(Activity.RESULT_OK, shadow.resultCode)
+        val branch = BranchEditorActivity.resultBranch(shadow.resultIntent)
+        assertNotNull("the case never came back", branch)
+        assertEquals(1, branch!!.conditions.size)
+        assertEquals(1, branch.actions.size)
+    }
+
+    @Test
+    fun `an else case with no action is refused instead of coming back empty`() {
+        val intent = BranchEditorActivity.intent(
+            context(), BranchEditorActivity.Kind.ELSE, 0, Branch()
+        )
+        val activity = Robolectric.buildActivity(BranchEditorActivity::class.java, intent).setup().get()
+
+        activity.findViewById<View>(R.id.branchDoneButton).performClick()
+        idle()
+
+        assertTrue("the window must stay open", !activity.isFinishing)
+        assertEquals(Activity.RESULT_CANCELED, shadowOf(activity).resultCode)
+    }
+
+    @Test
+    fun `a branched rule shows one card per case and saves them all`() {
+        val store = RuleStore(context())
+        val rule = Rule(
+            name = "cases",
+            conditions = listOf(Condition(ConditionType.IN_PARK, flag = true)),
+            actions = listOf(Action(ActionType.SET_ONE_PEDAL)),
+            elseIf = listOf(
+                Branch(
+                    conditions = listOf(Condition(ConditionType.OUTSIDE_TEMP, number = 5f)),
+                    actions = listOf(Action(ActionType.SET_FAN_LEVEL, number = 1))
+                )
+            ),
+            elseActions = listOf(Action(ActionType.SET_MEDIA_VOLUME, number = 8))
+        )
+        assertEquals(RuleStore.SaveResult.OK, store.save(rule))
+
+        val activity = Robolectric.buildActivity(
+            RuleEditorActivity::class.java, RuleEditorActivity.intentForEdit(context(), rule.id)
+        ).setup().get()
+
+        assertEquals(
+            "if, else if and else each get a card",
+            3,
+            activity.findViewById<ViewGroup>(R.id.branchContainer).childCount
+        )
+
         activity.findViewById<View>(R.id.saveButton).performClick()
         idle()
 
-        assertEquals("rule was not persisted", 1, RuleStore(context()).getAll().size)
+        val saved = store.getById(rule.id)
+        assertNotNull("rule was not persisted", saved)
+        assertEquals(1, saved!!.elseIfBranches.size)
+        assertEquals(listOf(Action(ActionType.SET_MEDIA_VOLUME, number = 8)), saved.otherwise)
     }
 }

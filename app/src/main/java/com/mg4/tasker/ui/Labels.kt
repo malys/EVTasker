@@ -121,17 +121,40 @@ class Labels(
         return "${context.getString(result.actionType.labelRes)} — ${verdictLabel(result.verdict)}$retries"
     }
 
-    /** What became of one rule, in one word — the History tab's wording, reused. */
-    fun outcomeLabel(run: com.mg4.tasker.model.RuleRun): String = context.getString(
-        when (run.outcome) {
-            com.mg4.tasker.model.RuleOutcome.FIRED ->
-                if (run.status == com.mg4.tasker.model.RuleStatus.FAILED) R.string.outcome_failed
-                else R.string.outcome_fired
-            com.mg4.tasker.model.RuleOutcome.NOT_MATCHED -> R.string.outcome_not_matched
-            com.mg4.tasker.model.RuleOutcome.NOT_EVALUABLE -> R.string.outcome_not_evaluable
-            com.mg4.tasker.model.RuleOutcome.DISABLED -> R.string.outcome_disabled
-        }
-    )
+    /**
+     * What became of one rule, in one word — the History tab's wording, reused.
+     *
+     * A rule with several cases also says which one ran: "applied" alone would leave the
+     * user to guess whether the "else" fired, which is the whole question a branched rule
+     * raises after the fact.
+     */
+    fun outcomeLabel(run: com.mg4.tasker.model.RuleRun): String {
+        val outcome = context.getString(
+            when (run.outcome) {
+                com.mg4.tasker.model.RuleOutcome.FIRED ->
+                    if (run.status == com.mg4.tasker.model.RuleStatus.FAILED) R.string.outcome_failed
+                    else R.string.outcome_fired
+                com.mg4.tasker.model.RuleOutcome.NOT_MATCHED -> R.string.outcome_not_matched
+                com.mg4.tasker.model.RuleOutcome.NOT_EVALUABLE -> R.string.outcome_not_evaluable
+                com.mg4.tasker.model.RuleOutcome.DISABLED -> R.string.outcome_disabled
+            }
+        )
+        val branch = branchLabel(run.firedBranch) ?: return outcome
+        return "$outcome — $branch"
+    }
+
+    /**
+     * Which case of a rule this is: "IF", "ELSE IF n" or "ELSE".
+     *
+     * Null when there is no case to name — a plain if/then rule, or a run where nothing
+     * fired. The engine only reports a branch for a rule that has more than one.
+     */
+    fun branchLabel(firedBranch: Int?): String? = when (firedBranch) {
+        null -> null
+        com.mg4.tasker.model.BRANCH_ELSE -> context.getString(R.string.branch_else)
+        com.mg4.tasker.model.BRANCH_IF -> context.getString(R.string.branch_if)
+        else -> context.getString(R.string.branch_else_if, firedBranch)
+    }
 
     fun verdictLabel(verdict: String): String = context.getString(
         when (verdict) {

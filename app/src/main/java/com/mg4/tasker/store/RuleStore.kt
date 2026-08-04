@@ -3,6 +3,9 @@ package com.mg4.tasker.store
 import android.content.Context
 import com.google.gson.Gson
 import com.mg4.hardware.AppLogger
+import com.mg4.tasker.model.Action
+import com.mg4.tasker.model.Branch
+import com.mg4.tasker.model.Condition
 import com.mg4.tasker.model.Rule
 
 /**
@@ -64,10 +67,35 @@ class RuleStore(context: Context) {
      */
     @Suppress("SENSELESS_COMPARISON")
     private fun Rule.isHonourable(): Boolean {
-        val honourable = conditions.all { it.type != null } && actions.all { it.type != null }
+        // Every case, not only the first one: a removed entry hidden in an "else if" or in
+        // the "else" reaches the engine exactly the same way, and the null only shows up when
+        // that branch is the one that matches — on the car, on some later drive.
+        val honourable = match != null && conditions.honourable() && actions.honourable() &&
+            (elseIf == null || elseIf.all { it.honourable() }) &&
+            (elseActions == null || elseActions.honourable())
         if (!honourable) AppLogger.w(TAG, "rule '$name' dropped: it uses a catalog entry this build removed")
         return honourable
     }
+
+    /**
+     * Gson fills an unknown enum name, an absent list and a null array entry all with null,
+     * whatever the Kotlin type says — so each level is checked rather than trusted.
+     */
+    @Suppress("SENSELESS_COMPARISON")
+    @JvmName("conditionsHonourable")
+    private fun List<Condition>.honourable(): Boolean =
+        // The operator too, not only the type: it is read by an exhaustive `when` in
+        // ConditionEvaluator, which a null walks straight past into a crash.
+        this != null && all { it != null && it.type != null && it.op != null }
+
+    @Suppress("SENSELESS_COMPARISON")
+    @JvmName("actionsHonourable")
+    private fun List<Action>.honourable(): Boolean =
+        this != null && all { it != null && it.type != null }
+
+    @Suppress("SENSELESS_COMPARISON")
+    private fun Branch?.honourable(): Boolean =
+        this != null && match != null && conditions.honourable() && actions.honourable()
 
     /** Unreadable storage reads as zero rules: that beats crashing at vehicle start. */
     fun getAll(): List<Rule> = (read() as? Stored.Rules)?.rules ?: emptyList()

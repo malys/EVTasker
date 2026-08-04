@@ -104,75 +104,43 @@
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
-            <!-- WHEN -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_lg"
-                android:text="@string/rules_when"
-                android:textAppearance="@style/Text.MG4.SectionHeader" />
-
-            <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/matchGroup"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_sm"
-                app:singleSelection="true"
-                app:selectionRequired="true">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/matchAll"
-                    style="@style/Widget.MG4.Button.Outlined"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/editor_match_all" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/matchAny"
-                    style="@style/Widget.MG4.Button.Outlined"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/editor_match_any" />
-            </com.google.android.material.button.MaterialButtonToggleGroup>
-
+            <!-- THE CASES
+                 One card per case, in the order they are tried. The conditions and the
+                 actions are not here: they are written in the case's own window, where each
+                 gets a full pane instead of two lists stacked in one column. What this
+                 screen owns is the shape of the rule — which cases exist and in what
+                 order — and that is what a card can show in one line. -->
             <LinearLayout
-                android:id="@+id/conditionContainer"
+                android:id="@+id/branchContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="@dimen/spacing_sm" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/addConditionButton"
-                style="@style/Widget.MG4.Button.Outlined"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_sm"
-                android:text="@string/editor_add_condition" />
-
-            <!-- THEN -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_lg"
-                android:text="@string/rules_then"
-                android:textAppearance="@style/Text.MG4.SectionHeader" />
+                android:layout_marginTop="@dimen/spacing_lg" />
 
             <LinearLayout
-                android:id="@+id/actionContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="@dimen/spacing_sm" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/addActionButton"
-                style="@style/Widget.MG4.Button.Outlined"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:orientation="horizontal"
                 android:layout_marginTop="@dimen/spacing_sm"
-                android:layout_marginBottom="@dimen/spacing_lg"
-                android:text="@string/editor_add_action" />
+                android:layout_marginBottom="@dimen/spacing_lg">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/addElseIfButton"
+                    style="@style/Widget.MG4.Button.Outlined"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/editor_add_else_if" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/addElseButton"
+                    style="@style/Widget.MG4.Button.Outlined"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_sm"
+                    android:text="@string/editor_add_else" />
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

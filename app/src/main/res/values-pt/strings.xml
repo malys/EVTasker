@@ -94,6 +94,7 @@
     <string name="value_no_bt_devices">Nenhum dispositivo Bluetooth emparelhado</string>
     <string name="value_no_contacts">Nenhum contacto sincronizado. Permita a partilha de contactos no telefone emparelhado.</string>
     <string name="value_contact_hint">Pesquisar contacto ou número</string>
+    <string name="value_call_required">Introduza um número de telefone ou selecione um contacto</string>
     <string name="value_no_profiles">Nenhum perfil MG4Control acessível</string>
     <string name="value_notification_hint">Mensagem a apresentar</string>
 
@@ -241,4 +242,23 @@
     <string name="editor_trigger_off">Ao desligar</string>
     <string name="editor_move_up">Subir</string>
     <string name="editor_move_down">Descer</string>
+    <string name="editor_delay_budget">As esperas desta regra somam mais de %1$d segundos. Reduza-as: as ações seguintes seriam executadas muito depois do evento do veículo.</string>
+
+    <!-- Ramos: se / senão se / senão -->
+    <string name="branch_if">SE</string>
+    <string name="branch_else_if">SENÃO SE %1$d</string>
+    <string name="branch_else">SENÃO</string>
+    <string name="editor_add_else_if">Adicionar um «senão se»</string>
+    <string name="editor_add_else">Adicionar um «senão»</string>
+    <string name="editor_branch_else_hint">Executa se nenhum caso acima corresponder</string>
+    <string name="editor_branch_done">Concluído</string>
+    <string name="editor_summary_all">todas: %1$s</string>
+    <string name="editor_summary_any">alguma: %1$s</string>
+    <string name="editor_case_incomplete">Cada caso precisa de uma condição e uma ação; o «senão» precisa de uma ação</string>
+    <string name="editor_max_else_if">Uma regra aceita no máximo %1$d casos «senão se»</string>
+    <plurals name="rule_summary_cases">
+        <item quantity="one">%d caso</item>
+        <item quantity="other">%d casos</item>
+    </plurals>
+    <string name="editor_button_cases">Uma regra que nomeia um botão tem de o nomear em cada caso e não pode ter um «senão»</string>
 </resources>

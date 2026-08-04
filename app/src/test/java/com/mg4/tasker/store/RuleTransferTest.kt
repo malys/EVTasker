@@ -3,11 +3,15 @@ package com.mg4.tasker.store
 import com.mg4.hardware.catalog.ActionType
 import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.model.Action
+import com.mg4.tasker.model.Branch
 import com.mg4.tasker.model.CompareOp
 import com.mg4.tasker.model.Condition
+import com.mg4.tasker.model.MAX_ELSE_IF
 import com.mg4.tasker.model.MatchMode
 import com.mg4.tasker.model.Rule
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -64,7 +68,7 @@ class RuleTransferTest {
 
     @Test
     fun `a newer format version is refused rather than partly read`() {
-        val json = """{"format":"mg4tasker-rules","version":2,"rules":[]}"""
+        val json = """{"format":"mg4tasker-rules","version":3,"rules":[]}"""
 
         assertEquals(RuleTransfer.Reason.VERSION, invalidReason(json))
     }
@@ -212,5 +216,112 @@ class RuleTransferTest {
             ),
             rules
         )
+    }
+
+    // ------------------------------------------------------------- branches
+
+    private fun branched(id: String = "b1") = rule(id = id).copy(
+        elseIf = listOf(
+            Branch(
+                match = MatchMode.ALL,
+                conditions = listOf(Condition(ConditionType.OUTSIDE_TEMP, CompareOp.LT, 15f)),
+                actions = listOf(Action(ActionType.SET_FAN_LEVEL, number = 1))
+            )
+        ),
+        elseActions = listOf(Action(ActionType.SET_ONE_PEDAL))
+    )
+
+    @Test
+    fun `round trip preserves every case`() {
+        val rules = listOf(branched())
+
+        assertEquals(RuleTransfer.Result.Ok(rules), decodeOf(RuleTransfer.encode(rules)))
+    }
+
+    @Test
+    fun `a file with no branch still claims the older version`() {
+        // Otherwise a build without branches refuses backups whose rules it understands.
+        assertTrue(RuleTransfer.encode(listOf(rule())).contains("\"version\":1"))
+        assertTrue(RuleTransfer.encode(listOf(branched())).contains("\"version\":2"))
+    }
+
+    @Test
+    fun `a rule with no branch exports without the branch keys`() {
+        val json = RuleTransfer.encode(listOf(rule()))
+
+        assertFalse(json.contains("elseIf"))
+        assertFalse(json.contains("elseActions"))
+    }
+
+    @Test
+    fun `more else if cases than a rule may carry is refused`() {
+        val case = """{"match":"ALL","conditions":[{"type":"IN_PARK","op":"EQ"}],
+                       "actions":[{"type":"SET_ONE_PEDAL"}]}"""
+        val json = """
+            {"format":"mg4tasker-rules","version":2,"rules":[
+              {"id":"r1","name":"X","match":"ALL",
+               "conditions":[{"type":"IN_PARK","op":"EQ"}],
+               "actions":[{"type":"SET_ONE_PEDAL"}],
+               "elseIf":[${List(MAX_ELSE_IF + 1) { case }.joinToString(",")}]}]}
+        """.trimIndent()
+
+        assertEquals(RuleTransfer.Reason.TOO_MANY, invalidReason(json))
+    }
+
+    @Test
+    fun `an action unknown to this build is refused wherever it hides`() {
+        // In the "else" the entry is as unapplicable as in the "if": accepting the file and
+        // dropping the case would apply a rule the file did not describe.
+        val json = """
+            {"format":"mg4tasker-rules","version":2,"rules":[
+              {"id":"r1","name":"X","match":"ALL",
+               "conditions":[{"type":"IN_PARK","op":"EQ"}],
+               "actions":[{"type":"SET_ONE_PEDAL"}],
+               "elseActions":[{"type":"LAUNCH_ROCKET"}]}]}
+        """.trimIndent()
+
+        assertEquals(RuleTransfer.Reason.UNKNOWN_ENTRY, invalidReason(json))
+    }
+
+    @Test
+    fun `an else if with no condition is refused`() {
+        val json = """
+            {"format":"mg4tasker-rules","version":2,"rules":[
+              {"id":"r1","name":"X","match":"ALL",
+               "conditions":[{"type":"IN_PARK","op":"EQ"}],
+               "actions":[{"type":"SET_ONE_PEDAL"}],
+               "elseIf":[{"match":"ALL","conditions":[],"actions":[{"type":"SET_ONE_PEDAL"}]}]}]}
+        """.trimIndent()
+
+        assertEquals(RuleTransfer.Reason.MALFORMED, invalidReason(json))
+    }
+
+    @Test
+    fun `cases claiming the version that predates them are refused`() {
+        // Version 1 tells a build without cases it may apply these rules — which it would do
+        // by keeping the "if" and dropping everything after it.
+        val json = """
+            {"format":"mg4tasker-rules","version":1,"rules":[
+              {"id":"r1","name":"X","match":"ALL",
+               "conditions":[{"type":"IN_PARK","op":"EQ"}],
+               "actions":[{"type":"SET_ONE_PEDAL"}],
+               "elseActions":[{"type":"SET_ONE_PEDAL"}]}]}
+        """.trimIndent()
+
+        assertEquals(RuleTransfer.Reason.MALFORMED, invalidReason(json))
+    }
+
+    @Test
+    fun `a case that does not name the button of a button rule is refused`() {
+        val json = """
+            {"format":"mg4tasker-rules","version":2,"rules":[
+              {"id":"r1","name":"X","match":"ALL",
+               "conditions":[{"type":"PHYSICAL_BUTTON","op":"EQ"}],
+               "actions":[{"type":"SET_ONE_PEDAL"}],
+               "elseIf":[{"match":"ALL","conditions":[{"type":"IN_PARK","op":"EQ"}],
+                          "actions":[{"type":"SET_ONE_PEDAL"}]}]}]}
+        """.trimIndent()
+
+        assertEquals(RuleTransfer.Reason.MALFORMED, invalidReason(json))
     }
 }

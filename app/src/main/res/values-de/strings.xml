@@ -94,6 +94,7 @@
     <string name="value_no_bt_devices">Kein gekoppeltes Bluetooth-Gerät</string>
     <string name="value_no_contacts">Keine synchronisierten Kontakte. Kontaktfreigabe am gekoppelten Telefon erlauben.</string>
     <string name="value_contact_hint">Kontakt oder Nummer suchen</string>
+    <string name="value_call_required">Telefonnummer eingeben oder Kontakt auswählen</string>
     <string name="value_no_profiles">Kein MG4Control-Profil erreichbar</string>
     <string name="value_notification_hint">Anzuzeigende Nachricht</string>
 
@@ -241,4 +242,23 @@
     <string name="editor_trigger_off">Fahrzeug aus</string>
     <string name="editor_move_up">Nach oben</string>
     <string name="editor_move_down">Nach unten</string>
+    <string name="editor_delay_budget">Die Wartezeiten dieser Regel ergeben zusammen mehr als %1$d Sekunden. Kürzen Sie sie: Die folgenden Aktionen würden lange nach dem Fahrzeugereignis laufen.</string>
+
+    <!-- Zweige: wenn / sonst wenn / sonst -->
+    <string name="branch_if">WENN</string>
+    <string name="branch_else_if">SONST WENN %1$d</string>
+    <string name="branch_else">SONST</string>
+    <string name="editor_add_else_if">Ein „sonst wenn“ hinzufügen</string>
+    <string name="editor_add_else">Ein „sonst“ hinzufügen</string>
+    <string name="editor_branch_else_hint">Läuft, wenn kein Fall darüber zutrifft</string>
+    <string name="editor_branch_done">Fertig</string>
+    <string name="editor_summary_all">alle: %1$s</string>
+    <string name="editor_summary_any">mindestens eine: %1$s</string>
+    <string name="editor_case_incomplete">Jeder Fall braucht eine Bedingung und eine Aktion; das „sonst“ braucht eine Aktion</string>
+    <string name="editor_max_else_if">Eine Regel nimmt höchstens %1$d „sonst wenn“-Fälle</string>
+    <plurals name="rule_summary_cases">
+        <item quantity="one">%d Fall</item>
+        <item quantity="other">%d Fälle</item>
+    </plurals>
+    <string name="editor_button_cases">Eine Regel, die eine Taste nennt, muss in jedem Fall eine nennen und darf kein „sonst“ haben</string>
 </resources>

@@ -146,6 +146,39 @@ class RulesFragment : Fragment() {
         )
         binding.detailConditions.text = current.conditions.joinToString("\n") { "• " + labels.describe(it) }
         binding.detailActions.text = current.actions.joinToString("\n") { "• " + labels.describe(it) }
+        renderOtherCases(current, labels)
+    }
+
+    /**
+     * The cases after the first: each "else if" under its own heading, then the "else".
+     *
+     * Listed rather than folded into the WHEN / THEN pair above, because the order is what
+     * decides which case wins — reading them top to bottom is reading the rule.
+     */
+    private fun renderOtherCases(rule: com.mg4.tasker.model.Rule, labels: Labels) {
+        binding.detailCases.removeAllViews()
+        val inflater = layoutInflater
+
+        rule.elseIfBranches.forEachIndexed { index, branch ->
+            val case = com.mg4.tasker.databinding.ItemDetailCaseBinding
+                .inflate(inflater, binding.detailCases, false)
+            case.caseKind.text = getString(R.string.branch_else_if, index + 1)
+            case.caseConditions.text =
+                branch.conditions.joinToString("\n") { "• " + labels.describe(it) }
+            case.caseActions.text =
+                branch.actions.joinToString("\n") { "→ " + labels.describe(it) }
+            binding.detailCases.addView(case.root)
+        }
+
+        if (rule.otherwise.isNotEmpty()) {
+            val case = com.mg4.tasker.databinding.ItemDetailCaseBinding
+                .inflate(inflater, binding.detailCases, false)
+            case.caseKind.text = getString(R.string.branch_else)
+            case.caseConditions.visibility = View.GONE
+            case.caseActions.text =
+                rule.otherwise.joinToString("\n") { "→ " + labels.describe(it) }
+            binding.detailCases.addView(case.root)
+        }
     }
 
     private fun confirmDelete() {

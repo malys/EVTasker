@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One further case of a rule in the detail pane: the "if" keeps the WHEN / THEN pair above,
+     and every "else if" and the "else" are listed under their own heading below it. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginTop="@dimen/spacing_lg">
+
+    <TextView
+        android:id="@+id/caseKind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/Text.MG4.SectionHeader" />
+
+    <!-- Gone for the "else", which is reached by having no case match rather than by a test. -->
+    <TextView
+        android:id="@+id/caseConditions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_sm"
+        android:textAppearance="@style/Text.MG4.Body"
+        android:lineSpacingMultiplier="1.3" />
+
+    <TextView
+        android:id="@+id/caseActions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_sm"
+        android:textAppearance="@style/Text.MG4.Body"
+        android:lineSpacingMultiplier="1.3" />
+</LinearLayout>
