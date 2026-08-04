@@ -94,6 +94,7 @@
     <string name="value_no_bt_devices">Ningún dispositivo Bluetooth emparejado</string>
     <string name="value_no_contacts">No hay contactos sincronizados. Permite compartir contactos en el teléfono emparejado.</string>
     <string name="value_contact_hint">Buscar contacto o número</string>
+    <string name="value_call_required">Introduce un número de teléfono o selecciona un contacto</string>
     <string name="value_no_profiles">Ningún perfil de MG4Control accesible</string>
     <string name="value_notification_hint">Mensaje a mostrar</string>
 
@@ -241,4 +242,23 @@
     <string name="editor_trigger_off">Al apagar</string>
     <string name="editor_move_up">Subir</string>
     <string name="editor_move_down">Bajar</string>
+    <string name="editor_delay_budget">Las esperas de esta regla suman más de %1$d segundos. Redúzcalas: las acciones siguientes se ejecutarían mucho después del evento del vehículo.</string>
+
+    <!-- Ramas: si / si no, si / si no -->
+    <string name="branch_if">SI</string>
+    <string name="branch_else_if">SI NO, SI %1$d</string>
+    <string name="branch_else">SI NO</string>
+    <string name="editor_add_else_if">Añadir un «si no, si»</string>
+    <string name="editor_add_else">Añadir un «si no»</string>
+    <string name="editor_branch_else_hint">Se ejecuta si ningún caso anterior coincide</string>
+    <string name="editor_branch_done">Listo</string>
+    <string name="editor_summary_all">todas: %1$s</string>
+    <string name="editor_summary_any">alguna: %1$s</string>
+    <string name="editor_case_incomplete">Cada caso necesita una condición y una acción; el «si no» necesita una acción</string>
+    <string name="editor_max_else_if">Una regla admite como máximo %1$d casos «si no, si»</string>
+    <plurals name="rule_summary_cases">
+        <item quantity="one">%d caso</item>
+        <item quantity="other">%d casos</item>
+    </plurals>
+    <string name="editor_button_cases">Una regla que nombra un botón debe nombrarlo en cada caso y no puede tener un «si no»</string>
 </resources>

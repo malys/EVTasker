@@ -94,6 +94,7 @@
     <string name="value_no_bt_devices">Nessun dispositivo Bluetooth associato</string>
     <string name="value_no_contacts">Nessun contatto sincronizzato. Consenti la condivisione dei contatti sul telefono associato.</string>
     <string name="value_contact_hint">Cerca contatto o numero</string>
+    <string name="value_call_required">Inserisci un numero di telefono o seleziona un contatto</string>
     <string name="value_no_profiles">Nessun profilo MG4Control raggiungibile</string>
     <string name="value_notification_hint">Messaggio da mostrare</string>
 
@@ -241,4 +242,23 @@
     <string name="editor_trigger_off">Allo spegnimento</string>
     <string name="editor_move_up">Sposta su</string>
     <string name="editor_move_down">Sposta giù</string>
+    <string name="editor_delay_budget">Le attese di questa regola superano %1$d secondi in totale. Riducile: le azioni successive verrebbero eseguite molto dopo l’evento del veicolo.</string>
+
+    <!-- Rami: se / altrimenti se / altrimenti -->
+    <string name="branch_if">SE</string>
+    <string name="branch_else_if">ALTRIMENTI SE %1$d</string>
+    <string name="branch_else">ALTRIMENTI</string>
+    <string name="editor_add_else_if">Aggiungi un «altrimenti se»</string>
+    <string name="editor_add_else">Aggiungi un «altrimenti»</string>
+    <string name="editor_branch_else_hint">Si esegue se nessun caso sopra corrisponde</string>
+    <string name="editor_branch_done">Fatto</string>
+    <string name="editor_summary_all">tutte: %1$s</string>
+    <string name="editor_summary_any">almeno una: %1$s</string>
+    <string name="editor_case_incomplete">Ogni caso richiede una condizione e un’azione; l’«altrimenti» richiede un’azione</string>
+    <string name="editor_max_else_if">Una regola accetta al massimo %1$d casi «altrimenti se»</string>
+    <plurals name="rule_summary_cases">
+        <item quantity="one">%d caso</item>
+        <item quantity="other">%d casi</item>
+    </plurals>
+    <string name="editor_button_cases">Una regola che nomina un pulsante deve nominarlo in ogni caso e non può avere un «altrimenti»</string>
 </resources>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One case of a rule, in its own window.
+     Two panes side by side rather than one column: the horizontal space is there, and what
+     the user is actually doing is comparing what is checked against what is done. Stacked,
+     the actions sit below the fold as soon as a case has three conditions, and every added
+     action is a scroll away from the condition that justifies it. Each pane scrolls on its
+     own and keeps its "add" button pinned at the bottom, so neither list can push the
+     control that feeds it off the screen. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/mg4_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/mg4_surface"
+        android:padding="@dimen/spacing_md">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_lg"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/branchTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/Text.MG4.Title" />
+
+            <!-- Shown for the "else", which has no condition pane to explain itself. -->
+            <TextView
+                android:id="@+id/branchSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/editor_branch_else_hint"
+                android:textAppearance="@style/Text.MG4.Secondary"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/branchCancelButton"
+            style="@style/Widget.MG4.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/editor_cancel" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/branchDoneButton"
+            style="@style/Widget.MG4.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:text="@string/editor_branch_done" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_lg">
+
+        <!-- WHAT IS CHECKED -->
+        <LinearLayout
+            android:id="@+id/conditionPane"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_lg"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/rules_when"
+                android:textAppearance="@style/Text.MG4.SectionHeader" />
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/matchGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/matchAll"
+                    style="@style/Widget.MG4.Button.Outlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/editor_match_all" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/matchAny"
+                    style="@style/Widget.MG4.Button.Outlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/editor_match_any" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:id="@+id/conditionContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </ScrollView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/addConditionButton"
+                style="@style/Widget.MG4.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:text="@string/editor_add_condition" />
+        </LinearLayout>
+
+        <!-- WHAT IS DONE -->
+        <LinearLayout
+            android:id="@+id/actionPane"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/rules_then"
+                android:textAppearance="@style/Text.MG4.SectionHeader" />
+
+            <!-- Holds the height of the match toggle opposite, so both lists start on the
+                 same line. Two panes whose first row is off by 72dp read as two screens. -->
+            <Space
+                android:id="@+id/matchSpacer"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/touch_target"
+                android:layout_marginTop="@dimen/spacing_sm" />
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:id="@+id/actionContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </ScrollView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/addActionButton"
+                style="@style/Widget.MG4.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:text="@string/editor_add_action" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

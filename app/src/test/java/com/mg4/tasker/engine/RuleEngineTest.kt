@@ -4,6 +4,9 @@ import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.ActionResult
 import com.mg4.hardware.catalog.ActionType
+import com.mg4.tasker.model.BRANCH_ELSE
+import com.mg4.tasker.model.BRANCH_IF
+import com.mg4.tasker.model.Branch
 import com.mg4.tasker.model.CompareOp
 import com.mg4.tasker.model.Condition
 import com.mg4.hardware.catalog.ConditionType
@@ -14,6 +17,7 @@ import com.mg4.tasker.model.RuleOutcome
 import com.mg4.tasker.model.RuleStatus
 import com.mg4.tasker.model.Snapshot
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -353,6 +357,58 @@ class RuleEngineTest {
         assertEquals(listOf(ActionType.DELAY.spec.min * 1_000L), sleeps)
     }
 
+    @Test
+    fun `le budget d attente du cycle est partage par toutes les regles`() {
+        val executor = RecordingExecutor()
+        val sleeps = mutableListOf<Long>()
+        fun waiting(name: String) = Rule(
+            name = name,
+            conditions = listOf(Condition(ConditionType.IN_PARK, flag = true)),
+            actions = listOf(
+                Action(ActionType.DELAY, number = 30),
+                Action(ActionType.SET_FAN_LEVEL, number = 1)
+            )
+        )
+
+        // 45 s de budget : la première règle en consomme 30, la seconde n'en obtient que 15.
+        val engine = RuleEngine(executor, sleep = { sleeps += it }, delayBudgetMs = 45_000L)
+        val runs = engine.run(
+            listOf(waiting("un"), waiting("deux")),
+            Snapshot(readings = mapOf(BridgeContract.KEY_IN_PARK to true)),
+            "TEST", 0L
+        ).ruleRuns
+
+        assertEquals(listOf(30_000L, 15_000L), sleeps)
+        assertEquals(true, runs[0].actionResults.first().ok)
+        // L'attente écourtée est signalée, pas passée sous silence.
+        val truncated = runs[1].actionResults.first()
+        assertEquals(false, truncated.ok)
+        assertEquals(BridgeContract.VERDICT_UNSUPPORTED, truncated.verdict)
+        // Ce qui suivait s'exécute quand même : le budget borne l'attente, pas la règle.
+        assertEquals(
+            listOf(ActionType.SET_FAN_LEVEL, ActionType.SET_FAN_LEVEL),
+            executor.executed
+        )
+    }
+
+    @Test
+    fun `le budget d attente repart entier a chaque cycle`() {
+        val sleeps = mutableListOf<Long>()
+        val waiting = Rule(
+            name = "attente",
+            conditions = listOf(Condition(ConditionType.IN_PARK, flag = true)),
+            actions = listOf(Action(ActionType.DELAY, number = 10), Action(ActionType.SET_FAN_LEVEL, number = 1))
+        )
+        val snapshot = Snapshot(readings = mapOf(BridgeContract.KEY_IN_PARK to true))
+
+        val engine = RuleEngine(RecordingExecutor(), sleep = { sleeps += it }, delayBudgetMs = 10_000L)
+        engine.run(listOf(waiting), snapshot, "TEST", 0L)
+        engine.run(listOf(waiting), snapshot, "TEST", 1L)
+
+        // Un budget qui ne se réarme pas ferait du deuxième démarrage une règle sans attente.
+        assertEquals(listOf(10_000L, 10_000L), sleeps)
+    }
+
     // -------------------------------------------------------------------------
     // Triggers
     // -------------------------------------------------------------------------
@@ -390,5 +446,117 @@ class RuleEngineTest {
         )
 
         assertEquals(listOf(rules[1]), addressed(rules, "MANUAL", rules[1].id))
+    }
+
+    // -------------------------------------------------------------------------
+    // si / sinon si / sinon
+    // -------------------------------------------------------------------------
+
+    /** Froid : sièges chauffants ; tiède : ventilation ; sinon : volume média. */
+    private fun byTemperature(elseActions: List<Action>? = listOf(Action(ActionType.SET_MEDIA_VOLUME, number = 12))) =
+        Rule(
+            name = "température",
+            conditions = listOf(Condition(ConditionType.OUTSIDE_TEMP, op = CompareOp.LT, number = 5f)),
+            actions = listOf(Action(ActionType.SET_STEERING_HEAT, number = 2)),
+            elseIf = listOf(
+                Branch(
+                    conditions = listOf(Condition(ConditionType.OUTSIDE_TEMP, op = CompareOp.LT, number = 20f)),
+                    actions = listOf(Action(ActionType.SET_FAN_LEVEL, number = 1))
+                )
+            ),
+            elseActions = elseActions
+        )
+
+    private fun atTemperature(celsius: Float) =
+        Snapshot(readings = mapOf(BridgeContract.KEY_OUTSIDE_TEMP to celsius))
+
+    @Test
+    fun `le premier cas qui correspond gagne et les suivants sont ignores`() {
+        val executor = RecordingExecutor()
+
+        val result = run(byTemperature(), atTemperature(2f), executor)
+
+        assertEquals(RuleOutcome.FIRED, result.outcome)
+        assertEquals(listOf(ActionType.SET_STEERING_HEAT), executor.executed)
+        assertEquals(BRANCH_IF, result.firedBranch)
+    }
+
+    @Test
+    fun `le sinon si prend le relais quand le si ne correspond pas`() {
+        val executor = RecordingExecutor()
+
+        val result = run(byTemperature(), atTemperature(12f), executor)
+
+        assertEquals(listOf(ActionType.SET_FAN_LEVEL), executor.executed)
+        assertEquals("le premier sinon si est le cas numéro 1", 1, result.firedBranch)
+    }
+
+    @Test
+    fun `le sinon s execute quand aucun cas ne correspond`() {
+        val executor = RecordingExecutor()
+
+        val result = run(byTemperature(), atTemperature(25f), executor)
+
+        assertEquals(RuleOutcome.FIRED, result.outcome)
+        assertEquals(listOf(ActionType.SET_MEDIA_VOLUME), executor.executed)
+        assertEquals(BRANCH_ELSE, result.firedBranch)
+    }
+
+    @Test
+    fun `sans sinon, aucun cas correspondant ne declenche rien`() {
+        val executor = RecordingExecutor()
+
+        val result = run(byTemperature(elseActions = null), atTemperature(25f), executor)
+
+        assertEquals(RuleOutcome.NOT_MATCHED, result.outcome)
+        assertTrue(executor.executed.isEmpty())
+    }
+
+    @Test
+    fun `une lecture manquante arrete la regle au lieu de tomber dans le sinon`() {
+        // Le point de sûreté : illisible n'est pas faux. Enchaîner sur le cas suivant, ou
+        // sur le sinon, écrirait dans la voiture PARCE QUE la valeur manque.
+        val executor = RecordingExecutor()
+
+        val result = run(byTemperature(), Snapshot(), executor)
+
+        assertEquals(RuleOutcome.NOT_EVALUABLE, result.outcome)
+        assertTrue("aucun cas ne doit s'exécuter", executor.executed.isEmpty())
+        assertEquals(listOf(ConditionType.OUTSIDE_TEMP), result.unavailableConditions)
+    }
+
+    @Test
+    fun `une lecture manquante dans un sinon si arrete aussi la regle`() {
+        val executor = RecordingExecutor()
+        val rule = Rule(
+            name = "mixte",
+            conditions = listOf(Condition(ConditionType.OUTSIDE_TEMP, op = CompareOp.LT, number = 5f)),
+            actions = listOf(Action(ActionType.SET_STEERING_HEAT, number = 2)),
+            elseIf = listOf(
+                Branch(
+                    conditions = listOf(Condition(ConditionType.IN_PARK, flag = true)),
+                    actions = listOf(Action(ActionType.SET_FAN_LEVEL, number = 1))
+                )
+            ),
+            elseActions = listOf(Action(ActionType.SET_MEDIA_VOLUME, number = 12))
+        )
+
+        // Le premier cas se conclut (il fait 25 °C), le second n'est pas lisible.
+        val result = run(rule, atTemperature(25f), executor)
+
+        assertEquals(RuleOutcome.NOT_EVALUABLE, result.outcome)
+        assertTrue(executor.executed.isEmpty())
+        assertEquals(listOf(ConditionType.IN_PARK), result.unavailableConditions)
+    }
+
+    @Test
+    fun `une regle sans autre cas ne nomme aucune branche`() {
+        val executor = RecordingExecutor()
+        val simple = rule(conditions = arrayOf(Condition(ConditionType.IN_PARK, flag = true)))
+
+        val result = run(simple, Snapshot(readings = mapOf(BridgeContract.KEY_IN_PARK to true)), executor)
+
+        assertEquals(RuleOutcome.FIRED, result.outcome)
+        assertNull("rien à nommer quand il n'y a qu'un cas", result.firedBranch)
     }
 }

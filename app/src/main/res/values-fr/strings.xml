@@ -111,6 +111,7 @@
     <string name="value_no_bt_devices">Aucun appareil Bluetooth appairé</string>
     <string name="value_no_contacts">Aucun contact synchronisé. Autorisez le partage des contacts sur le téléphone appairé.</string>
     <string name="value_contact_hint">Rechercher un contact ou un numéro</string>
+    <string name="value_call_required">Saisissez un numéro de téléphone ou sélectionnez un contact</string>
     <string name="value_no_profiles">Aucun profil MG4Control accessible</string>
     <string name="value_notification_hint">Message à afficher</string>
 
@@ -258,4 +259,23 @@
     <string name="editor_trigger_off">À l’extinction</string>
     <string name="editor_move_up">Monter</string>
     <string name="editor_move_down">Descendre</string>
+    <string name="editor_delay_budget">Les attentes de cette règle dépassent %1$d secondes au total. Réduisez-les : les actions suivantes s’exécuteraient longtemps après l’événement du véhicule.</string>
+
+    <!-- Branches : si / sinon si / sinon -->
+    <string name="branch_if">SI</string>
+    <string name="branch_else_if">SINON SI %1$d</string>
+    <string name="branch_else">SINON</string>
+    <string name="editor_add_else_if">Ajouter un « sinon si »</string>
+    <string name="editor_add_else">Ajouter un « sinon »</string>
+    <string name="editor_branch_else_hint">S’exécute si aucun cas ci-dessus ne correspond</string>
+    <string name="editor_branch_done">Terminé</string>
+    <string name="editor_summary_all">toutes : %1$s</string>
+    <string name="editor_summary_any">au moins une : %1$s</string>
+    <string name="editor_case_incomplete">Chaque cas exige une condition et une action ; le « sinon » exige une action</string>
+    <string name="editor_max_else_if">Une règle accepte au plus %1$d cas « sinon si »</string>
+    <plurals name="rule_summary_cases">
+        <item quantity="one">%d cas</item>
+        <item quantity="other">%d cas</item>
+    </plurals>
+    <string name="editor_button_cases">Une règle qui nomme un bouton doit en nommer un dans chaque cas, et ne peut pas avoir de « sinon »</string>
 </resources>

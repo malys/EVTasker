@@ -106,6 +106,13 @@
             android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- One case of a rule ("if", "else if", "else"), edited on its own screen. -->
+        <activity
+            android:name=".ui.BranchEditorActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- Persistent vehicle service: inits MG4Hardware, listens for ignition, evaluates
              rules and applies actions directly. connectedDevice matches what it does. -->
         <service

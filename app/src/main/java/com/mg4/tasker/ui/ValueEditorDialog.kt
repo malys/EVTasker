@@ -6,6 +6,7 @@ import android.content.Context
 import android.util.TypedValue
 import android.view.View
 import android.widget.ArrayAdapter
+import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.chip.Chip
 import com.mg4.tasker.R
 import com.mg4.tasker.bridge.BridgeContract
@@ -63,6 +64,7 @@ object ValueEditorDialog {
                         number = buttons[binding.physicalButtonSpinner.selectedItemPosition].codes.first().toFloat(),
                         text = presses[binding.physicalPressSpinner.selectedItemPosition].name
                     ))
+                    true
             }
             return
         }
@@ -114,6 +116,7 @@ object ValueEditorDialog {
                         days = state.days()
                     )
                 )
+                true
         }
     }
 
@@ -165,17 +168,24 @@ object ValueEditorDialog {
         )
 
         showEditor(context, action.type.labelRes, binding) {
+                if (spec.kind == ValueKind.CONTACT && state.text().isBlank()) {
+                    binding.contactBlock.error = context.getString(R.string.value_call_required)
+                    return@showEditor false
+                }
                 onDone(
                     action.copy(
                         number = state.number().toInt(),
                         flag = state.flag(),
                         text = state.text(),
                         payload = state.payload(),
-                        displayName = if (spec.kind == ValueKind.CONTACT) state.choiceLabel() else action.displayName,
+                        displayName = if (spec.kind == ValueKind.CONTACT)
+                            state.choiceLabel().ifBlank { null }
+                        else action.displayName,
                         minutesFrom = state.minutesFrom,
                         minutesTo = state.minutesTo
                     )
                 )
+                true
         }
     }
 
@@ -184,7 +194,7 @@ object ValueEditorDialog {
         context: Context,
         titleRes: Int,
         content: DialogValueEditorBinding,
-        save: () -> Unit
+        save: () -> Boolean
     ) {
         val shell = ScreenValueEditorBinding.inflate(android.view.LayoutInflater.from(context))
         (content.root.parent as? android.view.ViewGroup)?.removeView(content.root)
@@ -198,7 +208,9 @@ object ValueEditorDialog {
         val dialog = android.app.Dialog(context, R.style.Theme_MG4_Picker)
         shell.editorTitle.setText(titleRes)
         shell.editorCancel.setOnClickListener { dialog.dismiss() }
-        shell.editorSave.setOnClickListener { save(); dialog.dismiss() }
+        shell.editorSave.setOnClickListener {
+            if (save()) dialog.dismiss()
+        }
         dialog.setContentView(shell.root)
         dialog.setOnShowListener {
             dialog.window?.setLayout(
@@ -340,20 +352,27 @@ object ValueEditorDialog {
             }
 
             ValueKind.CONTACT -> {
+                binding.contactBlock.visibility = View.VISIBLE
                 if (choices.isEmpty()) {
                     binding.choiceEmpty.visibility = View.VISIBLE
                     binding.choiceEmpty.text = emptyChoiceMessage
+                    binding.contactInput.setText(initialText, false)
+                    text = initialText
                 } else {
-                    binding.contactBlock.visibility = View.VISIBLE
                     val labels = choices.map { it.label }
                     binding.contactInput.setAdapter(
                         ArrayAdapter(context, android.R.layout.simple_dropdown_item_1line, labels)
                     )
                     binding.contactInput.threshold = 0
-                    val initial = choices.indexOfFirst { it.value == initialText }.coerceAtLeast(0)
-                    text = choices[initial].value
-                    choiceLabel = choices[initial].label
-                    binding.contactInput.setText(choiceLabel, false)
+                    val initial = choices.indexOfFirst { it.value == initialText }
+                    if (initial >= 0) {
+                        text = choices[initial].value
+                        choiceLabel = choices[initial].label
+                        binding.contactInput.setText(choiceLabel, false)
+                    } else {
+                        text = initialText
+                        binding.contactInput.setText(initialText, false)
+                    }
                     binding.contactInput.setOnClickListener { binding.contactInput.showDropDown() }
                     binding.contactInput.setOnItemClickListener { parent, _, index, _ ->
                         val selectedLabel = parent.getItemAtPosition(index).toString()
@@ -361,6 +380,16 @@ object ValueEditorDialog {
                             text = selected.value
                             choiceLabel = selected.label
                         }
+                    }
+                }
+                // The same field is deliberately both a contact search and a phone-number
+                // entry. A selected contact stores its number; typing replaces that selection
+                // and clears the contact label so the rule summary shows the entered number.
+                binding.contactInput.doAfterTextChanged { editable ->
+                    val entered = editable?.toString().orEmpty().trim()
+                    if (entered != choiceLabel) {
+                        text = entered
+                        choiceLabel = ""
                     }
                 }
             }

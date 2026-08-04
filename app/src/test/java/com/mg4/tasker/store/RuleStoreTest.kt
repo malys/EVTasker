@@ -92,4 +92,31 @@ class RuleStoreTest {
         assertEquals("still valid", all[0].name)
         all.forEach { rule -> rule.conditions.forEach { it.type.name }; rule.actions.forEach { it.type.name } }
     }
+
+    /**
+     * Same failure hidden one level deeper. A removed entry inside an "else if" or the "else"
+     * only surfaces when that case is the one that matches — on the car, on a later drive.
+     */
+    @Test
+    fun `a removed catalog entry inside another case drops the rule too`() {
+        val store = RuleStore(context())
+        store.save(sampleRule("still valid"))
+        val prefs = context()
+            .getSharedPreferences("mg4_tasker_rules", android.content.Context.MODE_PRIVATE)
+        val json = prefs.getString("rules_json", null)!!
+        val withRemovedType = json.dropLast(1) + """,{"id":"gone","name":"branched rule",
+            "enabled":true,"match":"ALL",
+            "conditions":[{"type":"IN_PARK","op":"EQ","number":0.0,"flag":true,
+            "text":"","minutesFrom":0,"minutesTo":0,"days":[]}],
+            "actions":[{"type":"SET_MEDIA_VOLUME","number":5,"flag":false,"text":"",
+            "minutesFrom":0,"minutesTo":0}],
+            "elseActions":[{"type":"STAR_LEFT_LONG_PRESS_ACTION","number":1,"flag":true,
+            "text":"","minutesFrom":0,"minutesTo":0}]}]"""
+        prefs.edit().putString("rules_json", withRemovedType).commit()
+
+        val all = RuleStore(context()).getAll()
+
+        assertEquals(1, all.size)
+        assertEquals("still valid", all[0].name)
+    }
 }

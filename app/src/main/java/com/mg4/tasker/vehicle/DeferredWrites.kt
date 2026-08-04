@@ -105,7 +105,9 @@ object DeferredWrites {
                 // nothing. It stays refused.
                 .filter { it.actionType != ActionType.APPLY_PROFILE }
                 .mapNotNull { result ->
-                    rule.actions.firstOrNull { it.type == result.actionType }
+                    // The branch that ran, not the rule's first one: a refusal from an
+                    // "else if" or from the "else" has to be found where it came from.
+                    rule.actionsFor(ruleRun.firedBranch).firstOrNull { it.type == result.actionType }
                         ?.let { Pending(rule.id, rule.name, it, now) }
                 }
         }

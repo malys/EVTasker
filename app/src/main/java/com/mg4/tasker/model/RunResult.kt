@@ -38,6 +38,12 @@ data class ActionResult(
     val attempts: Int = 1
 )
 
+/** [RuleRun.firedBranch] for the rule's own conditions — the "if". */
+const val BRANCH_IF = 0
+
+/** [RuleRun.firedBranch] for the trailing "else", which has no conditions to index. */
+const val BRANCH_ELSE = -1
+
 /** One clear verdict for a rule's cycle: applied, skipped, or failed. */
 enum class RuleStatus {
     APPLIED,
@@ -52,7 +58,15 @@ data class RuleRun(
     val outcome: RuleOutcome,
     val actionResults: List<ActionResult> = emptyList(),
     /** Conditions that could not be read, to explain a NOT_EVALUABLE. */
-    val unavailableConditions: List<ConditionType> = emptyList()
+    val unavailableConditions: List<ConditionType> = emptyList(),
+    /**
+     * Which branch ran: [BRANCH_IF], the 1-based index of an "else if", or [BRANCH_ELSE].
+     *
+     * Null when the rule has no branch to name — either it is a plain if/then rule, or
+     * nothing fired. Also null for every history entry written before branches existed,
+     * which is why it is nullable rather than defaulted to [BRANCH_IF].
+     */
+    val firedBranch: Int? = null
 ) {
     /** Derived from [outcome] and [actionResults] so callers don't re-derive this logic themselves. */
     val status: RuleStatus

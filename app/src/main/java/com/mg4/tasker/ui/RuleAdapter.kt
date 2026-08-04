@@ -33,11 +33,21 @@ class RuleAdapter(
         val context = holder.itemView.context
 
         holder.binding.ruleName.text = rule.name
-        holder.binding.ruleSummary.text = context.resources.getQuantityString(
-            com.mg4.tasker.R.plurals.rule_summary_conditions, rule.conditions.size, rule.conditions.size
-        ) + " → " + context.resources.getQuantityString(
-            com.mg4.tasker.R.plurals.rule_summary_actions, rule.actions.size, rule.actions.size
-        )
+        // A branched rule counts cases, not conditions: only one case runs, so adding up the
+        // conditions of all of them would describe a rule that does not exist. The detail
+        // pane is where each case is spelled out.
+        holder.binding.ruleSummary.text = if (rule.hasAlternatives) {
+            val cases = rule.branches.size + if (rule.otherwise.isEmpty()) 0 else 1
+            context.resources.getQuantityString(
+                com.mg4.tasker.R.plurals.rule_summary_cases, cases, cases
+            )
+        } else {
+            context.resources.getQuantityString(
+                com.mg4.tasker.R.plurals.rule_summary_conditions, rule.conditions.size, rule.conditions.size
+            ) + " → " + context.resources.getQuantityString(
+                com.mg4.tasker.R.plurals.rule_summary_actions, rule.actions.size, rule.actions.size
+            )
+        }
 
         // setOnCheckedChangeListener(null) before setChecked: without it, view recycling
         // fires the previous rule's listener and toggles the wrong rule.

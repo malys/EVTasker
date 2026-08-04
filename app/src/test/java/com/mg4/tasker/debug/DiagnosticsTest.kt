@@ -178,11 +178,13 @@ class DiagnosticsTest {
         assertEquals(Diagnostics.Reason.NO_TTS_ENGINE, entry(noTts, "SPEAK_TEXT").reason)
         assertEquals(Diagnostics.Status.OK, entry(noTts, "SHOW_NOTIFICATION").status)
 
-        // The message action shows on screen as well as in the shade, so a silenced channel
-        // no longer stops it reaching the driver — it is reported on its own row instead.
         val silenced =
             Diagnostics.actions(allowed.copy(notificationsEnabled = false), FirmwareGen.SWI68)
-        assertEquals(Diagnostics.Status.OK, entry(silenced, "SHOW_NOTIFICATION").status)
+        assertEquals(Diagnostics.Status.BLOCKED, entry(silenced, "SHOW_NOTIFICATION").status)
+        assertEquals(
+            Diagnostics.Reason.NOTIFICATIONS_OFF,
+            entry(silenced, "SHOW_NOTIFICATION").reason
+        )
         assertEquals(Diagnostics.Status.OK, entry(silenced, "SPEAK_TEXT").status)
     }
 
@@ -215,6 +217,34 @@ class DiagnosticsTest {
 
         val withApp = Diagnostics.actions(allowed.copy(navigationApp = true), FirmwareGen.SWI68)
         assertEquals(Diagnostics.Status.OK, entry(withApp, "NAVIGATE_TO").status)
+    }
+
+    @Test
+    fun `radio tuning requires the same vendor service as radio playback`() {
+        val none = Diagnostics.actions(allowed, FirmwareGen.SWI68)
+        assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "PLAY_RADIO").reason)
+        assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "TUNE_RADIO").reason)
+
+        val bound = Diagnostics.actions(allowed.copy(radioService = true), FirmwareGen.SWI68)
+        assertEquals(Diagnostics.Status.OK, entry(bound, "PLAY_RADIO").status)
+        assertEquals(Diagnostics.Status.OK, entry(bound, "TUNE_RADIO").status)
+    }
+
+    @Test
+    fun `local webhook and delay actions do not depend on the vehicle layer`() {
+        val entries = Diagnostics.actions(allowed.copy(vehicleLayerReady = false), FirmwareGen.SWI68)
+
+        assertEquals(Diagnostics.Status.OK, entry(entries, "WEBHOOK_GET").status)
+        assertEquals(Diagnostics.Status.OK, entry(entries, "WEBHOOK_POST").status)
+        assertEquals(Diagnostics.Status.OK, entry(entries, "DELAY").status)
+    }
+
+    @Test
+    fun `unknown firmware fails closed only for firmware-specific actions`() {
+        val entries = Diagnostics.actions(allowed.copy(radioService = true), null)
+
+        assertEquals(Diagnostics.Reason.UNSUPPORTED_FIRMWARE, entry(entries, "PLAY_RADIO").reason)
+        assertEquals(Diagnostics.Status.OK, entry(entries, "SHOW_NOTIFICATION").status)
     }
 
     /** No write can be probed without performing it, so an excluded firmware fails closed. */

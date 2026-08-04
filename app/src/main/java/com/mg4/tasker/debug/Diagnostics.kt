@@ -5,6 +5,7 @@ import com.mg4.hardware.FirmwareSupport
 import com.mg4.hardware.catalog.ActionType
 import com.mg4.hardware.catalog.ConditionType
 import com.mg4.tasker.bridge.BridgeContract
+import com.mg4.tasker.engine.ActionCompatibility
 import com.mg4.tasker.engine.ConditionEvaluator
 import com.mg4.tasker.model.CompareOp
 import com.mg4.tasker.model.Condition
@@ -156,7 +157,7 @@ object Diagnostics {
      */
     fun actions(caps: Capabilities, gen: FirmwareGen?): List<Entry> =
         ActionType.entries.map { type ->
-            val hidden = !FirmwareSupport.isSupported(type, gen)
+            val hidden = !ActionCompatibility.isConfirmed(type, gen)
             val reason = when {
                 hidden -> Reason.UNSUPPORTED_FIRMWARE
                 else -> blockingReason(type, caps)
@@ -195,9 +196,8 @@ object Diagnostics {
         // Resolving the target package is a per-rule matter, not a per-action one: the
         // executor checks the package the rule names, which this screen does not know.
         ActionType.LAUNCH_APP -> Reason.NONE
-        // Always reaches the driver: the message is shown on screen, and the notification
-        // is the part that may be silenced. The NOTIFICATIONS row still reports the channel.
-        ActionType.SHOW_NOTIFICATION -> Reason.NONE
+        ActionType.SHOW_NOTIFICATION ->
+            if (caps.notificationsEnabled) Reason.NONE else Reason.NOTIFICATIONS_OFF
         ActionType.SPEAK_TEXT ->
             if (caps.ttsEngineAvailable) Reason.NONE else Reason.NO_TTS_ENGINE
         ActionType.NAVIGATE_TO ->
@@ -209,10 +209,14 @@ object Diagnostics {
             if (caps.climateService) gateReason(type, caps) else Reason.NO_VENDOR_SERVICE
         in CHARGING_ACTIONS ->
             if (caps.chargingService) gateReason(type, caps) else Reason.NO_VENDOR_SERVICE
-        ActionType.PLAY_RADIO ->
+        ActionType.PLAY_RADIO, ActionType.TUNE_RADIO ->
             if (caps.radioService) Reason.NONE else Reason.NO_VENDOR_SERVICE
         ActionType.CALL_NUMBER, ActionType.CALL_CONTACT ->
             if (caps.phoneService) Reason.NONE else Reason.NO_VENDOR_SERVICE
+
+        // These run entirely inside MG4Tasker. Their configured value can still be invalid,
+        // but availability of the vehicle layer is irrelevant to whether the action exists.
+        ActionType.WEBHOOK_GET, ActionType.WEBHOOK_POST, ActionType.DELAY -> Reason.NONE
 
         // Everything else is a direct MG4Hardware write.
         else -> if (!caps.vehicleLayerReady) Reason.LAYER_NOT_READY else gateReason(type, caps)

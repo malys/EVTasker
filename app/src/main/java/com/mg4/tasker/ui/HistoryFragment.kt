@@ -11,8 +11,6 @@ import com.mg4.tasker.R
 import com.mg4.tasker.databinding.FragmentHistoryBinding
 import com.mg4.tasker.databinding.ItemHistoryRunBinding
 import com.mg4.tasker.model.EngineRun
-import com.mg4.tasker.model.RuleOutcome
-import com.mg4.tasker.model.RuleStatus
 import com.mg4.tasker.model.RuleTrigger
 import com.mg4.tasker.store.HistoryStore
 import com.mg4.tasker.vehicle.DeferredWrites
@@ -101,15 +99,8 @@ class HistoryFragment : Fragment() {
             holder.binding.runWarning.setText(R.string.history_no_bridge)
 
             holder.binding.runDetail.text = run.ruleRuns.joinToString("\n") { ruleRun ->
-                val outcome = context.getString(
-                    when (ruleRun.outcome) {
-                        RuleOutcome.FIRED         ->
-                            if (ruleRun.status == RuleStatus.FAILED) R.string.outcome_failed else R.string.outcome_fired
-                        RuleOutcome.NOT_MATCHED   -> R.string.outcome_not_matched
-                        RuleOutcome.NOT_EVALUABLE -> R.string.outcome_not_evaluable
-                        RuleOutcome.DISABLED      -> R.string.outcome_disabled
-                    }
-                )
+                // The Rules tab's wording, and the case that ran with it.
+                val outcome = labels.outcomeLabel(ruleRun)
                 buildString {
                     append("• ${ruleRun.ruleName} : $outcome")
                     // Name the missing data: "cannot be evaluated" alone does not help fix it.

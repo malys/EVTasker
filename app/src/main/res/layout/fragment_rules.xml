@@ -148,6 +148,14 @@
                     android:layout_marginTop="@dimen/spacing_sm"
                     android:textAppearance="@style/Text.MG4.Body"
                     android:lineSpacingMultiplier="1.3" />
+
+                <!-- The "else if" cases and the "else", when the rule has any. Empty and
+                     invisible for a plain if/then rule, which is most of them. -->
+                <LinearLayout
+                    android:id="@+id/detailCases"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
             </LinearLayout>
         </ScrollView>
     </FrameLayout>

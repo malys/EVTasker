@@ -33,6 +33,7 @@ profile* — becomes available.
 - [MG4Control (optional)](#mg4control-optional)
 - [The speed gate](#the-speed-gate)
 - [Conditions and actions](#conditions-and-actions)
+- [Cases: if, else if, else](#cases-if-else-if-else)
 - [Firmware compatibility](#firmware-compatibility)
 - [Vehicle services: climate, charging, radio, calls](#vehicle-services-climate-charging-radio-calls)
 - [Diagnostic](#diagnostic)
@@ -192,6 +193,13 @@ switching the climate on, then setting the fan level — the **Wait** action (1 
 holds the sequence in between. It touches nothing in the car, and appears in the history at
 its place in the sequence. A rule made only of waits is refused at save time: it would hold
 the cycle and change nothing.
+
+One cycle may spend **two minutes waiting in total**, every wait of every rule it evaluates
+counted together — the rules of a cycle run one after the other, so a rule that waits also
+delays the ones after it. Past that budget the wait is cut short and the history says so:
+what follows would otherwise be applied against a snapshot taken before the driver left the
+car. A single rule whose waits exceed the budget is refused at save time, so the limit is
+learned in the editor rather than after the drive.
 - **15 minutes, and never across an ignition cycle.** A rule that fired for this drive
   belongs to this drive. At switch-off the queue is dropped, not applied: the car is stopped
   then, which is exactly what makes it the wrong moment to change the setting the next
@@ -241,6 +249,48 @@ below.
 
 ---
 
+## Cases: if, else if, else
+A rule can carry several cases. They are tried in the order they are written and **exactly
+one of them runs**: the first whose conditions hold wins, and the "else" is what happens when
+none did.
+
+```
+IF    outside temperature < 5 °C      → steering heating 2, seat heating 2
+ELSE IF  outside temperature < 18 °C  → fan level 1
+ELSE                                  → media volume 12
+```
+
+Without cases, that is three rules whose conditions have to exclude each other by hand, and
+the day one range is edited the three stop agreeing. The "else" is optional: a rule that says
+nothing about the remaining situations simply does nothing in them.
+
+**An unreadable reading stops the rule where it stands.** It does not fall through to the next
+case, and it does not reach the "else". Unreadable is not false — falling through would mean
+writing to the vehicle *because* a value was missing, which is the one thing the engine never
+does. The history reports the rule as not evaluable and names the missing signal, exactly as
+it does for a rule with a single case.
+
+**Each case is edited in its own window**, opened from its card on the rule screen: what is
+checked on the left, what is done on the right, each list with its own scroll and its own
+"add" button. The rule screen itself keeps the shape of the rule — the cases in the order they
+are tried, each with the size of what it checks and of what it does — and the order of the
+"else if" cases is changed with the arrows on their cards. A rule takes at most four "else if"
+cases: past that the chain stops being readable at a glance on a screen at arm's length.
+
+The history names the case that ran ("applied — ELSE IF 1"), because "applied" alone leaves
+the one question a branched rule raises after the fact unanswered.
+
+**A rule that names a physical button must name one in every case, and takes no "else".** A
+button condition does not only test something — it decides which event stream brings the rule
+its cycles, for the whole rule. A case that named no button would be evaluated on presses of
+buttons it never mentioned, and an "else", which tests nothing at all, would run on every
+press of every button. Refused at save and at import rather than silently rewired.
+
+The wait budget compares the **longest** case, not the sum of them: only one case runs, so
+adding them up would refuse a rule that can never wait that long.
+
+---
+
 ## Firmware compatibility
 Every vehicle catalogue entry carries a `@SupportedOn(...)` annotation naming the firmware
 generations it works on, derived from MG4Hardware's `FirmwareInfo` and per-generation
@@ -257,6 +307,14 @@ routing. That annotation is the single source of truth for three things:
 > The matrix is derived from MG4Hardware's code, **not** from on-vehicle testing. The app's
 > Diagnostic tab is the source of truth for your own car: it reads each signal and shows
 > "unreadable" where the firmware does not expose it.
+
+**When the generation cannot be identified, the editor still offers everything and execution
+refuses.** Hiding entries on a guess would leave a car unable to write rules it can perfectly
+well run, so the picker filters nothing without a positive match. A vehicle action, on the
+other hand, is only attempted on a generation its annotation actually names: anything else is
+reported as `firmware support not confirmed` in the history rather than written to a car we
+could not identify. The Diagnostic tab reports the same verdict, because it runs the same
+check.
 
 Highlights (see the generated matrix for the full grid):
 
@@ -330,6 +388,10 @@ notification channel for the notify action.
 The one step it cannot take is the write itself — applying a drive mode to see whether it
 sticks would change the car under the driver. So for vehicle writes, OK means "everything
 checked before writing passes", and the history reports what the write did afterwards.
+
+**The first launch after an upgrade opens on this tab**, because a new build's verdicts about
+this car are what changed. The marker is written by the main screen, never by a background
+receiver: a package replacement must not put an activity in front of a driver who is moving.
 
 Three sections:
 
@@ -475,8 +537,8 @@ against the path the user picked:
 |---|---|
 | written by a newer version | `version` above the one this build understands |
 | unknown condition or action | a catalogue entry this build cannot perform — never silently dropped |
-| not a readable rules file | malformed, blank name, no condition, no action, duplicate ids, non-finite threshold, weekday outside 1–7 |
-| more than 20 rules | above `RuleStore.MAX_RULES` |
+| not a readable rules file | malformed, blank name, no condition, no action, duplicate ids, non-finite threshold, weekday outside 1–7, a case with no condition or no action, a button rule whose cases do not all name a button, cases in a file claiming version 1 |
+| more than 20 rules | above `RuleStore.MAX_RULES`, or a rule with more than four "else if" cases |
 | no rules | a valid envelope with an empty list |
 
 Picking JSON that belongs to another app reports "not a readable rules file". Files over 256 KB
@@ -487,16 +549,29 @@ are refused on their length, before anything is read into memory.
 ```json
 {
   "format": "mg4tasker-rules",
-  "version": 1,
+  "version": 2,
   "rules": [
     {
       "id": "1f2e…", "name": "Cold morning", "enabled": true, "match": "ALL",
       "conditions": [{ "type": "OUTSIDE_TEMP", "op": "LT", "number": 5.0 }],
-      "actions":    [{ "type": "SET_STEERING_HEAT", "number": 2 }]
+      "actions":    [{ "type": "SET_STEERING_HEAT", "number": 2 }],
+      "elseIf": [
+        {
+          "match": "ALL",
+          "conditions": [{ "type": "OUTSIDE_TEMP", "op": "LT", "number": 18.0 }],
+          "actions":    [{ "type": "SET_FAN_LEVEL", "number": 1 }]
+        }
+      ],
+      "elseActions": [{ "type": "SET_MEDIA_VOLUME", "number": 12 }]
     }
   ]
 }
 ```
+
+`elseIf` and `elseActions` arrived with version 2 and are **absent** from a rule that has no
+other case — so a file whose rules are all plain if/then still says `"version": 1` and stays
+readable by a build that predates cases. A file that does carry one says 2, and an older build
+refuses it whole rather than applying its first case alone.
 
 Renaming a `ConditionType` / `ActionType` constant therefore invalidates older files — the
 import reports the unknown entry rather than guessing.
