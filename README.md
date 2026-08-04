@@ -646,11 +646,15 @@ regenerates on the next test run.
 
 Two build flavors, like the sibling apps:
 
-- **stable** — tagged releases, **no self-update**. The updater class is not in the APK.
+- **stable** — tagged releases, **no self-update** and no network permission. The updater
+  class is not in the APK.
 - **unstable** — pre-releases published on every push to `master`, with **OTA**: the app
-  checks GitHub pre-releases and downloads a newer unstable APK (https + GitHub host
-  allowlist + same-signature check, all fail-closed; install is a manual tap). Installs
+  checks GitHub pre-releases, downloads into private cache, validates every redirect and
+  the APK signature, then installs it automatically via `pm` and deletes it. Installs
   beside stable as `com.mg4.tasker.unstable`.
+
+The Console tab is always visible on unstable builds. On the stable/offline channel it is
+hidden from the normal navigation and appears after three taps on the Diagnostic tab.
 
 ```bash
 mise run test            # both flavors

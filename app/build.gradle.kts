@@ -43,6 +43,7 @@ android {
         create("stable") {
             dimension = "channel"
             buildConfigField("boolean", "OTA_ENABLED", "false")
+            buildConfigField("boolean", "CONSOLE_VISIBLE_BY_DEFAULT", "false")
         }
         create("unstable") {
             dimension = "channel"
@@ -52,6 +53,7 @@ android {
             versionName = "${defaultConfig.versionName}.${project.findProperty("unstableBuild") ?: "0"}"
             versionNameSuffix = "-unstable"
             buildConfigField("boolean", "OTA_ENABLED", "true")
+            buildConfigField("boolean", "CONSOLE_VISIBLE_BY_DEFAULT", "true")
         }
     }
 

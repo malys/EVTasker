@@ -13,6 +13,9 @@
     <string name="config_section_language">IDIOMA</string>
     <string name="config_section_rules_file">FICHEIRO DE REGRAS</string>
     <string name="config_rules_file_explain">A exportação escreve todas as regras num ficheiro no armazenamento. A importação substitui todas as regras atuais pelas do ficheiro.</string>
+    <string name="config_section_rule_editor">EDITOR DE REGRAS</string>
+    <string name="config_expert_rules">Modo especialista</string>
+    <string name="config_expert_rules_explain">Permite ramos Senão se e Senão ao criar regras. As regras avançadas existentes permanecem sempre visíveis.</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automação ativada</string>
@@ -74,6 +77,7 @@
     <string name="editor_add_action">Adicionar uma ação</string>
     <string name="editor_save">Guardar</string>
     <string name="editor_cancel">Cancelar</string>
+    <string name="editor_expert_branches_notice">Os ramos avançados desta regra continuam editáveis. Ative o modo especialista na Configuração para adicionar mais.</string>
     <string name="editor_name_required">Dê um nome à regra</string>
     <string name="editor_incomplete">São necessárias pelo menos uma condição e uma ação</string>
     <string name="editor_save_failed">Falha ao guardar: não foi possível escrever a regra. Ver o separador Consola.</string>
@@ -91,6 +95,9 @@
     <string name="value_from">De</string>
     <string name="value_to">a</string>
     <string name="value_ok">Confirmar</string>
+    <string name="group_integration">Integração</string>
+    <string name="editor_tune_and_play_radio">Sintonizar e reproduzir rádio</string>
+    <string name="editor_radio_sequence_hint">Sintoniza, espera 1 segundo e reproduz</string>
     <string name="value_no_bt_devices">Nenhum dispositivo Bluetooth emparelhado</string>
     <string name="value_no_contacts">Nenhum contacto sincronizado. Permita a partilha de contactos no telefone emparelhado.</string>
     <string name="value_contact_hint">Pesquisar contacto ou número</string>

@@ -89,4 +89,10 @@ class OtaUpdaterTest {
         assertTrue(OtaUpdater.downloadFileName(null).contains("unknown"))
         assertTrue(OtaUpdater.downloadFileName("").contains("unknown"))
     }
+
+    @Test fun `pm install requires both success text and zero exit`() {
+        assertTrue(OtaUpdater.installSucceeded(0, "Success\n"))
+        assertFalse(OtaUpdater.installSucceeded(1, "Success\n"))
+        assertFalse(OtaUpdater.installSucceeded(0, "Failure [INSTALL_FAILED]"))
+    }
 }

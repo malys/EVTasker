@@ -13,6 +13,9 @@
     <string name="config_section_language">LINGUA</string>
     <string name="config_section_rules_file">FILE DELLE REGOLE</string>
     <string name="config_rules_file_explain">L’esportazione scrive tutte le regole in un file sull’archivio. L’importazione sostituisce tutte le regole attuali con quelle del file.</string>
+    <string name="config_section_rule_editor">EDITOR DELLE REGOLE</string>
+    <string name="config_expert_rules">Modalità esperto</string>
+    <string name="config_expert_rules_explain">Consente rami Altrimenti se e Altrimenti durante la creazione delle regole. Le regole avanzate esistenti restano sempre visibili.</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automazione attivata</string>
@@ -74,6 +77,7 @@
     <string name="editor_add_action">Aggiungi un\'azione</string>
     <string name="editor_save">Salva</string>
     <string name="editor_cancel">Annulla</string>
+    <string name="editor_expert_branches_notice">I rami avanzati di questa regola restano modificabili. Attiva la modalità esperto in Configurazione per aggiungerne altri.</string>
     <string name="editor_name_required">Dai un nome alla regola</string>
     <string name="editor_incomplete">Sono richieste almeno una condizione e un\'azione</string>
     <string name="editor_save_failed">Salvataggio non riuscito: impossibile scrivere la regola. Vedi la scheda Console.</string>
@@ -91,6 +95,9 @@
     <string name="value_from">Da</string>
     <string name="value_to">a</string>
     <string name="value_ok">Conferma</string>
+    <string name="group_integration">Integrazione</string>
+    <string name="editor_tune_and_play_radio">Sintonizza e riproduci la radio</string>
+    <string name="editor_radio_sequence_hint">Sintonizza, attende 1 secondo, quindi avvia la radio</string>
     <string name="value_no_bt_devices">Nessun dispositivo Bluetooth associato</string>
     <string name="value_no_contacts">Nessun contatto sincronizzato. Consenti la condivisione dei contatti sul telefono associato.</string>
     <string name="value_contact_hint">Cerca contatto o numero</string>

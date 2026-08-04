@@ -164,7 +164,7 @@ class BranchEditorActivity : AppCompatActivity() {
                             contacts = contacts,
                             currentValue = currentValue(type)
                         ) { configured ->
-                            actions += configured
+                            actions += ActionBundles.expand(configured)
                             renderActions()
                         }
                     }

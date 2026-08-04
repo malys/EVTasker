@@ -13,6 +13,9 @@
     <string name="config_section_language">IDIOMA</string>
     <string name="config_section_rules_file">ARCHIVO DE REGLAS</string>
     <string name="config_rules_file_explain">La exportación escribe todas las reglas en un archivo del almacenamiento. La importación sustituye todas las reglas actuales por las del archivo.</string>
+    <string name="config_section_rule_editor">EDITOR DE REGLAS</string>
+    <string name="config_expert_rules">Modo experto</string>
+    <string name="config_expert_rules_explain">Permite ramas Si no, si y Si no al crear reglas. Las reglas avanzadas existentes siempre permanecen visibles.</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automatización activada</string>
@@ -74,6 +77,7 @@
     <string name="editor_add_action">Añadir una acción</string>
     <string name="editor_save">Guardar</string>
     <string name="editor_cancel">Cancelar</string>
+    <string name="editor_expert_branches_notice">Las ramas avanzadas de esta regla siguen siendo editables. Active el modo experto en Configuración para añadir más.</string>
     <string name="editor_name_required">Da un nombre a la regla</string>
     <string name="editor_incomplete">Se requiere al menos una condición y una acción</string>
     <string name="editor_save_failed">Error al guardar: no se pudo escribir la regla. Consulta la pestaña Consola.</string>
@@ -91,6 +95,9 @@
     <string name="value_from">De</string>
     <string name="value_to">a</string>
     <string name="value_ok">Confirmar</string>
+    <string name="group_integration">Integración</string>
+    <string name="editor_tune_and_play_radio">Sintonizar y reproducir la radio</string>
+    <string name="editor_radio_sequence_hint">Sintoniza, espera 1 segundo y reproduce</string>
     <string name="value_no_bt_devices">Ningún dispositivo Bluetooth emparejado</string>
     <string name="value_no_contacts">No hay contactos sincronizados. Permite compartir contactos en el teléfono emparejado.</string>
     <string name="value_contact_hint">Buscar contacto o número</string>

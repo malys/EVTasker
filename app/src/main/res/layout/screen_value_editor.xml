@@ -6,12 +6,39 @@
     android:orientation="vertical"
     android:padding="@dimen/spacing_lg">
 
-    <TextView
-        android:id="@+id/editorTitle"
+    <!-- A full-screen value picker is still an editor screen: its escape and commit
+         actions stay in the same top-right position as the rule and branch editors. -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/spacing_sm"
-        android:textAppearance="@style/Text.MG4.Display" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/editorTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_lg"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textAppearance="@style/Text.MG4.Display" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/editorCancel"
+            style="@style/Widget.MG4.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:text="@string/editor_cancel" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/editorSave"
+            style="@style/Widget.MG4.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/value_ok" />
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
@@ -27,27 +54,4 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="end|center_vertical"
-        android:minHeight="@dimen/touch_target"
-        android:paddingTop="@dimen/spacing_md"
-        android:orientation="horizontal">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/editorCancel"
-            style="@style/Widget.MG4.Button.Outlined"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/spacing_md"
-            android:text="@string/editor_cancel" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/editorSave"
-            style="@style/Widget.MG4.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/value_ok" />
-    </LinearLayout>
 </LinearLayout>

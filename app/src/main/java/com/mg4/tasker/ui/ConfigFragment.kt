@@ -47,6 +47,11 @@ class ConfigFragment : Fragment() {
         renderLanguage()
         binding.languageButton.setOnClickListener { pickLanguage() }
 
+        binding.expertRulesSwitch.isChecked = AppState.areExpertRulesEnabled(requireContext())
+        binding.expertRulesSwitch.setOnCheckedChangeListener { _, enabled ->
+            AppState.setExpertRulesEnabled(requireContext(), enabled)
+        }
+
         binding.exportButton.setOnClickListener { exportRules() }
         binding.importButton.setOnClickListener { importRules() }
     }

@@ -19,6 +19,7 @@ import com.mg4.tasker.model.MatchMode
 import com.mg4.tasker.model.RuleTrigger
 import com.mg4.tasker.model.Rule
 import com.mg4.tasker.store.RuleStore
+import com.mg4.tasker.store.AppState
 
 /**
  * Rule editing: the name, what addresses the rule, and which cases it has.
@@ -62,6 +63,9 @@ class RuleEditorActivity : AppCompatActivity() {
     /** Which card the open case window belongs to; [NO_TARGET] when none is open. */
     private var editing: Int = NO_TARGET
 
+    /** A presentation preference only; existing advanced branches always remain visible. */
+    private var expertRulesEnabled: Boolean = false
+
     private val branchEditor =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val target = editing
@@ -84,6 +88,7 @@ class RuleEditorActivity : AppCompatActivity() {
         binding = ActivityRuleEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
         store = RuleStore(this)
+        expertRulesEnabled = AppState.areExpertRulesEnabled(this)
 
         ruleId = intent.getStringExtra(EXTRA_RULE_ID)
         val existing = ruleId?.let { store.getById(it) }
@@ -181,6 +186,11 @@ class RuleEditorActivity : AppCompatActivity() {
         // One "else" is all there is to have, and the chain has a reading limit.
         binding.addElseButton.isEnabled = elseActions == null
         binding.addElseIfButton.isEnabled = branches.size <= MAX_ELSE_IF
+        binding.advancedBranchControls.visibility =
+            if (expertRulesEnabled) View.VISIBLE else View.GONE
+        val hasStoredAlternatives = branches.size > 1 || elseActions != null
+        binding.expertBranchesNotice.visibility =
+            if (!expertRulesEnabled && hasStoredAlternatives) View.VISIBLE else View.GONE
 
         // A physical button addresses the rule itself, whichever case names it.
         val eventDriven = branches.any { branch -> branch.conditions.any { it.type.eventDriven } }

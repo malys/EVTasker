@@ -13,6 +13,9 @@
     <string name="config_section_language">LANGUE</string>
     <string name="config_section_rules_file">FICHIER DE RÈGLES</string>
     <string name="config_rules_file_explain">L’export écrit toutes les règles dans un fichier sur le stockage. L’import remplace toutes les règles actuelles par celles du fichier.</string>
+    <string name="config_section_rule_editor">ÉDITEUR DE RÈGLES</string>
+    <string name="config_expert_rules">Mode expert</string>
+    <string name="config_expert_rules_explain">Autorise les branches Sinon si et Sinon lors de la création des règles. Les règles avancées existantes restent toujours visibles.</string>
 
     <!-- Groupes du catalogue -->
 
@@ -91,6 +94,7 @@
     <string name="editor_add_action">Ajouter une action</string>
     <string name="editor_save">Enregistrer</string>
     <string name="editor_cancel">Annuler</string>
+    <string name="editor_expert_branches_notice">Les branches avancées de cette règle restent modifiables. Activez le mode expert dans Configuration pour en ajouter.</string>
     <string name="editor_name_required">Donnez un nom à la règle</string>
     <string name="editor_incomplete">Il faut au moins une condition et une action</string>
     <string name="editor_save_failed">Échec de l\'enregistrement : la règle n\'a pas pu être écrite. Voir l\'onglet Console.</string>
@@ -108,6 +112,9 @@
     <string name="value_from">De</string>
     <string name="value_to">à</string>
     <string name="value_ok">Valider</string>
+    <string name="group_integration">Intégration</string>
+    <string name="editor_tune_and_play_radio">Régler et écouter la radio</string>
+    <string name="editor_radio_sequence_hint">Règle la fréquence, attend 1 seconde, puis lance la radio</string>
     <string name="value_no_bt_devices">Aucun appareil Bluetooth appairé</string>
     <string name="value_no_contacts">Aucun contact synchronisé. Autorisez le partage des contacts sur le téléphone appairé.</string>
     <string name="value_contact_hint">Rechercher un contact ou un numéro</string>
