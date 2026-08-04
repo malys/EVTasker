@@ -12,10 +12,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mg4.tasker.R
 import com.mg4.tasker.databinding.FragmentConsoleBinding
 import com.mg4.hardware.AppLogger
-import com.mg4.tasker.debug.CrashLogger
+import com.mg4.hardware.diag.CrashLogger
+import com.mg4.hardware.diag.PrivateBin
 import com.mg4.tasker.debug.DebugReport
 import com.mg4.tasker.debug.DiagnosticProbe
-import com.mg4.tasker.debug.PrivateBin
 import kotlin.concurrent.thread
 
 /**
