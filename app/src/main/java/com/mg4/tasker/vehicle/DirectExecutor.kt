@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import com.mg4.hardware.FirmwareInfo
+import com.mg4.hardware.FirmwareSupport
 import com.mg4.hardware.MG4Hardware
 import com.mg4.hardware.VehicleWriteGate
 import com.mg4.hardware.model.DriveMode
@@ -15,6 +17,7 @@ import com.mg4.hardware.saic.SaicPhone
 import com.mg4.hardware.saic.SaicRadio
 import com.mg4.hardware.saic.SaicVehicleControl
 import com.mg4.tasker.bridge.BridgeContract
+import com.mg4.tasker.engine.ActionCompatibility
 import com.mg4.tasker.engine.ActionExecutor
 import com.mg4.tasker.engine.ConditionEvaluator
 import com.mg4.tasker.model.Action
@@ -39,7 +42,18 @@ class DirectExecutor(
     private val profileBridge: ProfileBridge?
 ) : ActionExecutor {
 
-    override fun execute(action: Action): ActionResult = when (action.type) {
+    override fun execute(action: Action): ActionResult {
+        val generationName = FirmwareInfo.getGeneration().name
+        val generation = FirmwareSupport.parse(generationName)
+        if (!ActionCompatibility.isConfirmed(action.type, generation)) {
+            return ActionResult(
+                action.type,
+                false,
+                BridgeContract.VERDICT_UNSUPPORTED,
+                "firmware support not confirmed: $generationName"
+            )
+        }
+        return when (action.type) {
         ActionType.APPLY_PROFILE     -> applyProfile(action)
         ActionType.LAUNCH_APP        -> launchApp(action)
         ActionType.SHOW_NOTIFICATION -> notify(action)
@@ -49,6 +63,7 @@ class DirectExecutor(
         ActionType.WEBHOOK_POST      -> webhook(action, "POST")
         ActionType.TUNE_RADIO        -> tuneRadio(action)
         else                         -> applyVehicle(action)
+        }
     }
 
     // -------------------------------------------------------------------------
