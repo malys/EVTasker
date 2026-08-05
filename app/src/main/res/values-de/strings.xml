@@ -83,6 +83,8 @@
     <string name="editor_save_failed">Speichern fehlgeschlagen: Die Regel konnte nicht geschrieben werden. Siehe Konsole.</string>
     <string name="editor_store_unreadable">Die gespeicherten Regeln sind unlesbar; Speichern würde sie überschreiben. Importieren Sie eine Regeldatei.</string>
     <string name="editor_remove">Entfernen</string>
+    <string name="profile_automation_warning_title">Doppelte Profil-Automatisierung vermeiden</string>
+    <string name="profile_automation_warning_message">MG4Control ist verbunden. Deaktivieren Sie vor der Nutzung dieser Profilaktion die Profil-Automatisierungen von MG4Control sowie das automatische Anwenden seines Standardprofils, damit nicht beide Apps beim Start ein Profil anwenden.</string>
     <string name="editor_gated_hint">Nur im Stand</string>
     <string name="editor_gated_explain">Diese Einstellung ändert das Fahrverhalten: MG4Control verweigert sie während der Fahrt.</string>
     <string name="editor_pick_condition">Bedingung wählen</string>
@@ -268,4 +270,15 @@
         <item quantity="other">%d Fälle</item>
     </plurals>
     <string name="editor_button_cases">Eine Regel, die eine Taste nennt, muss in jedem Fall eine nennen und darf kein „sonst“ haben</string>
+    <string name="config_section_about">Über</string>
+    <string name="about_action">Über MG4 Tasker</string>
+    <string name="about_title">Über MG4 Tasker</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_attribution">Autor und Betreuer: malys</string>
+    <string name="about_repository">github.com/malys/MG4Tasker</string>
+    <string name="about_made_with_love">Mit ❤ erstellt von malys</string>
+    <string name="about_logo_description">MG4 Tasker Logo</string>
+    <string name="about_qr_description">QR-Code für das Projekt-Repository</string>
+    <string name="about_version_unknown">unbekannt</string>
+    <string name="about_close">Schließen</string>
 </resources>
