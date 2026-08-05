@@ -3,6 +3,7 @@ package com.mg4.tasker.debug
 import android.content.Context
 import com.google.gson.GsonBuilder
 import com.mg4.hardware.AppLogger
+import com.mg4.hardware.diag.CrashLogger
 import com.mg4.tasker.store.HistoryStore
 import com.mg4.tasker.store.RuleStore
 import com.mg4.tasker.store.RuleTransfer

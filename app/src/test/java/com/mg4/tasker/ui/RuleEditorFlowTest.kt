@@ -149,6 +149,8 @@ class RuleEditorFlowTest {
             3,
             activity.findViewById<ViewGroup>(R.id.branchContainer).childCount
         )
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.advancedBranchControls).visibility)
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.expertBranchesNotice).visibility)
 
         activity.findViewById<View>(R.id.saveButton).performClick()
         idle()

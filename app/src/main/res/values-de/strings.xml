@@ -13,6 +13,9 @@
     <string name="config_section_language">SPRACHE</string>
     <string name="config_section_rules_file">REGELDATEI</string>
     <string name="config_rules_file_explain">Der Export schreibt alle Regeln in eine Datei auf dem Speicher. Der Import ersetzt alle aktuellen Regeln durch die aus der Datei.</string>
+    <string name="config_section_rule_editor">REGEL-EDITOR</string>
+    <string name="config_expert_rules">Expertenmodus</string>
+    <string name="config_expert_rules_explain">Erlaubt Sonst-wenn- und Sonst-Zweige beim Erstellen von Regeln. Vorhandene erweiterte Regeln bleiben immer sichtbar.</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automatisierung aktiviert</string>
@@ -74,6 +77,7 @@
     <string name="editor_add_action">Aktion hinzufügen</string>
     <string name="editor_save">Speichern</string>
     <string name="editor_cancel">Abbrechen</string>
+    <string name="editor_expert_branches_notice">Die erweiterten Zweige dieser Regel bleiben bearbeitbar. Aktivieren Sie den Expertenmodus in der Konfiguration, um weitere hinzuzufügen.</string>
     <string name="editor_name_required">Geben Sie der Regel einen Namen</string>
     <string name="editor_incomplete">Mindestens eine Bedingung und eine Aktion sind erforderlich</string>
     <string name="editor_save_failed">Speichern fehlgeschlagen: Die Regel konnte nicht geschrieben werden. Siehe Konsole.</string>
@@ -91,6 +95,9 @@
     <string name="value_from">Von</string>
     <string name="value_to">bis</string>
     <string name="value_ok">Bestätigen</string>
+    <string name="group_integration">Integration</string>
+    <string name="editor_tune_and_play_radio">Radio einstellen und abspielen</string>
+    <string name="editor_radio_sequence_hint">Stellt den Sender ein, wartet 1 Sekunde und spielt ihn ab</string>
     <string name="value_no_bt_devices">Kein gekoppeltes Bluetooth-Gerät</string>
     <string name="value_no_contacts">Keine synchronisierten Kontakte. Kontaktfreigabe am gekoppelten Telefon erlauben.</string>
     <string name="value_contact_hint">Kontakt oder Nummer suchen</string>

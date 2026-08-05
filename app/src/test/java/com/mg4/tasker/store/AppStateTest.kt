@@ -27,4 +27,13 @@ class AppStateTest {
 
         assertFalse(AppState.isAutomationEnabled(context))
     }
+
+    @Test
+    fun `expert rule branches are hidden by default and persist when enabled`() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+
+        assertFalse(AppState.areExpertRulesEnabled(context))
+        AppState.setExpertRulesEnabled(context, true)
+        assertTrue(AppState.areExpertRulesEnabled(context))
+    }
 }

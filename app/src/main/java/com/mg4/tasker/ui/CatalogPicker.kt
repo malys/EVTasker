@@ -12,6 +12,7 @@ import com.mg4.tasker.databinding.DialogCatalogPickerBinding
 import com.mg4.tasker.databinding.ItemCatalogEntryBinding
 import com.mg4.tasker.databinding.ItemCatalogGroupBinding
 import com.mg4.hardware.catalog.ActionType
+import com.mg4.hardware.catalog.ActionGroup
 import com.mg4.hardware.catalog.ConditionType
 import com.mg4.hardware.catalog.ValueKind
 import com.mg4.hardware.FirmwareGen
@@ -70,20 +71,38 @@ object CatalogPicker {
         // Applying a profile is the one action that cannot work without MG4Control. Offering
         // it with an empty profile list only produces a rule that fails at ignition.
         val hasProfiles = ProfileBridge.isMG4ControlInstalled(context)
-        val groups = ActionType.byGroup().mapNotNull { (group, types) ->
+        val visible = ActionType.entries.filter { it != ActionType.PLAY_RADIO }
+        val grouped = visible.groupBy { type ->
+            when (type) {
+                ActionType.APPLY_PROFILE, ActionType.WEBHOOK_GET, ActionType.WEBHOOK_POST -> IntegrationGroup
+                else -> type.group
+            }
+        }
+        val groups = grouped.mapNotNull { (group, types) ->
             val supported = types
                 .filter { hasProfiles || it.spec.kind != ValueKind.PROFILE }
                 .filter { runnableHere(context, it) }
                 .filter { type -> allow(allowed, type.name) { FirmwareSupport.isSupported(type, firmware) } }
             if (supported.isEmpty()) return@mapNotNull null
             Group(
-                label = context.getString(group.labelRes),
+                label = when (group) {
+                    IntegrationGroup -> context.getString(R.string.group_integration)
+                    is ActionGroup -> context.getString(group.labelRes)
+                    else -> error("Unknown action group")
+                },
                 entries = supported.map { type ->
                     // The "when stopped only" badge shows BEFORE the choice, not after: the
                     // user must know an action will not apply while moving at the moment they
                     // pick it.
-                    val note = if (type.gated) context.getString(R.string.editor_gated_hint) else null
-                    Entry(context.getString(type.labelRes), note) { onPick(type) }
+                    val note = when {
+                        type == ActionType.TUNE_RADIO -> context.getString(R.string.editor_radio_sequence_hint)
+                        type.gated -> context.getString(R.string.editor_gated_hint)
+                        else -> null
+                    }
+                    val label = if (type == ActionType.TUNE_RADIO)
+                        context.getString(R.string.editor_tune_and_play_radio)
+                    else context.getString(type.labelRes)
+                    Entry(label, note) { onPick(type) }
                 }
             )
         }
@@ -114,6 +133,9 @@ object CatalogPicker {
     }
 
     private class Group(val label: String, val entries: List<Entry>)
+
+    /** UI-only group: the shared catalogue remains the source of execution semantics. */
+    private data object IntegrationGroup
 
     private class Entry(val label: String, val note: String?, val onClick: () -> Unit)
 

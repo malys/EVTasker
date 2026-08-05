@@ -13,6 +13,9 @@
     <string name="config_section_language">LANGUAGE</string>
     <string name="config_section_rules_file">RULES FILE</string>
     <string name="config_rules_file_explain">Export writes every rule to a file on storage. Import replaces all current rules with those in the file.</string>
+    <string name="config_section_rule_editor">RULE EDITOR</string>
+    <string name="config_expert_rules">Expert mode</string>
+    <string name="config_expert_rules_explain">Allow Else if and Else branches when creating rules. Existing advanced rules always remain visible.</string>
 
     <!-- Catalogue groups -->
 
@@ -91,6 +94,9 @@
     <string name="editor_add_action">Add an action</string>
     <string name="editor_save">Save</string>
     <string name="editor_cancel">Cancel</string>
+    <string name="profile_automation_warning_title">Avoid duplicate profile automation</string>
+    <string name="profile_automation_warning_message">MG4Control is connected. Before using this profile action, disable MG4Control’s profile automations and automatic application of its default profile to prevent both apps from applying profiles at startup.</string>
+    <string name="editor_expert_branches_notice">Advanced branches from this rule remain editable. Enable Expert mode in Configuration to add more.</string>
     <string name="editor_name_required">Give the rule a name</string>
     <string name="editor_incomplete">At least one condition and one action are required</string>
     <string name="editor_save_failed">Save failed: the rule could not be written to storage. See the Console tab.</string>
@@ -108,6 +114,9 @@
     <string name="value_from">From</string>
     <string name="value_to">to</string>
     <string name="value_ok">Confirm</string>
+    <string name="group_integration">Integration</string>
+    <string name="editor_tune_and_play_radio">Tune and play radio</string>
+    <string name="editor_radio_sequence_hint">Tunes, waits 1 second, then plays</string>
     <string name="value_no_bt_devices">No paired Bluetooth device</string>
     <string name="value_no_contacts">No synchronized contact. Allow contact sharing on the paired phone.</string>
     <string name="value_contact_hint">Search a contact or number</string>
@@ -282,4 +291,15 @@
         <item quantity="other">%d cases</item>
     </plurals>
     <string name="editor_button_cases">A rule that names a button must name one in every case, and cannot have an “else”</string>
+    <string name="config_section_about">About</string>
+    <string name="about_action">About MG4 Tasker</string>
+    <string name="about_title">About MG4 Tasker</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_attribution">Author and maintainer: malys</string>
+    <string name="about_repository">github.com/malys/MG4Tasker</string>
+    <string name="about_made_with_love">Made with ❤ by malys</string>
+    <string name="about_logo_description">MG4 Tasker logo</string>
+    <string name="about_qr_description">QR code for the project repository</string>
+    <string name="about_version_unknown">unknown</string>
+    <string name="about_close">Close</string>
 </resources>

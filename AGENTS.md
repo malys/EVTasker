@@ -117,6 +117,9 @@ Diagnostic tab's *Vehicle services* row is what widens it.
 - **In-app console**: `AppLogger` ring buffer + Console screen, so the car is diagnosable
   without ADB.
 - **Atomic file writes**: temp file → rename over target. Never delete-then-write.
+- **Channel isolation**: stable has no network permission and no updater implementation;
+  unstable automatically downloads to private cache, verifies every redirect and the APK
+  certificate, then installs through `pm` and deletes the cached APK.
 - **Language**: English by default (code, comments, commits, docs). User strings in
   `values/` (English) + `values-fr/` (French).
 

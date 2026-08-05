@@ -302,6 +302,12 @@ repositories without a rename: `Theme.MG4<App>`, `Widget.MG4.*`, `Text.MG4.*`,
   `windowIsFloating=false`, `backgroundDimEnabled=false`. In landscape, a bottom sheet
   leaves a third of the height, which means one column and a scrollbar by the fifth entry.
   There is nothing behind a picker worth seeing.
+- A confirmation or warning with explanatory content is a **dedicated full-screen
+  window, never a popup**. Put its explicit confirm and cancel actions together at the
+  upper-right, consistently with the suite's editor windows, keep both at the 72dp touch
+  minimum, and let the content use all remaining space. Reserve a compact dialog for a
+  short, single-decision interruption whose complete message remains immediately readable
+  at 70 cm.
 
 ### Lists
 - Row height ≥ 72dp, `mg4_surface`, `spacing_sm` gaps. No swipe-to-delete: a gesture with

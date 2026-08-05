@@ -1,12 +1,10 @@
 package com.mg4.tasker.update
 
-import android.app.DownloadManager
 import android.content.Context
-import android.net.Uri
-import android.os.Environment
 import android.util.Log
 import org.json.JSONArray
 import java.io.File
+import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
@@ -29,6 +27,7 @@ import java.util.Locale
 object OtaUpdater {
 
     private const val TAG = "OtaUpdater"
+    private const val CACHE_PREFIX = "MG4Tasker-ota-"
     private const val RELEASES_API = "https://api.github.com/repos/malys/MG4Tasker/releases"
     private const val TIMEOUT_MS = 10_000
 
@@ -40,6 +39,14 @@ object OtaUpdater {
     )
 
     data class Update(val versionName: String, val apkUrl: String)
+
+    fun purgeCachedApks(context: Context) {
+        context.cacheDir.listFiles { file ->
+            file.isFile && file.name.startsWith(CACHE_PREFIX) && file.name.endsWith(".apk")
+        }?.forEach { file ->
+            if (!file.delete()) Log.w(TAG, "Could not purge cached OTA APK: ${file.name}")
+        }
+    }
 
     /**
      * True if [url] is https and points at an allowed host. Rejects http (including an
@@ -94,6 +101,7 @@ object OtaUpdater {
         var conn: HttpURLConnection? = null
         return try {
             conn = (URL(RELEASES_API).openConnection() as HttpURLConnection).apply {
+                instanceFollowRedirects = false
                 setRequestProperty("Accept", "application/vnd.github.v3+json")
                 setRequestProperty("User-Agent", "MG4Tasker-Android")
                 connectTimeout = TIMEOUT_MS; readTimeout = TIMEOUT_MS
@@ -140,7 +148,7 @@ object OtaUpdater {
     }
 
     /**
-     * Name the downloaded APK gets in public Downloads. The version comes from a remote asset
+     * Safe diagnostic name for the downloaded APK. The version comes from a remote asset
      * name, so it is reduced to a safe character set before it reaches a path. Callers looking for
      * an already-downloaded update must use this same name.
      */
@@ -151,22 +159,66 @@ object OtaUpdater {
     }
 
     /**
-     * Queues the download. The URL is re-checked here: a remote URL is never handed to a
-     * system component on the strength of an earlier check alone.
+     * Downloads into private cache. Every redirect URL is validated before it is followed.
      */
-    fun download(context: Context, update: Update) {
+    fun download(context: Context, update: Update): File? {
         if (!isAllowedUrl(update.apkUrl)) {
-            Log.w(TAG, "Refusing to download from ${update.apkUrl}"); return
+            Log.w(TAG, "Refusing to download from ${update.apkUrl}"); return null
         }
-        val fileName = downloadFileName(update.versionName)
-        val request = DownloadManager.Request(Uri.parse(update.apkUrl))
-            .setTitle("MG4Tasker ${update.versionName}")
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-            .setMimeType("application/vnd.android.package-archive")
-        (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
-        Log.i(TAG, "Update queued: $fileName")
+        val temporary = File.createTempFile(CACHE_PREFIX, ".apk", context.cacheDir)
+        val target = File(context.cacheDir, "$CACHE_PREFIX${java.util.UUID.randomUUID()}.apk")
+        var current = URL(update.apkUrl)
+        try {
+            repeat(6) {
+                if (!isAllowedUrl(current.toString())) return null
+                val connection = (current.openConnection() as HttpURLConnection).apply {
+                    instanceFollowRedirects = false
+                    connectTimeout = TIMEOUT_MS
+                    readTimeout = TIMEOUT_MS
+                    setRequestProperty("User-Agent", "MG4Tasker-Android")
+                }
+                try {
+                    val status = connection.responseCode
+                    if (status in 300..399) {
+                        val location = connection.getHeaderField("Location") ?: return null
+                        current = current.toURI().resolve(location).toURL()
+                        if (!isAllowedUrl(current.toString())) return null
+                    } else {
+                        if (status != HttpURLConnection.HTTP_OK) return null
+                        FileOutputStream(temporary).use { output ->
+                            connection.inputStream.use { input -> input.copyTo(output) }
+                            output.fd.sync()
+                        }
+                        if (!temporary.renameTo(target)) return null
+                        return target
+                    }
+                } finally { connection.disconnect() }
+            }
+            return null
+        } catch (e: Exception) {
+            Log.w(TAG, "Update download failed", e)
+            return null
+        } finally {
+            if (temporary.exists()) temporary.delete()
+        }
     }
+
+    fun install(context: Context, apk: File): Boolean {
+        if (!signatureMatchesRunningApp(context, apk)) return false
+        return try {
+            val process = ProcessBuilder("/system/bin/pm", "install", "-r", apk.absolutePath)
+                .redirectErrorStream(true).start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exitCode = process.waitFor()
+            installSucceeded(exitCode, output)
+        } catch (e: Exception) {
+            Log.w(TAG, "Update install failed", e)
+            false
+        }
+    }
+
+    fun installSucceeded(exitCode: Int, output: String): Boolean =
+        exitCode == 0 && output.contains("Success")
 
     /**
      * True if [apk] is signed by the same certificate as the running app. Fail closed: an

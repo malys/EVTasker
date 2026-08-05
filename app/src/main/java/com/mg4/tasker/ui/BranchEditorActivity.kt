@@ -9,6 +9,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.mg4.tasker.R
@@ -48,6 +49,7 @@ class BranchEditorActivity : AppCompatActivity() {
         private const val EXTRA_MATCH = "match"
         private const val EXTRA_CONDITIONS = "conditions"
         private const val EXTRA_ACTIONS = "actions"
+        private const val STATE_PROFILE_WARNING_ACTION = "profile_warning_action"
 
         /**
          * @param position 1-based rank of an "else if" among its peers, for the title. Ignored
@@ -89,6 +91,7 @@ class BranchEditorActivity : AppCompatActivity() {
 
     /** MG4Control profiles, loaded in the background: the bridge blocks, the editor must not. */
     private var profiles: List<Pair<String, String>> = emptyList()
+    private var mg4ControlDetected = false
     private var contacts: List<com.mg4.tasker.util.ContactDirectory.Entry> = emptyList()
 
     /** Real maximum media volume of the vehicle, if MG4Control could read it. */
@@ -107,10 +110,27 @@ class BranchEditorActivity : AppCompatActivity() {
      */
     private var snapshot: com.mg4.tasker.model.Snapshot? = null
 
+    /**
+     * The warning is a full-screen activity, so keep only the catalogue choice while it is
+     * visible. Rebuilding the edit lambda after the result also survives activity recreation.
+     */
+    private var actionAwaitingProfileWarning: ActionType? = null
+
+    private val profileWarning =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val type = actionAwaitingProfileWarning
+            actionAwaitingProfileWarning = null
+            if (result.resultCode == Activity.RESULT_OK && type != null) editNewAction(type)
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBranchEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        actionAwaitingProfileWarning = savedInstanceState
+            ?.getString(STATE_PROFILE_WARNING_ACTION)
+            ?.let { name -> ActionType.entries.firstOrNull { it.name == name } }
 
         kind = intent.getStringExtra(EXTRA_KIND)
             ?.let { name -> Kind.entries.firstOrNull { it.name == name } }
@@ -150,24 +170,11 @@ class BranchEditorActivity : AppCompatActivity() {
         }
         binding.addActionButton.setOnClickListener {
             CatalogPicker.pickAction(this, firmware) { type ->
-                withContactsIfNeeded(type) {
-                    val fresh = Action(type = type)
-                    if (type.spec.kind == ValueKind.NONE) {
-                        actions += fresh
-                        renderActions()
-                    } else {
-                        ValueEditorDialog.editAction(
-                            context = this,
-                            action = fresh,
-                            dynamicMax = mediaVolumeMax,
-                            profiles = profiles,
-                            contacts = contacts,
-                            currentValue = currentValue(type)
-                        ) { configured ->
-                            actions += configured
-                            renderActions()
-                        }
-                    }
+                if (type == ActionType.APPLY_PROFILE && mg4ControlDetected) {
+                    actionAwaitingProfileWarning = type
+                    profileWarning.launch(ProfileAutomationWarningActivity.intent(this))
+                } else {
+                    editNewAction(type)
                 }
             }
         }
@@ -177,6 +184,35 @@ class BranchEditorActivity : AppCompatActivity() {
         renderConditions()
         renderActions()
         loadVehicleContext()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        actionAwaitingProfileWarning?.let {
+            outState.putString(STATE_PROFILE_WARNING_ACTION, it.name)
+        }
+        super.onSaveInstanceState(outState)
+    }
+
+    private fun editNewAction(type: ActionType) {
+        withContactsIfNeeded(type) {
+            val fresh = Action(type = type)
+            if (type.spec.kind == ValueKind.NONE) {
+                actions += fresh
+                renderActions()
+            } else {
+                ValueEditorDialog.editAction(
+                    context = this,
+                    action = fresh,
+                    dynamicMax = mediaVolumeMax,
+                    profiles = profiles,
+                    contacts = contacts,
+                    currentValue = currentValue(type)
+                ) { configured ->
+                    actions += ActionBundles.expand(configured)
+                    renderActions()
+                }
+            }
+        }
     }
 
     /**
@@ -218,8 +254,10 @@ class BranchEditorActivity : AppCompatActivity() {
             val maxVolume = com.mg4.hardware.MG4Hardware.getMediaVolumeMax()
 
             val bridge = com.mg4.tasker.vehicle.ProfileBridge(this)
+            var bridgeConnected = false
             val loadedProfiles = try {
-                if (bridge.connect()) bridge.listProfiles() else emptyList()
+                bridgeConnected = bridge.connect()
+                if (bridgeConnected) bridge.listProfiles() else emptyList()
             } finally {
                 bridge.disconnect()
             }
@@ -233,6 +271,7 @@ class BranchEditorActivity : AppCompatActivity() {
 
             Handler(Looper.getMainLooper()).post {
                 profiles = loadedProfiles
+                mg4ControlDetected = bridgeConnected
                 contacts = loadedContacts
                 mediaVolumeMax = if (maxVolume >= 0) maxVolume else null
                 firmware = gen

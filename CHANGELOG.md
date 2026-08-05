@@ -35,6 +35,10 @@ All notable changes to this project are documented here. Format follows
 
 ### Changed
 
+- **Crash reporting and paste upload now come from MG4Hardware** (`com.mg4.hardware.diag`)
+  instead of being carried here. The crash report gains the cause chain and a truncation
+  that counts bytes rather than characters, so a report full of accented log lines no longer
+  overshoots its own ceiling. Nothing changes on screen.
 - **One "Call" action** instead of two. The same entry now takes a typed number or a name
   from the phone book; the field is both a search and a number entry. Rules saved with the
   old "Call a contact" action still load and still call — the entry is deprecated, not

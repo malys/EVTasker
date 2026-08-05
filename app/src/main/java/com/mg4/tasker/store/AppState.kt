@@ -13,6 +13,7 @@ object AppState {
     private const val PREFS = "mg4_tasker_settings"
     private const val KEY_AUTOMATION_ENABLED = "automation_enabled"
     private const val KEY_WRITE_THRESHOLD = "write_threshold_kmh"
+    private const val KEY_EXPERT_RULES_ENABLED = "expert_rules_enabled"
 
     fun isAutomationEnabled(context: Context): Boolean =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -21,6 +22,16 @@ object AppState {
     fun setAutomationEnabled(context: Context, enabled: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .edit().putBoolean(KEY_AUTOMATION_ENABLED, enabled).apply()
+    }
+
+    /** Controls editor affordances only; stored rules and engine behaviour never depend on it. */
+    fun areExpertRulesEnabled(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_EXPERT_RULES_ENABLED, false)
+
+    fun setExpertRulesEnabled(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit().putBoolean(KEY_EXPERT_RULES_ENABLED, enabled).apply()
     }
 
     /**

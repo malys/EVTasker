@@ -45,11 +45,6 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- The one network use: uploading a diagnostic report to a PrivateBin paste, on an
-         explicit user action from the Console tab. Nothing is sent in the background, and
-         the paste is encrypted client-side — the server never receives the key. -->
-    <uses-permission android:name="android.permission.INTERNET" />
-
     <!-- Optional MG4Control bridge (the "apply profile" action only). Signature-level,
          obtained solely because both APKs are signed with the same platform key. -->
     <uses-permission android:name="com.mg4.control.permission.CONTROL_PROFILES" />
@@ -112,6 +107,12 @@
             android:exported="false"
             android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Long profile-safety guidance needs the whole vehicle display, never a popup. -->
+        <activity
+            android:name=".ui.ProfileAutomationWarningActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
 
         <!-- Persistent vehicle service: inits MG4Hardware, listens for ignition, evaluates
              rules and applies actions directly. connectedDevice matches what it does. -->

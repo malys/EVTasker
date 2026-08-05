@@ -1,57 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Long, safety-relevant confirmations are dedicated full-screen windows. Their actions
+     stay at the upper-right like every other editor, while the explanation owns the
+     remaining landscape surface. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/mg4_background"
-    android:orientation="vertical"
-    android:padding="@dimen/spacing_lg">
+    android:orientation="vertical">
 
-    <!-- A full-screen value picker is still an editor screen: its escape and commit
-         actions stay in the same top-right position as the rule and branch editors. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/mg4_surface"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_md">
 
         <TextView
-            android:id="@+id/editorTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginEnd="@dimen/spacing_lg"
-            android:maxLines="1"
+            android:layout_weight="1"
             android:ellipsize="end"
-            android:textAppearance="@style/Text.MG4.Display" />
+            android:maxLines="2"
+            android:text="@string/profile_automation_warning_title"
+            android:textAppearance="@style/Text.MG4.Title" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/editorCancel"
+            android:id="@+id/warningCancel"
             style="@style/Widget.MG4.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/spacing_sm"
             android:text="@string/editor_cancel" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/editorSave"
+            android:id="@+id/warningConfirm"
             style="@style/Widget.MG4.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
             android:text="@string/value_ok" />
     </LinearLayout>
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/spacing_md"
-        android:text="@string/value_editor_instruction"
-        android:textAppearance="@style/Text.MG4.Secondary" />
-
-    <include
-        android:id="@+id/valueEditorContent"
-        layout="@layout/dialog_value_editor"
+        android:id="@+id/warningMessage"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:gravity="start|top"
+        android:padding="@dimen/spacing_lg"
+        android:text="@string/profile_automation_warning_message"
+        android:textAppearance="@style/Text.MG4.Body" />
 
 </LinearLayout>
