@@ -8,6 +8,7 @@
      becomes available (via its signature-protected bridge). That is the only capability
      that needs MG4Control. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:sharedUserId="android.uid.system">
 
     <!-- Vehicle access (Android Automotive / SAIC) — same set MG4Control uses. -->
@@ -33,6 +34,12 @@
     <!-- Bluetooth: paired list for the editor, and live connection tracking for rules. -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Reads which phone the head unit made hands-free, for the "hands-free phone"
+         condition. Granted by the platform signature; without it that one condition
+         reports as unreadable and nothing else changes. -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_PRIVILEGED"
+        tools:ignore="ProtectedPermissions" />
     <!-- Requested only when the user chooses "Call a contact". The OEM PBAP client
          publishes the paired phone's downloaded phone book through ContactsContract. -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />

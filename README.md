@@ -226,6 +226,16 @@ regeneration, energy saving), **energy** (battery level, charging, charge limit)
 (seat/steering heating, media volume, brightness), and **driver assistance** (AEB, ELK,
 ACC/TJA, limiter, TSR, overspeed, speed-limit tone, ADAS sound).
 
+Three Bluetooth conditions, and the difference between them is the whole point. **Phone
+connected** is a radio fact: it is true of a phone left indoors while the car is parked in
+front of the house, which is what made arrival rules fire on the driveway. **Phone on
+board** is only true of a device still connected once the car has actually driven, so a
+phone that stayed behind drops out of it — at the cost of being unreadable, and therefore
+unevaluable, until the first few hundred metres. **Hands-free phone** is the one the head
+unit chose to route calls through: available from the first second, and the way to tell two
+phones apart when both are in range. A rule that must act at ignition should use *phone
+connected* together with a vehicle signal (ignition, speed, not in park) instead.
+
 Actions cover **profile** application, **driving**, **comfort**, **climate** (on/off, target
 temperature, A/C, AUTO, recirculation, fan level, front and rear defrosters), **energy**
 (charge limit, allow charging, scheduled charging and its window, battery pre-heating),

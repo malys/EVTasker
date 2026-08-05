@@ -239,6 +239,8 @@
     <string name="diag_reason_vendor">servizio del veicolo non disponibile su quest’auto</string>
     <string name="diag_reason_no_navigation">nessuna app di navigazione</string>
     <string name="diag_reason_no_location">nessuna posizione disponibile</string>
+    <string name="diag_reason_not_driven_yet">l’auto non ha ancora viaggiato</string>
+    <string name="diag_reason_no_handsfree">telefono vivavoce illeggibile</string>
     <string name="paste_header">**Password:** `%1$s` · scade un’ora dopo l’invio.\n\nOspitato gratuitamente da [April](https://www.april.org) su %2$s. Se ti ha evitato un giro dal meccanico, [fai una donazione](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Finestrini e blocco</string>
     <string name="editor_trigger">Si attiva</string>

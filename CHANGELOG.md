@@ -8,6 +8,25 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **"Ask for a profile", an action that hands the choice back to the driver.** "Apply a
+  profile" decides alone, which is right for a rule that knows the answer and wrong for the
+  ones that do not: arriving at a charger, the profile to apply depends on what the driver
+  is about to do, and no condition reads that. The action asks MG4Control to open its own
+  profile picker, and the driver taps. It needs MG4Control like the profile action does, and
+  carries the same "when stopped only" mark — MG4Control refuses to put the picker in front
+  of a moving driver. A refusal is never deferred to the next standstill: a question shown
+  at the next red light would reach a driver who is no longer asking it.
+- **Two Bluetooth conditions that tell a phone in the car from a phone merely near it.**
+  "Phone connected" is a radio fact and answers yes for a phone left in the house while the
+  car is parked outside it, which made arrival rules fire on the driveway. **Phone on
+  board** is true only of a device still connected once the car has driven — a phone that
+  stayed behind has dropped off the link by then. It is unreadable, and so unevaluable,
+  until the car has actually moved; rules that must act at ignition should keep using
+  "phone connected" gated on a vehicle signal. **Hands-free phone** is the one the head
+  unit routes calls through: it answers from the first second and is what separates two
+  phones both in range. The diagnostic screen reports both, and says "the car has not
+  driven yet" rather than blaming the Bluetooth radio.
+
 - **"else if" and "else" cases in a rule.** Cases are tried in the order written and exactly
   one runs: the first whose conditions hold, or the "else" when none did. An unreadable
   condition stops the rule where it stands instead of falling through to the next case or to

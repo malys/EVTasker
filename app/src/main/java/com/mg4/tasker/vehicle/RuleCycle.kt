@@ -2,6 +2,7 @@ package com.mg4.tasker.vehicle
 
 import android.content.Context
 import com.mg4.hardware.AppLogger
+import com.mg4.hardware.MG4Hardware
 import com.mg4.tasker.engine.RuleEngine
 import com.mg4.tasker.store.HistoryStore
 import com.mg4.tasker.store.RuleStore
@@ -24,6 +25,42 @@ object BtTracker {
     fun observed(): Set<String> = macs.toSet()
 
     fun snapshot(context: Context): Set<String> = observed() + BtDevices.connected(context)
+}
+
+/**
+ * Which of the connected devices are actually **in** the car.
+ *
+ * Bluetooth reaches through a wall: a phone left in the house connects to a car parked in
+ * front of it, and every "when I arrive" rule fires on the driveway. Nothing in the stack
+ * measures distance, so the car measures it instead — a device still connected after the
+ * car has driven [MOVING_KMH] went with it, and one that stayed behind has dropped off by
+ * then. Sampled while the car moves ([sample]), intersected so that a device leaving the
+ * link at any point during the drive leaves the set for good.
+ *
+ * [onboard] is null until the car has actually moved, and the conditions built on it are
+ * then UNAVAILABLE rather than false — the same "unreadable ≠ absent" rule the rest of the
+ * engine follows. A rule that must act at ignition cannot use this and should not: at that
+ * moment the answer does not exist yet.
+ */
+object BtOnboard {
+
+    /** Above walking pace and above GPS-less speed noise: the car has left the driveway. */
+    private const val MOVING_KMH = 10f
+
+    @Volatile
+    private var onboard: Set<String>? = null
+
+    fun sample(context: Context) {
+        val speed = MG4Hardware.getVehicleSpeedKmh() ?: return
+        if (speed < MOVING_KMH) return
+        val connected = BtTracker.snapshot(context)
+        onboard = onboard?.intersect(connected) ?: connected
+    }
+
+    fun onboard(): Set<String>? = onboard
+
+    /** The drive is over; the next one has its own passengers. */
+    fun reset() { onboard = null }
 }
 
 /**
@@ -86,6 +123,8 @@ object RuleCycle {
             val baseSnapshot = VehicleReader.read(
                 btMacs = BtTracker.snapshot(context),
                 btAvailable = BtDevices.isAvailable(context),
+                btOnboardMacs = BtOnboard.onboard(),
+                btHandsFreeMacs = BtDevices.activeHandsFree(context),
                 fix = CarLocation.lastKnown(context)
             )
             val snapshot = baseSnapshot.copy(readings = baseSnapshot.readings + eventReadings)

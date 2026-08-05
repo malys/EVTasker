@@ -3,6 +3,7 @@ package com.mg4.tasker.util
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
 import android.content.Context
 import com.mg4.hardware.AppLogger
 
@@ -70,6 +71,33 @@ object BtDevices {
         } catch (e: SecurityException) {
             AppLogger.w(TAG, "connected(): BLUETOOTH_CONNECT denied — ${e.message}")
             emptySet()
+        }
+    }
+
+    /**
+     * MAC addresses the head unit has made active for hands-free, or null when unknowable.
+     *
+     * The distinction matters as much as everywhere else: an empty set means "the head unit
+     * has chosen no phone", null means "we could not ask", and only the second must leave a
+     * rule unevaluated rather than answering no.
+     *
+     * `BluetoothAdapter.getActiveDevices(int)` is a system API, reachable with the platform
+     * signature and BLUETOOTH_PRIVILEGED. Asked of the adapter rather than through a
+     * `BluetoothHeadset` proxy: the proxy is acquired asynchronously and would have to be
+     * held open for the life of the service to answer a question asked once per cycle.
+     */
+    fun activeHandsFree(context: Context): Set<String>? {
+        val adapter = adapter(context) ?: return null
+        return try {
+            if (!adapter.isEnabled) return null
+            val devices = BluetoothAdapter::class.java
+                .getMethod("getActiveDevices", Int::class.javaPrimitiveType)
+                .invoke(adapter, BluetoothProfile.HEADSET) as? List<*>
+                ?: return null
+            devices.filterIsInstance<BluetoothDevice>().map { it.address }.toSet()
+        } catch (e: Exception) {
+            AppLogger.d(TAG, "getActiveDevices() unreachable on this platform: ${e.message}")
+            null
         }
     }
 

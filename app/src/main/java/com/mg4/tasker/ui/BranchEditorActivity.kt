@@ -19,6 +19,7 @@ import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.Branch
 import com.mg4.tasker.model.Condition
 import com.mg4.tasker.model.MatchMode
+import com.mg4.hardware.catalog.ActionGroup
 import com.mg4.hardware.catalog.ActionType
 import com.mg4.hardware.catalog.ValueKind
 import com.mg4.tasker.util.BtDevices
@@ -170,7 +171,7 @@ class BranchEditorActivity : AppCompatActivity() {
         }
         binding.addActionButton.setOnClickListener {
             CatalogPicker.pickAction(this, firmware) { type ->
-                if (type == ActionType.APPLY_PROFILE && mg4ControlDetected) {
+                if (type.group == ActionGroup.PROFILE && mg4ControlDetected) {
                     actionAwaitingProfileWarning = type
                     profileWarning.launch(ProfileAutomationWarningActivity.intent(this))
                 } else {

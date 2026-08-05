@@ -59,8 +59,16 @@ object ConditionEvaluator {
         // irrelevant here — Bluetooth is context, not a vehicle signal.
         if (!s.btAvailable) return ConditionOutcome.UNAVAILABLE
         if (c.text.isBlank()) return ConditionOutcome.UNAVAILABLE
-        val connected = s.btMacs.any { it.equals(c.text, ignoreCase = true) }
-        return match(connected == c.flag)
+        // Three questions, not one. "Connected" is a radio fact and answers yes for a phone
+        // left in a house the car is parked beside; the other two are about which phone is
+        // actually travelling. A null set is "not knowable yet", never "no".
+        val macs = when (c.type) {
+            ConditionType.BT_DEVICE_ONBOARD -> s.btOnboardMacs ?: return ConditionOutcome.UNAVAILABLE
+            ConditionType.BT_DEVICE_HANDSFREE -> s.btHandsFreeMacs ?: return ConditionOutcome.UNAVAILABLE
+            else -> s.btMacs
+        }
+        val present = macs.any { it.equals(c.text, ignoreCase = true) }
+        return match(present == c.flag)
     }
 
     /**

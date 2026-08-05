@@ -101,6 +101,37 @@ class DiagnosticsTest {
     }
 
     @Test
+    fun `a car that has not driven says so instead of blaming the radio`() {
+        // The radio is on and a phone is connected; only "on board" is unanswerable, and a
+        // report saying "bluetooth off" would send the reader to the wrong switch.
+        val entries = Diagnostics.conditions(Snapshot(btMacs = setOf("AA:BB:CC:DD:EE:FF")), null)
+
+        assertEquals(
+            Diagnostics.Reason.NOT_DRIVEN_YET,
+            entry(entries, "BT_DEVICE_ONBOARD").reason
+        )
+        assertEquals(
+            Diagnostics.Reason.NO_HANDSFREE_INFO,
+            entry(entries, "BT_DEVICE_HANDSFREE").reason
+        )
+    }
+
+    @Test
+    fun `once the car has driven the onboard entry reports who came along`() {
+        val snapshot = Snapshot(
+            btMacs = setOf("AA:BB:CC:DD:EE:FF", "11:22:33:44:55:66"),
+            btOnboardMacs = setOf("AA:BB:CC:DD:EE:FF"),
+            btHandsFreeMacs = setOf("AA:BB:CC:DD:EE:FF")
+        )
+
+        val entries = Diagnostics.conditions(snapshot, null)
+
+        assertEquals(Diagnostics.Status.OK, entry(entries, "BT_DEVICE_ONBOARD").status)
+        assertEquals("AA:BB:CC:DD:EE:FF", entry(entries, "BT_DEVICE_ONBOARD").value)
+        assertEquals("AA:BB:CC:DD:EE:FF", entry(entries, "BT_DEVICE_HANDSFREE").value)
+    }
+
+    @Test
     fun `a readable condition the matrix excludes stays OK and is flagged hidden`() {
         // OUTSIDE_TEMP is annotated for every generation, so an unparsed generation is used
         // to exercise the flag without pinning the test to one firmware's annotations.
@@ -160,15 +191,21 @@ class DiagnosticsTest {
     }
 
     @Test
-    fun `the profile action distinguishes MG4Control absent from unreachable`() {
+    fun `the profile actions distinguish MG4Control absent from unreachable`() {
         val absent = Diagnostics.actions(allowed.copy(mg4ControlInstalled = false), FirmwareGen.SWI68)
         assertEquals(Diagnostics.Reason.NO_MG4CONTROL, entry(absent, "APPLY_PROFILE").reason)
+        // The picker lives in MG4Control too: without it there is no dialog to open.
+        assertEquals(Diagnostics.Reason.NO_MG4CONTROL, entry(absent, "SHOW_PROFILE_PICKER").reason)
 
         val unreachable =
             Diagnostics.actions(allowed.copy(profileBridgeReachable = false), FirmwareGen.SWI68)
         assertEquals(
             Diagnostics.Reason.MG4CONTROL_UNREACHABLE,
             entry(unreachable, "APPLY_PROFILE").reason
+        )
+        assertEquals(
+            Diagnostics.Reason.MG4CONTROL_UNREACHABLE,
+            entry(unreachable, "SHOW_PROFILE_PICKER").reason
         )
     }
 

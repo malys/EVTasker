@@ -25,6 +25,7 @@ class DeferredWritesTest {
 
     private val driveMode = Action(ActionType.SET_DRIVE_MODE, number = 1)
     private val profile = Action(ActionType.APPLY_PROFILE, text = "p1")
+    private val picker = Action(ActionType.SHOW_PROFILE_PICKER)
 
     private fun rule(vararg actions: Action) = Rule(
         id = "r1",
@@ -86,6 +87,18 @@ class DeferredWritesTest {
         val kept = DeferredWrites.refusalsIn(
             cycle(ActionResult(ActionType.APPLY_PROFILE, false, BridgeContract.VERDICT_MOVING)),
             listOf(rule(profile)),
+            now = 0L
+        )
+        assertTrue(kept.isEmpty())
+    }
+
+    @Test
+    fun `a profile picker is never deferred either`() {
+        // Same missing bind, plus a reason of its own: asked for at a charger and shown at
+        // the next red light, the question would reach a driver who is no longer asking it.
+        val kept = DeferredWrites.refusalsIn(
+            cycle(ActionResult(ActionType.SHOW_PROFILE_PICKER, false, BridgeContract.VERDICT_MOVING)),
+            listOf(rule(picker)),
             now = 0L
         )
         assertTrue(kept.isEmpty())

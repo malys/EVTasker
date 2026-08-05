@@ -6,6 +6,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
 import androidx.core.content.ContextCompat
 import com.mg4.hardware.AppLogger
@@ -15,6 +17,7 @@ import com.mg4.hardware.VehicleWriteGate
 import com.mg4.tasker.model.RuleTrigger
 import com.mg4.tasker.store.AppState
 import com.mg4.tasker.util.Notifier
+import com.mg4.tasker.vehicle.BtOnboard
 import com.mg4.tasker.vehicle.BtTracker
 import com.mg4.tasker.vehicle.DeferredWrites
 import com.mg4.tasker.vehicle.ProfileBridge
@@ -36,6 +39,14 @@ class TaskerVehicleService : Service() {
 
     companion object {
         private const val TAG = "MG4Tasker.Vehicle"
+        /**
+         * How often the moving car is asked which phones are still with it.
+         *
+         * Two binder reads (speed, connected devices) — cheap enough at this pace that the
+         * drive is sampled several times before the first junction, and rare enough that a
+         * long motorway leg costs nothing measurable.
+         */
+        private const val ONBOARD_SAMPLE_MS = 15_000L
         private const val HARDKEY_ACTION = "com.saic.keyevent.hardkey.report"
         private const val SYSTEMUI_HARDKEY_ACTION = "com.android.systemui.ACTION_HARD_KEY_EVENT"
         const val HARDKEY_PERMISSION = "com.mg4.tasker.permission.RECEIVE_HARDKEY"
@@ -64,6 +75,19 @@ class TaskerVehicleService : Service() {
     /** Last transition acted on, so a re-asserted ignition state does not re-run a cycle. */
     @Volatile
     private var lastTrigger: RuleTrigger? = null
+
+    /**
+     * Off the main thread: sampling reads the car and the Bluetooth stack over binder, and
+     * this service runs in the same process as the UI.
+     */
+    private val onboardThread = HandlerThread("mg4-tasker-onboard")
+    private lateinit var onboardHandler: Handler
+    private val onboardSampler = object : Runnable {
+        override fun run() {
+            BtOnboard.sample(this@TaskerVehicleService)
+            onboardHandler.postDelayed(this, ONBOARD_SAMPLE_MS)
+        }
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -97,9 +121,17 @@ class TaskerVehicleService : Service() {
         // The gate resets to standstill-only on every process start; hand it back the
         // threshold the user chose before any rule can be evaluated.
         AppState.applyWriteThreshold(this)
+        onboardThread.start()
+        onboardHandler = Handler(onboardThread.looper)
         registerBtReceiver()
         registerHardkeyReceiver()
         registerIgnitionListener()
+        // START_STICKY means this service can be recreated mid-drive. Waiting for the next
+        // IGNITION_ON would then leave the whole drive unsampled, and every "phone on board"
+        // rule unevaluable until the car had been switched off and on again.
+        if (MG4Hardware.getCurrentIgnitionState() == MG4Hardware.CarIgnitionItem.RUN) {
+            startOnboardSampling()
+        }
         warnIfMG4ControlPresent()
         isRunning = true
     }
@@ -112,6 +144,17 @@ class TaskerVehicleService : Service() {
         ignitionListener?.let { MG4Hardware.unregisterVehicleConditionListener(it) }
         btReceiver?.let { runCatching { unregisterReceiver(it) } }
         hardkeyReceiver?.let { runCatching { unregisterReceiver(it) } }
+        onboardHandler.removeCallbacks(onboardSampler)
+        onboardThread.quitSafely()
+    }
+
+    private fun startOnboardSampling() {
+        onboardHandler.removeCallbacks(onboardSampler)
+        onboardHandler.post(onboardSampler)
+    }
+
+    private fun stopOnboardSampling() {
+        onboardHandler.removeCallbacks(onboardSampler)
     }
 
     /**
@@ -136,6 +179,15 @@ class TaskerVehicleService : Service() {
                 // The drive is over: writes held back for a red light that never came do not
                 // belong to the next one.
                 if (trigger == RuleTrigger.IGNITION_OFF) DeferredWrites.clear()
+                // The onboard set is cleared when the next drive starts, not when this one
+                // ends: the IGNITION_OFF rules are precisely the ones that want to know
+                // whose phone made the trip, and they evaluate on a thread of their own.
+                if (trigger == RuleTrigger.IGNITION_ON) {
+                    BtOnboard.reset()
+                    startOnboardSampling()
+                } else {
+                    stopOnboardSampling()
+                }
                 if (AppState.isAutomationEnabled(this)) {
                     AppLogger.i(TAG, "Ignition $state → evaluating ${trigger.name} rules")
                     thread(name = "mg4-tasker-cycle") { RuleCycle.run(this, trigger.name) }

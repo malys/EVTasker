@@ -20,6 +20,22 @@ data class Snapshot(
      * phone is paired to the head unit.
      */
     val btAvailable: Boolean = true,
+    /**
+     * MAC addresses of devices that were still connected once the car had moved — the ones
+     * that are in it rather than merely in range of it.
+     *
+     * null until the car has driven: the answer does not exist yet, and the conditions
+     * built on it are then unavailable. An empty set is a real answer, "nobody's phone
+     * came along", and does make those conditions false.
+     */
+    val btOnboardMacs: Set<String>? = null,
+    /**
+     * MAC addresses the head unit made active for hands-free, null when unreadable.
+     *
+     * Same distinction once more: empty means the head unit chose no phone, null means the
+     * platform would not say.
+     */
+    val btHandsFreeMacs: Set<String>? = null,
     /** Minutes since midnight, local time. */
     val minutesOfDay: Int = 0,
     /** Current day, java.util.Calendar.MONDAY…SUNDAY values. */

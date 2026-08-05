@@ -24,4 +24,12 @@ interface IProfileControl {
      * "detail" String optional.
      */
     Bundle applyProfile(String profileId);
+
+    /**
+     * Shows MG4Control's profile picker overlay and leaves the choice to the driver.
+     * Same result keys as applyProfile. Refused while the car moves or when its speed is
+     * unreadable — the picker exists to apply a profile — and UNSUPPORTED when MG4Control
+     * holds no profile to offer.
+     */
+    Bundle showProfilePicker();
 }

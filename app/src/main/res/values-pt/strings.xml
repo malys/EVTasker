@@ -239,6 +239,8 @@
     <string name="diag_reason_vendor">serviço do veículo indisponível neste carro</string>
     <string name="diag_reason_no_navigation">nenhuma aplicação de navegação</string>
     <string name="diag_reason_no_location">nenhuma posição disponível</string>
+    <string name="diag_reason_not_driven_yet">o carro ainda não circulou</string>
+    <string name="diag_reason_no_handsfree">telefone mãos-livres ilegível</string>
     <string name="paste_header">**Palavra-passe:** `%1$s` · expira uma hora após o envio.\n\nAlojado gratuitamente pela [April](https://www.april.org) em %2$s. Se isto lhe poupou uma ida à oficina, [faça um donativo](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Vidros e trancamento</string>
     <string name="editor_trigger">Executa</string>

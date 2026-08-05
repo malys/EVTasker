@@ -250,7 +250,9 @@ class DiagnosticFragment : Fragment() {
                 (raw as? Int)?.let { DateFormatSymbols().weekdays.getOrNull(it) }
             type == ConditionType.ANY_BT_CONNECTED ->
                 getString(if (raw == true) R.string.diag_value_yes else R.string.diag_value_no)
-            type == ConditionType.BT_DEVICE_CONNECTED ->
+            type == ConditionType.BT_DEVICE_CONNECTED ||
+                type == ConditionType.BT_DEVICE_ONBOARD ||
+                type == ConditionType.BT_DEVICE_HANDSFREE ->
                 (raw as? String)?.ifBlank { getString(R.string.diag_value_none) }
             type.spec.kind == ValueKind.BOOL ->
                 getString(if (raw == true) R.string.value_enabled else R.string.value_disabled)
@@ -294,6 +296,8 @@ class DiagnosticFragment : Fragment() {
             Diagnostics.Reason.NO_VENDOR_SERVICE -> R.string.diag_reason_vendor
             Diagnostics.Reason.NO_NAVIGATION_APP -> R.string.diag_reason_no_navigation
             Diagnostics.Reason.NO_LOCATION -> R.string.diag_reason_no_location
+            Diagnostics.Reason.NOT_DRIVEN_YET -> R.string.diag_reason_not_driven_yet
+            Diagnostics.Reason.NO_HANDSFREE_INFO -> R.string.diag_reason_no_handsfree
             Diagnostics.Reason.LAYER_NOT_READY -> R.string.diag_reason_layer
             Diagnostics.Reason.GATE_MOVING -> R.string.verdict_moving
             Diagnostics.Reason.GATE_UNKNOWN_SPEED -> R.string.verdict_unknown_speed

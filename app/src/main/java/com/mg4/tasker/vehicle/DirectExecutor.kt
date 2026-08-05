@@ -33,9 +33,10 @@ import com.mg4.tasker.util.WebhookClient
  * primitives); the verdict reported here mirrors that decision so the history can explain a
  * refusal.
  *
- * The one exception is [ActionType.APPLY_PROFILE]: applying an MG4Control *profile* needs
- * MG4Control, so it goes through the optional [profileBridge]. Everything else works with
- * MG4Control absent.
+ * The exceptions are [ActionType.APPLY_PROFILE] and [ActionType.SHOW_PROFILE_PICKER]: an
+ * MG4Control *profile* — applied outright or offered to the driver — needs MG4Control, so
+ * both go through the optional [profileBridge]. Everything else works with MG4Control
+ * absent.
  */
 class DirectExecutor(
     private val context: Context,
@@ -55,6 +56,7 @@ class DirectExecutor(
         }
         return when (action.type) {
         ActionType.APPLY_PROFILE     -> applyProfile(action)
+        ActionType.SHOW_PROFILE_PICKER -> showProfilePicker(action)
         ActionType.LAUNCH_APP        -> launchApp(action)
         ActionType.SHOW_NOTIFICATION -> notify(action)
         ActionType.SPEAK_TEXT        -> speak(action)
@@ -154,6 +156,7 @@ class DirectExecutor(
             // so a failure is the app's own (no such profile, no such app, webhook refused) and
             // must be reported as that rather than as a vehicle that would not take the value.
             ActionType.APPLY_PROFILE,
+            ActionType.SHOW_PROFILE_PICKER,
             ActionType.LAUNCH_APP,
             ActionType.SHOW_NOTIFICATION,
             ActionType.SPEAK_TEXT,
@@ -209,6 +212,23 @@ class DirectExecutor(
             ?: return ActionResult(a.type, false, BridgeContract.VERDICT_NO_BRIDGE, "MG4Control not installed")
         if (a.text.isBlank()) return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no profile selected")
         val res = bridge.applyProfile(a.text)
+            ?: return ActionResult(a.type, false, BridgeContract.VERDICT_NO_BRIDGE, "MG4Control unreachable")
+        return ActionResult(
+            a.type,
+            ok = res.getBoolean(BridgeContract.KEY_OK, false),
+            verdict = res.getString(BridgeContract.KEY_VERDICT) ?: BridgeContract.VERDICT_ERROR,
+            detail = res.getString(BridgeContract.KEY_DETAIL)
+        )
+    }
+
+    /**
+     * The gate, the profile list and the overlay all live on MG4Control's side, so the
+     * verdict is whatever it answers — nothing is decided here beyond "no bridge".
+     */
+    private fun showProfilePicker(a: Action): ActionResult {
+        val bridge = profileBridge
+            ?: return ActionResult(a.type, false, BridgeContract.VERDICT_NO_BRIDGE, "MG4Control not installed")
+        val res = bridge.showProfilePicker()
             ?: return ActionResult(a.type, false, BridgeContract.VERDICT_NO_BRIDGE, "MG4Control unreachable")
         return ActionResult(
             a.type,

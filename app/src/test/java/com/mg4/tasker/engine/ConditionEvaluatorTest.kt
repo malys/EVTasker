@@ -143,6 +143,106 @@ class ConditionEvaluatorTest {
         assertEquals(ConditionOutcome.MATCH, ConditionEvaluator.evaluate(condition, snapshot))
     }
 
+    @Test
+    fun `le telephone reste a la maison il est connecte mais pas a bord`() {
+        // Le cas qui a motivé la condition : voiture garée devant la maison, le téléphone
+        // resté à l'intérieur est bien connecté, mais il n'a pas fait le trajet.
+        val mac = "AA:BB:CC:DD:EE:FF"
+        val snapshot = Snapshot(btMacs = setOf(mac), btOnboardMacs = setOf("11:22:33:44:55:66"))
+
+        assertEquals(
+            ConditionOutcome.MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.BT_DEVICE_CONNECTED, text = mac), snapshot)
+        )
+        assertEquals(
+            ConditionOutcome.NO_MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.BT_DEVICE_ONBOARD, text = mac), snapshot)
+        )
+    }
+
+    @Test
+    fun `deux telephones a portee seul celui embarque est a bord`() {
+        val inCar = "AA:BB:CC:DD:EE:FF"
+        val atHome = "11:22:33:44:55:66"
+        val snapshot = Snapshot(btMacs = setOf(inCar, atHome), btOnboardMacs = setOf(inCar))
+
+        assertEquals(
+            ConditionOutcome.MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.BT_DEVICE_ONBOARD, text = inCar), snapshot)
+        )
+        assertEquals(
+            ConditionOutcome.NO_MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.BT_DEVICE_ONBOARD, text = atHome), snapshot)
+        )
+    }
+
+    @Test
+    fun `avant d avoir roule le telephone a bord est indisponible et non faux`() {
+        // btOnboardMacs=null : la voiture n'a pas bougé, la question n'a pas encore de
+        // réponse. Répondre « non » ferait tirer toute règle « mon téléphone n'est pas là ».
+        val condition = Condition(ConditionType.BT_DEVICE_ONBOARD, text = "AA:BB:CC:DD:EE:FF")
+
+        assertEquals(
+            ConditionOutcome.UNAVAILABLE,
+            ConditionEvaluator.evaluate(condition, Snapshot(btMacs = setOf("AA:BB:CC:DD:EE:FF")))
+        )
+    }
+
+    @Test
+    fun `personne a bord apres avoir roule est faux et non indisponible`() {
+        // L'ensemble vide est une vraie réponse : la voiture a roulé, aucun téléphone n'a
+        // suivi. À distinguer du null ci-dessus.
+        val condition = Condition(ConditionType.BT_DEVICE_ONBOARD, text = "AA:BB:CC:DD:EE:FF")
+
+        assertEquals(
+            ConditionOutcome.NO_MATCH,
+            ConditionEvaluator.evaluate(condition, Snapshot(btOnboardMacs = emptySet()))
+        )
+    }
+
+    @Test
+    fun `le telephone mains-libres est celui que la voiture a choisi`() {
+        val driver = "AA:BB:CC:DD:EE:FF"
+        val passenger = "11:22:33:44:55:66"
+        val snapshot = Snapshot(
+            btMacs = setOf(driver, passenger),
+            btHandsFreeMacs = setOf(driver)
+        )
+
+        assertEquals(
+            ConditionOutcome.MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.BT_DEVICE_HANDSFREE, text = driver), snapshot)
+        )
+        assertEquals(
+            ConditionOutcome.NO_MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.BT_DEVICE_HANDSFREE, text = passenger), snapshot)
+        )
+    }
+
+    @Test
+    fun `mains-libres illisible est indisponible et non faux`() {
+        val condition = Condition(ConditionType.BT_DEVICE_HANDSFREE, text = "AA:BB:CC:DD:EE:FF")
+
+        assertEquals(
+            ConditionOutcome.UNAVAILABLE,
+            ConditionEvaluator.evaluate(condition, Snapshot(btMacs = setOf("AA:BB:CC:DD:EE:FF")))
+        )
+    }
+
+    @Test
+    fun `radio eteinte le telephone a bord est indisponible meme avec un trajet connu`() {
+        val mac = "AA:BB:CC:DD:EE:FF"
+        val condition = Condition(ConditionType.BT_DEVICE_ONBOARD, text = mac)
+
+        assertEquals(
+            ConditionOutcome.UNAVAILABLE,
+            ConditionEvaluator.evaluate(
+                condition,
+                Snapshot(btAvailable = false, btOnboardMacs = setOf(mac))
+            )
+        )
+    }
+
     // -------------------------------------------------------------------------
     // Position
     // -------------------------------------------------------------------------

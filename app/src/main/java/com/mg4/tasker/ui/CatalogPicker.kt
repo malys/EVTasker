@@ -68,19 +68,20 @@ object CatalogPicker {
 
     fun pickAction(context: Context, firmware: FirmwareGen?, onPick: (ActionType) -> Unit) {
         val allowed = SupportStore.supportedActions(context)
-        // Applying a profile is the one action that cannot work without MG4Control. Offering
-        // it with an empty profile list only produces a rule that fails at ignition.
+        // The profile actions are the ones that cannot work without MG4Control. Offering them
+        // with an empty profile list only produces a rule that fails at ignition.
         val hasProfiles = ProfileBridge.isMG4ControlInstalled(context)
         val visible = ActionType.entries.filterNot { it in CatalogVisibility.hiddenActions }
         val grouped = visible.groupBy { type ->
             when (type) {
-                ActionType.APPLY_PROFILE, ActionType.WEBHOOK_GET, ActionType.WEBHOOK_POST -> IntegrationGroup
+                ActionType.APPLY_PROFILE, ActionType.SHOW_PROFILE_PICKER,
+                ActionType.WEBHOOK_GET, ActionType.WEBHOOK_POST -> IntegrationGroup
                 else -> type.group
             }
         }
         val groups = grouped.mapNotNull { (group, types) ->
             val supported = types
-                .filter { hasProfiles || it.spec.kind != ValueKind.PROFILE }
+                .filter { hasProfiles || it.group != ActionGroup.PROFILE }
                 .filter { runnableHere(context, it) }
                 .filter { type -> allow(allowed, type.name) { FirmwareSupport.isSupported(type, firmware) } }
             if (supported.isEmpty()) return@mapNotNull null

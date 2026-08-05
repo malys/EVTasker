@@ -13,8 +13,9 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 /**
- * The **only** thing MG4Tasker still needs MG4Control for: applying an MG4Control driving
- * profile. Everything else is done directly through MG4Hardware.
+ * The **only** thing MG4Tasker still needs MG4Control for: MG4Control driving profiles —
+ * applying one, or handing the choice to the driver through MG4Control's own picker.
+ * Everything else is done directly through MG4Hardware.
  *
  * Binds MG4Control's signature-protected bridge on demand and unbinds after use. When
  * MG4Control is not installed (or a different signature), [connect] fails and every call
@@ -28,7 +29,7 @@ class ProfileBridge(private val context: Context) {
         private const val TAG = "MG4Tasker.Profile"
         private const val BIND_TIMEOUT_SECONDS = 8L
 
-        /** True if MG4Control is installed (the profile action depends on it). */
+        /** True if MG4Control is installed (the profile actions depend on it). */
         fun isMG4ControlInstalled(context: Context): Boolean = try {
             context.packageManager.getPackageInfo(BridgeContract.MG4CONTROL_PACKAGE, 0)
             true
@@ -89,5 +90,12 @@ class ProfileBridge(private val context: Context) {
         bridge?.applyProfile(profileId)
     } catch (e: Exception) {
         Log.w(TAG, "applyProfile failed: ${e.message}"); null
+    }
+
+    /** Asks MG4Control to put its profile picker in front of the driver. */
+    fun showProfilePicker(): Bundle? = try {
+        bridge?.showProfilePicker()
+    } catch (e: Exception) {
+        Log.w(TAG, "showProfilePicker failed: ${e.message}"); null
     }
 }

@@ -80,6 +80,10 @@ object Diagnostics {
         NO_NAVIGATION_APP,
         /** No location permission, or no fix recent enough to place the car. */
         NO_LOCATION,
+        /** The car has not moved yet, so no device can be called "on board". */
+        NOT_DRIVEN_YET,
+        /** The platform would not say which phone the head unit made hands-free. */
+        NO_HANDSFREE_INFO,
     }
 
     /**
@@ -177,18 +181,27 @@ object Diagnostics {
      * them would point whoever reads the report at the wrong subsystem.
      */
     private fun unavailableReason(type: ConditionType, snapshot: Snapshot): Reason = when {
+        // Order matters: with the radio off nothing is knowable, and saying "the car has
+        // not moved yet" would send the reader looking for a drive instead of a switch.
+        !snapshot.btAvailable && type in BLUETOOTH_CONDITIONS -> Reason.BLUETOOTH_OFF
+        type == ConditionType.BT_DEVICE_ONBOARD -> Reason.NOT_DRIVEN_YET
+        type == ConditionType.BT_DEVICE_HANDSFREE -> Reason.NO_HANDSFREE_INFO
         type in BLUETOOTH_CONDITIONS -> Reason.BLUETOOTH_OFF
         type == ConditionType.LOCATION_WITHIN -> Reason.NO_LOCATION
         !snapshot.bridgeAvailable -> Reason.LAYER_NOT_READY
         else -> Reason.NOT_READABLE
     }
 
-    private val BLUETOOTH_CONDITIONS =
-        setOf(ConditionType.BT_DEVICE_CONNECTED, ConditionType.ANY_BT_CONNECTED)
+    private val BLUETOOTH_CONDITIONS = setOf(
+        ConditionType.BT_DEVICE_CONNECTED,
+        ConditionType.ANY_BT_CONNECTED,
+        ConditionType.BT_DEVICE_ONBOARD,
+        ConditionType.BT_DEVICE_HANDSFREE
+    )
 
     /** The first check [com.mg4.tasker.vehicle.DirectExecutor] would fail on, in its own order. */
     private fun blockingReason(type: ActionType, caps: Capabilities): Reason = when (type) {
-        ActionType.APPLY_PROFILE -> when {
+        ActionType.APPLY_PROFILE, ActionType.SHOW_PROFILE_PICKER -> when {
             !caps.mg4ControlInstalled -> Reason.NO_MG4CONTROL
             !caps.profileBridgeReachable -> Reason.MG4CONTROL_UNREACHABLE
             else -> gateReason(type, caps)
@@ -252,7 +265,9 @@ object Diagnostics {
         type = type,
         op = CompareOp.EQ,
         text = when (type) {
-            ConditionType.BT_DEVICE_CONNECTED -> PROBE_MAC
+            ConditionType.BT_DEVICE_CONNECTED,
+            ConditionType.BT_DEVICE_ONBOARD,
+            ConditionType.BT_DEVICE_HANDSFREE -> PROBE_MAC
             ConditionType.LOCATION_WITHIN -> PROBE_POINT
             ConditionType.DATE -> java.time.LocalDate.now().toString()
             else -> ""
@@ -273,6 +288,11 @@ object Diagnostics {
         ConditionType.DATE -> snapshot.localDate
         ConditionType.ANY_BT_CONNECTED -> snapshot.btMacs.isNotEmpty()
         ConditionType.BT_DEVICE_CONNECTED -> snapshot.btMacs.sorted().joinToString(", ")
+        // Null never reaches here — an unavailable condition reports its reason instead —
+        // but the empty set does, and "connected, none of them travelling" is exactly the
+        // state a user misreads.
+        ConditionType.BT_DEVICE_ONBOARD -> snapshot.btOnboardMacs?.sorted()?.joinToString(", ")
+        ConditionType.BT_DEVICE_HANDSFREE -> snapshot.btHandsFreeMacs?.sorted()?.joinToString(", ")
         // Where the car thinks it is, which is the only way to tell a radius that is too
         // small from a fix that is simply wrong.
         ConditionType.LOCATION_WITHIN ->

@@ -22,7 +22,13 @@ import java.util.Calendar
  */
 object VehicleReader {
 
-    fun read(btMacs: Set<String>, btAvailable: Boolean, fix: CarLocation.Fix? = null): Snapshot {
+    fun read(
+        btMacs: Set<String>,
+        btAvailable: Boolean,
+        btOnboardMacs: Set<String>? = null,
+        btHandsFreeMacs: Set<String>? = null,
+        fix: CarLocation.Fix? = null
+    ): Snapshot {
         val calendar = Calendar.getInstance()
         val minutes = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
         val day = calendar.get(Calendar.DAY_OF_WEEK)
@@ -44,6 +50,8 @@ object VehicleReader {
                 readings = vendorReadings(),
                 btMacs = btMacs,
                 btAvailable = btAvailable,
+                btOnboardMacs = btOnboardMacs,
+                btHandsFreeMacs = btHandsFreeMacs,
                 minutesOfDay = minutes,
                 dayOfWeek = day,
                 localDate = date,
@@ -109,6 +117,8 @@ object VehicleReader {
             readings = readings,
             btMacs = btMacs,
             btAvailable = btAvailable,
+            btOnboardMacs = btOnboardMacs,
+            btHandsFreeMacs = btHandsFreeMacs,
             minutesOfDay = minutes,
             dayOfWeek = day,
             localDate = date,

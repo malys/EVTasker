@@ -100,10 +100,15 @@ object DeferredWrites {
             val rule = byId[ruleRun.ruleId] ?: return@flatMap emptyList()
             ruleRun.actionResults
                 .filter { it.isGateRefusal() }
-                // APPLY_PROFILE needs a live MG4Control bind belonging to the cycle that
-                // opened it; re-applying it later would mean holding that bind open for
-                // nothing. It stays refused.
-                .filter { it.actionType != ActionType.APPLY_PROFILE }
+                // The profile actions need a live MG4Control bind belonging to the cycle that
+                // opened it; re-applying one later would mean holding that bind open for
+                // nothing. And a picker deferred to the next standstill would appear long
+                // after the moment that asked for it, in front of a driver who is no longer
+                // expecting a question. Both stay refused.
+                .filter {
+                    it.actionType != ActionType.APPLY_PROFILE &&
+                        it.actionType != ActionType.SHOW_PROFILE_PICKER
+                }
                 .mapNotNull { result ->
                     // The branch that ran, not the rule's first one: a refusal from an
                     // "else if" or from the "else" has to be found where it came from.
