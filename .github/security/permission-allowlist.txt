@@ -28,6 +28,9 @@ android.permission.POST_NOTIFICATIONS
 # Paired list for the editor + live connection tracking (ACL) for context conditions.
 android.permission.BLUETOOTH
 android.permission.BLUETOOTH_CONNECT
+# Reads which phone the head unit made hands-free, for the "hands-free phone"
+# condition. Granted by the platform signature only.
+android.permission.BLUETOOTH_PRIVILEGED
 
 # --- Contacts ---
 # Read-only access, requested only while configuring "Call a contact". The OEM PBAP client
