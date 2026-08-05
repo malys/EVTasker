@@ -71,7 +71,7 @@ object CatalogPicker {
         // Applying a profile is the one action that cannot work without MG4Control. Offering
         // it with an empty profile list only produces a rule that fails at ignition.
         val hasProfiles = ProfileBridge.isMG4ControlInstalled(context)
-        val visible = ActionType.entries.filter { it != ActionType.PLAY_RADIO }
+        val visible = ActionType.entries.filterNot { it in CatalogVisibility.hiddenActions }
         val grouped = visible.groupBy { type ->
             when (type) {
                 ActionType.APPLY_PROFILE, ActionType.WEBHOOK_GET, ActionType.WEBHOOK_POST -> IntegrationGroup

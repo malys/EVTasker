@@ -110,10 +110,19 @@ class DiagnosticFragment : Fragment() {
         report = fresh
         binding.exportButton.isEnabled = true
 
-        val blocked = fresh.blockedConditions + fresh.blockedActions
+        // The report keeps every catalogue entry, the screen shows the ones the user can
+        // pick: a duplicate the picker never offers ([CatalogVisibility]) would otherwise
+        // appear here as a second radio and a second call entry.
+        val actions = fresh.actions.filterNot {
+            ActionType.valueOf(it.name) in CatalogVisibility.hiddenActions
+        }
+        // Counted from the rows actually listed, so the summary and the list cannot
+        // disagree over an entry that is not on screen.
+        val blockedActions = actions.count { !it.ok }
+        val blocked = fresh.blockedConditions + blockedActions
         binding.summaryStatus.text =
             if (blocked == 0) getString(R.string.diag_summary_ok)
-            else getString(R.string.diag_summary_blocked, fresh.blockedConditions, fresh.blockedActions)
+            else getString(R.string.diag_summary_blocked, fresh.blockedConditions, blockedActions)
         binding.summaryStatus.setTextColor(color(blocked == 0))
 
         binding.bridgeHint.visibility =
@@ -130,9 +139,9 @@ class DiagnosticFragment : Fragment() {
             }
 
             add(Row.Header(getString(R.string.diag_section_actions)))
-            fresh.actions.forEach { entry ->
+            actions.forEach { entry ->
                 val type = ActionType.valueOf(entry.name)
-                add(Row.Item(getString(type.labelRes), actionValue(entry), entry.ok))
+                add(Row.Item(actionLabel(type), actionValue(entry), entry.ok))
             }
         }
         binding.diagList.adapter = Adapter(rows)
@@ -265,6 +274,11 @@ class DiagnosticFragment : Fragment() {
         val label = type.spec.options.firstOrNull { it.value == value }?.let { getString(it.labelRes) }
         return if (label != null) "$label ($value)" else value.toString()
     }
+
+    /** Same wording as the picker: tuning a station also switches the source to the radio. */
+    private fun actionLabel(type: ActionType): String =
+        if (type == ActionType.TUNE_RADIO) getString(R.string.editor_tune_and_play_radio)
+        else getString(type.labelRes)
 
     private fun actionValue(entry: Diagnostics.Entry): String =
         if (entry.ok) getString(R.string.diag_action_ready) + hiddenSuffix(entry) else reason(entry)

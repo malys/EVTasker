@@ -35,6 +35,20 @@ All notable changes to this project are documented here. Format follows
 
 ### Changed
 
+- **The operator and the value of a condition are read at title size** (26sp) rather than
+  body. "is equal to" and the value next to it are the two words that decide what a
+  condition means, and they were the smallest text on the screen carrying them — in the
+  closed drop-down and in its open list alike.
+- **The picker and the Diagnostic tab no longer list an entry twice.** "Play the radio" is
+  not a choice — "Tune and play radio" expands into it — and "Call a contact" is the
+  deprecated alias kept for old saved rules. Both showed next to the entry they duplicate,
+  giving two radio actions and two call actions. They are hidden from the two screens the
+  driver reads, not from the engine or the exported debug report, where an imported rule can
+  still carry either one.
+- **The stored support record drops entries this build no longer defines.** It survives an
+  upgrade, and an upgrade can delete catalogue entries — the four `STAR_*_PRESS` conditions
+  became one `PHYSICAL_BUTTON`. Until the next check ran, the Diagnostic tab counted the
+  removed ones as supported.
 - **Crash reporting and paste upload now come from MG4Hardware** (`com.mg4.hardware.diag`)
   instead of being carried here. The crash report gains the cause chain and a truncation
   that counts bytes rather than characters, so a report full of accented log lines no longer

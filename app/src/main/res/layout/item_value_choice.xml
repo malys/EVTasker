@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Both the closed spinner and its dropdown rows. Title size rather than body: the
+     operator ("is equal to") and the chosen value are the two words that decide what a
+     condition means, and they were the smallest text on the screen that carries them. -->
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@android:id/text1"
     android:layout_width="match_parent"
@@ -7,4 +10,4 @@
     android:minHeight="@dimen/touch_target"
     android:paddingHorizontal="@dimen/spacing_md"
     android:textColor="@color/mg4_text_primary"
-    android:textSize="@dimen/text_body" />
+    android:textSize="@dimen/text_title" />
