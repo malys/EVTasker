@@ -23,6 +23,8 @@ object SupportStore {
     private const val KEY_TIME       = "checked_at"
     private const val KEY_CONDITIONS = "supported_conditions"
     private const val KEY_ACTIONS    = "supported_actions"
+    private const val KEY_DIAG_CONDITIONS = "diagnostic_blocked_conditions"
+    private const val KEY_DIAG_ACTIONS    = "diagnostic_blocked_actions"
 
     /** No record yet, or the record predates the current app version (annotations may have moved). */
     fun needsCheck(context: Context): Boolean {
@@ -47,6 +49,33 @@ object SupportStore {
 
     fun supportedActions(context: Context): Set<String>? =
         stored(context, KEY_ACTIONS)?.let { known(it, ActionType.entries.map { e -> e.name }) }
+
+    /**
+     * Records what the last diagnostic run found permanently blocked on this car.
+     *
+     * The firmware matrix above is a static table; this is the car answering for itself —
+     * which vendor services actually bound, whether a map app exists, whether the head unit
+     * reports a signal at all. The rule editor subtracts both, so an entry the Diagnostic tab
+     * reports as blocked is no longer offered two screens away.
+     *
+     * Overwritten on every run, so re-running the diagnostic after installing a map app or
+     * granting a permission is what brings the entries back.
+     */
+    fun saveDiagnostic(context: Context, conditions: Set<String>, actions: Set<String>) {
+        prefs(context).edit()
+            .putStringSet(KEY_DIAG_CONDITIONS, conditions)
+            .putStringSet(KEY_DIAG_ACTIONS, actions)
+            .apply()
+    }
+
+    /** ConditionType names the last diagnostic found blocked for a reason that will not change. */
+    fun diagnosticBlockedConditions(context: Context): Set<String> =
+        stored(context, KEY_DIAG_CONDITIONS)?.let { known(it, ConditionType.entries.map { e -> e.name }) }
+            ?: emptySet()
+
+    fun diagnosticBlockedActions(context: Context): Set<String> =
+        stored(context, KEY_DIAG_ACTIONS)?.let { known(it, ActionType.entries.map { e -> e.name }) }
+            ?: emptySet()
 
     private fun stored(context: Context, key: String): Set<String>? =
         prefs(context).takeIf { it.contains(key) }?.getStringSet(key, emptySet())?.toSet()

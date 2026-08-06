@@ -29,13 +29,25 @@ class ProfileBridge(private val context: Context) {
         private const val TAG = "MG4Tasker.Profile"
         private const val BIND_TIMEOUT_SECONDS = 8L
 
-        /** True if MG4Control is installed (the profile actions depend on it). */
-        fun isMG4ControlInstalled(context: Context): Boolean = try {
-            context.packageManager.getPackageInfo(BridgeContract.MG4CONTROL_PACKAGE, 0)
-            true
-        } catch (_: Exception) {
-            false
-        }
+        /** True if MG4Control is installed, under any of its channels (the profile actions depend on it). */
+        fun isMG4ControlInstalled(context: Context): Boolean = installedPackage(context) != null
+
+        /**
+         * The MG4Control application id present on this car, or null.
+         *
+         * Resolved rather than assumed: the offline and unstable builds carry a suffixed id
+         * and are the same app. Preference order is [BridgeContract.MG4CONTROL_PACKAGES] —
+         * with two channels installed, the stable one is the one bound.
+         */
+        fun installedPackage(context: Context): String? =
+            BridgeContract.MG4CONTROL_PACKAGES.firstOrNull { pkg ->
+                try {
+                    context.packageManager.getPackageInfo(pkg, 0)
+                    true
+                } catch (_: Exception) {
+                    false
+                }
+            }
     }
 
     private var bridge: IProfileControl? = null
@@ -43,7 +55,7 @@ class ProfileBridge(private val context: Context) {
 
     fun connect(): Boolean {
         if (bridge != null) return true
-        if (!isMG4ControlInstalled(context)) return false
+        val pkg = installedPackage(context) ?: return false
 
         val latch = CountDownLatch(1)
         val conn = object : ServiceConnection {
@@ -54,7 +66,7 @@ class ProfileBridge(private val context: Context) {
             override fun onNullBinding(name: ComponentName?) { latch.countDown() }
         }
         val intent = Intent().apply {
-            component = ComponentName(BridgeContract.MG4CONTROL_PACKAGE, BridgeContract.BRIDGE_SERVICE)
+            component = ComponentName(pkg, BridgeContract.BRIDGE_SERVICE)
         }
         val bound = try {
             context.bindService(intent, conn, Context.BIND_AUTO_CREATE)

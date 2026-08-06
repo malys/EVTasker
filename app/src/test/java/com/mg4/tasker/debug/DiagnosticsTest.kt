@@ -271,8 +271,7 @@ class DiagnosticsTest {
     fun `local webhook and delay actions do not depend on the vehicle layer`() {
         val entries = Diagnostics.actions(allowed.copy(vehicleLayerReady = false), FirmwareGen.SWI68)
 
-        assertEquals(Diagnostics.Status.OK, entry(entries, "WEBHOOK_GET").status)
-        assertEquals(Diagnostics.Status.OK, entry(entries, "WEBHOOK_POST").status)
+        assertEquals(Diagnostics.Status.OK, entry(entries, "WEBHOOK").status)
         assertEquals(Diagnostics.Status.OK, entry(entries, "DELAY").status)
     }
 
@@ -282,6 +281,43 @@ class DiagnosticsTest {
 
         assertEquals(Diagnostics.Reason.UNSUPPORTED_FIRMWARE, entry(entries, "PLAY_RADIO").reason)
         assertEquals(Diagnostics.Status.OK, entry(entries, "SHOW_NOTIFICATION").status)
+    }
+
+    /**
+     * The rule editor hides what the diagnostic blocked, but only for reasons that will still
+     * be true tomorrow. A verdict taken while the car happened to be moving must never remove
+     * an action from the picker.
+     */
+    @Test
+    fun `only verdicts about the car itself may hide a catalogue entry`() {
+        val structural = listOf(
+            Diagnostics.Reason.UNSUPPORTED_FIRMWARE,
+            Diagnostics.Reason.NO_VENDOR_SERVICE,
+            Diagnostics.Reason.NO_NAVIGATION_APP,
+            Diagnostics.Reason.NO_TTS_ENGINE,
+            Diagnostics.Reason.NO_MG4CONTROL,
+            Diagnostics.Reason.NOT_READABLE
+        )
+        val transient = listOf(
+            Diagnostics.Reason.NONE,
+            Diagnostics.Reason.GATE_MOVING,
+            Diagnostics.Reason.GATE_UNKNOWN_SPEED,
+            Diagnostics.Reason.BLUETOOTH_OFF,
+            Diagnostics.Reason.LAYER_NOT_READY,
+            Diagnostics.Reason.MG4CONTROL_UNREACHABLE,
+            Diagnostics.Reason.NOTIFICATIONS_OFF,
+            Diagnostics.Reason.NO_LOCATION,
+            Diagnostics.Reason.NOT_DRIVEN_YET,
+            Diagnostics.Reason.NO_HANDSFREE_INFO
+        )
+
+        structural.forEach { assertTrue("$it must hide", it.describesTheCar) }
+        transient.forEach { assertTrue("$it must not hide", !it.describesTheCar) }
+        // Every constant is accounted for, so a new reason cannot be added without deciding.
+        assertEquals(
+            Diagnostics.Reason.entries.toSet(),
+            (structural + transient).toSet()
+        )
     }
 
     /** No write can be probed without performing it, so an excluded firmware fails closed. */

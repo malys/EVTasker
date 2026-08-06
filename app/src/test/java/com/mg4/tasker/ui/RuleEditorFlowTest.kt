@@ -13,6 +13,7 @@ import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.Branch
 import com.mg4.tasker.model.Condition
 import com.mg4.tasker.model.Rule
+import com.mg4.tasker.store.AppState
 import com.mg4.tasker.store.RuleStore
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -159,5 +160,53 @@ class RuleEditorFlowTest {
         assertNotNull("rule was not persisted", saved)
         assertEquals(1, saved!!.elseIfBranches.size)
         assertEquals(listOf(Action(ActionType.SET_MEDIA_VOLUME, number = 8)), saved.otherwise)
+    }
+
+    @Test
+    fun `a new rule with expert mode off lands straight in the if case window`() {
+        val activity = Robolectric.buildActivity(
+            RuleEditorActivity::class.java, RuleEditorActivity.intentForNew(context())
+        ).setup().get()
+
+        val next = shadowOf(activity).peekNextStartedActivityForResult()
+        assertNotNull("did not open the if case window", next)
+        assertEquals(BranchEditorActivity::class.java.name, next!!.intent.component!!.className)
+    }
+
+    @Test
+    fun `a new rule with expert mode on stays on the case-shape screen`() {
+        AppState.setExpertRulesEnabled(context(), true)
+
+        val activity = Robolectric.buildActivity(
+            RuleEditorActivity::class.java, RuleEditorActivity.intentForNew(context())
+        ).setup().get()
+
+        assertEquals(
+            "expert mode must land on the case-shape screen, not skip past it",
+            null,
+            shadowOf(activity).peekNextStartedActivityForResult()
+        )
+    }
+
+    @Test
+    fun `editing a branched rule with expert mode off still shows the case-shape screen`() {
+        val store = RuleStore(context())
+        val rule = Rule(
+            name = "cases",
+            conditions = listOf(Condition(ConditionType.IN_PARK, flag = true)),
+            actions = listOf(Action(ActionType.SET_ONE_PEDAL)),
+            elseActions = listOf(Action(ActionType.SET_MEDIA_VOLUME, number = 8))
+        )
+        assertEquals(RuleStore.SaveResult.OK, store.save(rule))
+
+        val activity = Robolectric.buildActivity(
+            RuleEditorActivity::class.java, RuleEditorActivity.intentForEdit(context(), rule.id)
+        ).setup().get()
+
+        assertEquals(
+            "an existing else must stay reachable, not be skipped past",
+            null,
+            shadowOf(activity).peekNextStartedActivityForResult()
+        )
     }
 }

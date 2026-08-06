@@ -18,6 +18,7 @@ import com.mg4.tasker.util.BtDevices
 import com.mg4.tasker.util.CarLocation
 import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.util.SpeechEngines
+import com.mg4.tasker.vehicle.BtOnboard
 import com.mg4.tasker.vehicle.BtTracker
 import com.mg4.tasker.vehicle.DeferredWrites
 import com.mg4.tasker.vehicle.VendorServices
@@ -115,9 +116,15 @@ object DiagnosticProbe {
         // right after boot is also what gets them connected for the next rule cycle.
         VendorServices.connect(appContext)
         val fix = CarLocation.lastKnown(appContext)
+        // The two Bluetooth sets are read here for the same reason as the rest of the
+        // snapshot: left out, they arrived null and the diagnostic reported the "on board"
+        // and "hands-free" conditions as blocked on every car, including the ones where a
+        // rule using them evaluates perfectly well.
         val snapshot = VehicleReader.read(
             btMacs = BtTracker.snapshot(appContext),
             btAvailable = BtDevices.isAvailable(appContext),
+            btOnboardMacs = BtOnboard.onboard(appContext),
+            btHandsFreeMacs = BtDevices.activeHandsFree(appContext),
             fix = fix
         )
 
@@ -141,16 +148,32 @@ object DiagnosticProbe {
             navigationApp = hasNavigationApp(appContext),
         )
 
+        val conditions = Diagnostics.conditions(snapshot, gen)
+        val actions = Diagnostics.actions(caps, gen)
+        // The editor reads this back, so what the Diagnostic tab calls blocked is no longer
+        // offered in the pickers. Only the verdicts that describe the car are kept — see
+        // Diagnostics.Reason.describesTheCar.
+        SupportStore.saveDiagnostic(
+            appContext,
+            conditions = structurallyBlocked(conditions),
+            actions = structurallyBlocked(actions),
+        )
+
         return Report(
             at = System.currentTimeMillis(),
             firmwareGen = genName,
             appVersion = "${com.mg4.tasker.BuildConfig.VERSION_NAME} (${com.mg4.tasker.BuildConfig.VERSION_CODE})",
             capabilities = caps,
             environment = environment(appContext, caps, gen?.name, engines, snapshot, fix),
-            conditions = Diagnostics.conditions(snapshot, gen),
-            actions = Diagnostics.actions(caps, gen),
+            conditions = conditions,
+            actions = actions,
         )
     }
+
+    private fun structurallyBlocked(entries: List<Diagnostics.Entry>): Set<String> =
+        entries.filter { it.status == Diagnostics.Status.BLOCKED && it.reason.describesTheCar }
+            .map { it.name }
+            .toSet()
 
     private fun environment(
         context: Context,
@@ -237,13 +260,13 @@ object DiagnosticProbe {
     }
 
     /** Whether any activity answers a `geo:` intent — what NAVIGATE_TO needs to exist. */
-    private fun hasNavigationApp(context: Context): Boolean {
-        val intent = android.content.Intent(
-            android.content.Intent.ACTION_VIEW,
-            android.net.Uri.parse("geo:0,0?q=test")
-        )
-        return intent.resolveActivity(context.packageManager) != null
-    }
+    /**
+     * A `geo:` resolver is not the question — the MG4's map app has no such filter, and this
+     * reported "no navigation app" on a car whose home screen shows one. Asks [MapApps],
+     * which is also what actually opens it.
+     */
+    private fun hasNavigationApp(context: Context): Boolean =
+        com.mg4.tasker.util.MapApps.isAvailable(context)
 
     private fun gateVerdict(): String =
         when (VehicleWriteGate.decideNow()) {

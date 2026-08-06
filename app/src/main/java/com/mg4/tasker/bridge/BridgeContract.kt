@@ -12,7 +12,23 @@ package com.mg4.tasker.bridge
  */
 object BridgeContract {
 
-    const val MG4CONTROL_PACKAGE = "com.mg4.control"
+    /**
+     * Every application id MG4Control ships under, most "official" first.
+     *
+     * The suffixes come from MG4Control's own flavors — `.offline` for the build with no
+     * network code, `.unstable` for pre-releases — and they install side by side. Looking
+     * only for the stable id reported "MG4Control not installed" on a car that had it, which
+     * removed the profile actions and the profile picker from the rule editor entirely.
+     *
+     * The service class name does not carry the suffix: only the application id does.
+     */
+    val MG4CONTROL_PACKAGES = listOf(
+        "com.mg4.control",
+        "com.mg4.control.offline",
+        "com.mg4.control.unstable",
+        "com.mg4.control.offline.unstable"
+    )
+
     const val BRIDGE_SERVICE     = "com.mg4.control.api.ProfileControlService"
     const val PERMISSION_BRIDGE  = "com.mg4.control.permission.CONTROL_PROFILES"
 

@@ -37,10 +37,16 @@ object BtTracker {
  * then. Sampled while the car moves ([sample]), intersected so that a device leaving the
  * link at any point during the drive leaves the set for good.
  *
- * [onboard] is null until the car has actually moved, and the conditions built on it are
- * then UNAVAILABLE rather than false — the same "unreadable ≠ absent" rule the rest of the
- * engine follows. A rule that must act at ignition cannot use this and should not: at that
- * moment the answer does not exist yet.
+ * That answer is the accurate one, and it is also the one that does not exist yet at
+ * ignition — which is when most rules run. Reporting UNAVAILABLE there made the condition
+ * look broken: on a car whose speed is unreadable it never resolved at all, and on every
+ * other one it stayed unanswerable for the first minute of every drive.
+ *
+ * So before the car has moved, [onboard] falls back to the device the head unit has itself
+ * made active ([BtDevices.activeHandsFree]) — the phone it routes calls and media through.
+ * That is the closest thing the platform offers to "the strongest link", and unlike a plain
+ * connection it is a choice the car made among the phones in range. Null is still returned
+ * when even that is unknowable, so "unreadable ≠ absent" continues to hold.
  */
 object BtOnboard {
 
@@ -48,19 +54,31 @@ object BtOnboard {
     private const val MOVING_KMH = 10f
 
     @Volatile
-    private var onboard: Set<String>? = null
+    private var driven: Set<String>? = null
 
     fun sample(context: Context) {
         val speed = MG4Hardware.getVehicleSpeedKmh() ?: return
         if (speed < MOVING_KMH) return
         val connected = BtTracker.snapshot(context)
-        onboard = onboard?.intersect(connected) ?: connected
+        driven = driven?.intersect(connected) ?: connected
     }
 
-    fun onboard(): Set<String>? = onboard
+    /**
+     * The on-board set, best source first. Null only when nothing can be said at all.
+     *
+     * The active device is intersected with what is actually connected: the stack keeps
+     * naming the last active phone for a while after it has gone, and a MAC that is no
+     * longer linked is not on board.
+     */
+    fun onboard(context: Context): Set<String>? {
+        driven?.let { return it }
+        if (!BtDevices.isAvailable(context)) return null
+        val active = BtDevices.activeHandsFree(context) ?: return null
+        return active.intersect(BtTracker.snapshot(context))
+    }
 
     /** The drive is over; the next one has its own passengers. */
-    fun reset() { onboard = null }
+    fun reset() { driven = null }
 }
 
 /**
@@ -123,7 +141,7 @@ object RuleCycle {
             val baseSnapshot = VehicleReader.read(
                 btMacs = BtTracker.snapshot(context),
                 btAvailable = BtDevices.isAvailable(context),
-                btOnboardMacs = BtOnboard.onboard(),
+                btOnboardMacs = BtOnboard.onboard(context),
                 btHandsFreeMacs = BtDevices.activeHandsFree(context),
                 fix = CarLocation.lastKnown(context)
             )

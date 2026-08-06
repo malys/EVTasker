@@ -62,7 +62,14 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <!-- Every MG4Control channel: the offline and unstable builds carry a suffixed
+             application id and are the same app. Declaring only the stable id made
+             MG4Control invisible on a car that had it, and the profile actions vanished
+             from the rule editor with it. -->
         <package android:name="com.mg4.control" />
+        <package android:name="com.mg4.control.offline" />
+        <package android:name="com.mg4.control.unstable" />
+        <package android:name="com.mg4.control.offline.unstable" />
         <!-- API 30+: without this the TTS engine is invisible and the "speak" action
              would report "no speech engine" on a car that has one installed. -->
         <intent>
@@ -76,6 +83,13 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="google.navigation" />
         </intent>
+        <!-- The head unit's own map apps. They publish no geo: filter, so the intent
+             declarations above never see them and "Open map" resolved to nothing. Names
+             taken from the vendor launcher and its navigation widget. -->
+        <package android:name="com.saicmotor.navigation" />
+        <package android:name="com.telenav.app.arp" />
+        <package android:name="com.nng.igo.primong" />
+        <package android:name="com.mmi.navimaps_auto" />
     </queries>
 
     <application

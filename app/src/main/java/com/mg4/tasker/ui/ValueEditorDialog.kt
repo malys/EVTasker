@@ -6,6 +6,7 @@ import android.content.Context
 import android.util.TypedValue
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.chip.Chip
 import com.mg4.tasker.R
@@ -469,7 +470,22 @@ object ValueEditorDialog {
                     android.text.InputType.TYPE_TEXT_VARIATION_URI
                 binding.textInput.setText(initialText)
                 binding.textInput.addTextChangedListener { text = it.trim() }
-                binding.payloadBlock.visibility = View.VISIBLE
+
+                // The body only makes sense for POST — GET carries no request body — so it
+                // stays hidden until the switch says POST.
+                fun verbLabel(isPost: Boolean) = context.getString(
+                    if (isPost) R.string.value_webhook_method_post else R.string.value_webhook_method_get
+                )
+                binding.boolSwitch.visibility = View.VISIBLE
+                binding.boolSwitch.isChecked = initialFlag
+                binding.boolSwitch.setText(verbLabel(initialFlag))
+                binding.payloadBlock.visibility = if (initialFlag) View.VISIBLE else View.GONE
+                binding.boolSwitch.setOnCheckedChangeListener { view, checked ->
+                    flag = checked
+                    view.setText(verbLabel(checked))
+                    binding.payloadBlock.visibility = if (checked) View.VISIBLE else View.GONE
+                }
+
                 binding.payloadInput.setText(initialPayload)
                 binding.payloadInput.addTextChangedListener { payload = it }
             }
@@ -502,14 +518,11 @@ object ValueEditorDialog {
                 }
                 binding.locationMap.setOnClickListener {
                     val centre = text.ifBlank { currentPoint.orEmpty() }
-                    val point = ConditionEvaluator.parsePoint(centre)
-                    val uri = if (point != null) {
-                        android.net.Uri.parse("geo:${point.first},${point.second}?q=${point.first},${point.second}")
-                    } else {
-                        android.net.Uri.parse("geo:0,0?q=${android.net.Uri.encode(centre)}")
-                    }
-                    runCatching {
-                        context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, uri))
+                    // The button did nothing at all on the car: the MG4's map app publishes no
+                    // geo: filter, and the failure was swallowed. MapApps falls back to the
+                    // explicit component the head unit's own launcher uses.
+                    if (com.mg4.tasker.util.MapApps.open(context, centre) == null) {
+                        Toast.makeText(context, R.string.value_location_map_none, Toast.LENGTH_SHORT).show()
                     }
                 }
 

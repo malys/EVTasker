@@ -2,7 +2,6 @@ package com.mg4.tasker.vehicle
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import com.mg4.hardware.FirmwareInfo
 import com.mg4.hardware.FirmwareSupport
@@ -19,10 +18,10 @@ import com.mg4.hardware.saic.SaicVehicleControl
 import com.mg4.tasker.bridge.BridgeContract
 import com.mg4.tasker.engine.ActionCompatibility
 import com.mg4.tasker.engine.ActionExecutor
-import com.mg4.tasker.engine.ConditionEvaluator
 import com.mg4.tasker.model.Action
 import com.mg4.tasker.model.ActionResult
 import com.mg4.hardware.catalog.ActionType
+import com.mg4.tasker.util.EmulatorDetector
 import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.util.Speaker
 import com.mg4.tasker.util.WebhookClient
@@ -46,7 +45,11 @@ class DirectExecutor(
     override fun execute(action: Action): ActionResult {
         val generationName = FirmwareInfo.getGeneration().name
         val generation = FirmwareSupport.parse(generationName)
-        if (!ActionCompatibility.isConfirmed(action.type, generation)) {
+        // No emulator image runs SAIC firmware, so `generation` never resolves there and this
+        // gate would refuse every gated action before MG4Hardware even gets a chance to run.
+        // Bypass it on an emulator so the action reaches MG4Hardware for real — see
+        // EmulatorDetector's doc for what that actually exercises on each AVD profile.
+        if (!EmulatorDetector.isEmulator() && !ActionCompatibility.isConfirmed(action.type, generation)) {
             return ActionResult(
                 action.type,
                 false,
@@ -61,8 +64,7 @@ class DirectExecutor(
         ActionType.SHOW_NOTIFICATION -> notify(action)
         ActionType.SPEAK_TEXT        -> speak(action)
         ActionType.NAVIGATE_TO       -> navigate(action)
-        ActionType.WEBHOOK_GET       -> webhook(action, "GET")
-        ActionType.WEBHOOK_POST      -> webhook(action, "POST")
+        ActionType.WEBHOOK           -> webhook(action, if (action.flag) "POST" else "GET")
         ActionType.TUNE_RADIO        -> tuneRadio(action)
         else                         -> applyVehicle(action)
         }
@@ -161,8 +163,7 @@ class DirectExecutor(
             ActionType.SHOW_NOTIFICATION,
             ActionType.SPEAK_TEXT,
             ActionType.NAVIGATE_TO,
-            ActionType.WEBHOOK_GET,
-            ActionType.WEBHOOK_POST,
+            ActionType.WEBHOOK,
             // TUNE_RADIO is a vehicle write, but it carries a frequency the driver typed, and
             // "103,5 FM" that parsed to nothing must be reported as that rather than as a radio
             // that refused.
@@ -267,27 +268,14 @@ class DirectExecutor(
         if (a.text.isBlank()) {
             return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no destination")
         }
-        val point = ConditionEvaluator.parsePoint(a.text)
-        val encoded = Uri.encode(a.text)
-        val uris = if (point != null) {
-            val (lat, lon) = point
-            listOf("geo:$lat,$lon?q=$lat,$lon", "google.navigation:q=$lat,$lon")
+        // The URI intents come first and carry the destination; the head unit's own map app
+        // has no geo: filter, so MapApps ends with an explicit component. See MapApps.
+        val opened = com.mg4.tasker.util.MapApps.open(context, a.text)
+        return if (opened != null) {
+            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, opened)
         } else {
-            listOf("geo:0,0?q=$encoded", "google.navigation:q=$encoded")
+            ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no navigation app")
         }
-        for (uri in uris) {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            if (intent.resolveActivity(context.packageManager) == null) continue
-            return try {
-                context.startActivity(intent)
-                ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, uri)
-            } catch (e: Exception) {
-                Log.w("MG4Tasker.Exec", "navigate($uri): ${e.message}")
-                ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, e.message)
-            }
-        }
-        return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no navigation app")
     }
 
     private fun webhook(a: Action, method: String): ActionResult {

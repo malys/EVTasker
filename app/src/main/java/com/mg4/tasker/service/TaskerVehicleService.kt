@@ -16,6 +16,7 @@ import com.mg4.hardware.PhysicalButtonEventDecoder
 import com.mg4.hardware.VehicleWriteGate
 import com.mg4.tasker.model.RuleTrigger
 import com.mg4.tasker.store.AppState
+import com.mg4.tasker.util.BtDevices
 import com.mg4.tasker.util.Notifier
 import com.mg4.tasker.vehicle.BtOnboard
 import com.mg4.tasker.vehicle.BtTracker
@@ -123,16 +124,29 @@ class TaskerVehicleService : Service() {
         AppState.applyWriteThreshold(this)
         onboardThread.start()
         onboardHandler = Handler(onboardThread.looper)
+        // The Bluetooth profile proxies answer on a callback, so the first question asked of
+        // them cannot be answered. Asked for here, they are ready long before the first rule
+        // cycle — which is the cycle that decides whose phone is on board.
+        BtDevices.warmUp(applicationContext)
         registerBtReceiver()
         registerHardkeyReceiver()
         registerIgnitionListener()
         // START_STICKY means this service can be recreated mid-drive. Waiting for the next
         // IGNITION_ON would then leave the whole drive unsampled, and every "phone on board"
         // rule unevaluable until the car had been switched off and on again.
-        if (MG4Hardware.getCurrentIgnitionState() == MG4Hardware.CarIgnitionItem.RUN) {
+        // IgnitionState, not CarIgnitionItem: getCurrentIgnitionState() answers on the AAOS
+        // scale, where 2 means OFF — the very value CarIgnitionItem calls RUN. The mistake
+        // was invisible while the property was unreadable on SWI68 and the comparison could
+        // only ever be false; now that the reader falls back to Katman5, it would have
+        // started sampling on a car that had just been switched off.
+        if (MG4Hardware.getCurrentIgnitionState() == MG4Hardware.IgnitionState.ON) {
             startOnboardSampling()
         }
-        warnIfMG4ControlPresent()
+        // No "MG4Control is also installed" notification here any more. It fired on every
+        // service start on the cars where the two apps are meant to run together, and it said
+        // less than the rule editor already does: the profile actions carry the coexistence
+        // warning at the moment it matters, when one is picked.
+        logMG4ControlPresence()
         isRunning = true
     }
 
@@ -259,10 +273,9 @@ class TaskerVehicleService : Service() {
         )
     }
 
-    private fun warnIfMG4ControlPresent() {
-        if (ProfileBridge.isMG4ControlInstalled(this)) {
-            AppLogger.w(TAG, "MG4Control is installed — both apps can write the vehicle")
-            Notifier.showRuleMessage(this, getString(com.mg4.tasker.R.string.warn_mg4control_present))
-        }
+    /** Kept in the log — the exported debug report still has to say which apps share the car. */
+    private fun logMG4ControlPresence() {
+        val pkg = ProfileBridge.installedPackage(this) ?: return
+        AppLogger.i(TAG, "MG4Control present ($pkg) — both apps can write the vehicle")
     }
 }

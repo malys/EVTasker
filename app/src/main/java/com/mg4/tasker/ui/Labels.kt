@@ -106,7 +106,7 @@ class Labels(
                 "$name : ${action.text}"
 
             ValueKind.WEBHOOK ->
-                "$name : ${action.text}"
+                "$name (${if (action.flag) "POST" else "GET"}) : ${action.text}"
 
             ValueKind.CONTACT ->
                 "$name : ${action.displayName ?: action.text}"

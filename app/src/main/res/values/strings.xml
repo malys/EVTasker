@@ -234,7 +234,6 @@
     <string name="console_crash_show">Show report</string>
     <string name="console_crash_dismiss">Dismiss</string>
 
-    <string name="warn_mg4control_present">MG4Control is also installed — both apps can change vehicle settings.</string>
 
     <!-- Notifications -->
     <string name="channel_name">MG4Tasker</string>
@@ -242,7 +241,10 @@
     <string name="value_location_hint">latitude, longitude</string>
     <string name="value_location_current">Use current position</string>
     <string name="value_location_map">Open map</string>
+    <string name="value_location_map_none">No map application on this head unit</string>
     <string name="value_webhook_url">HTTPS webhook URL</string>
+    <string name="value_webhook_method_get">GET</string>
+    <string name="value_webhook_method_post">POST</string>
     <string name="value_webhook_body">POST body (optional)</string>
     <string name="rules_threshold_standstill">Apply only when stopped</string>
     <string name="rules_threshold_value">Apply up to %1$d km/h</string>
@@ -256,7 +258,7 @@
     <string name="diag_reason_vendor">vehicle service unavailable on this car</string>
     <string name="diag_reason_no_navigation">no navigation app</string>
     <string name="diag_reason_no_location">no position available</string>
-    <string name="diag_reason_not_driven_yet">the car has not driven yet</string>
+    <string name="diag_reason_not_driven_yet">no phone on board yet (car has not driven, no active phone)</string>
     <string name="diag_reason_no_handsfree">hands-free phone unreadable</string>
     <string name="paste_header">**Password:** `%1$s` · expires one hour after upload.\n\nHosted free of charge by [April](https://www.april.org) on %2$s. If this saved you a trip to the garage, [make a donation](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Windows and locks</string>

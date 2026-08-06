@@ -125,6 +125,15 @@ class RuleEditorActivity : AppCompatActivity() {
         binding.saveButton.setOnClickListener { save() }
 
         renderBranches()
+
+        // A plain rule has one case and no branching to lay out, so the if/else-if/else
+        // screen is a click a non-expert user has no reason to make: land straight in the
+        // "if" case window instead. A rule that already has alternatives still shows the
+        // shape screen, expert mode or not — those cases stay reachable to edit or remove.
+        val hasStoredAlternatives = branches.size > 1 || elseActions != null
+        if (savedInstanceState == null && !expertRulesEnabled && !hasStoredAlternatives) {
+            openBranch(0, BranchEditorActivity.Kind.IF, branches[0])
+        }
     }
 
     private fun openBranch(target: Int, kind: BranchEditorActivity.Kind, branch: Branch) {

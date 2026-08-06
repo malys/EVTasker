@@ -217,7 +217,6 @@
     <string name="console_crash_show">Mostrar informe</string>
     <string name="console_crash_dismiss">Descartar</string>
 
-    <string name="warn_mg4control_present">MG4Control también está instalado — ambas apps pueden cambiar los ajustes del vehículo.</string>
 
     <!-- Notifications -->
     <string name="channel_name">MG4Tasker</string>
@@ -225,7 +224,10 @@
     <string name="value_location_hint">latitud, longitud</string>
     <string name="value_location_current">Posición actual</string>
     <string name="value_location_map">Abrir el mapa</string>
+    <string name="value_location_map_none">No hay aplicación de mapas en esta unidad</string>
     <string name="value_webhook_url">URL HTTPS del webhook</string>
+    <string name="value_webhook_method_get">GET</string>
+    <string name="value_webhook_method_post">POST</string>
     <string name="value_webhook_body">Cuerpo POST (opcional)</string>
     <string name="rules_threshold_standstill">Aplicar solo en parado</string>
     <string name="rules_threshold_value">Aplicar hasta %1$d km/h</string>

@@ -19,6 +19,8 @@ import com.mg4.hardware.FirmwareGen
 import com.mg4.hardware.FirmwareSupport
 import com.mg4.tasker.store.SupportStore
 import com.mg4.tasker.util.BtDevices
+import com.mg4.tasker.util.EmulatorDetector
+import com.mg4.tasker.util.MapApps
 import com.mg4.tasker.util.SpeechEngines
 import com.mg4.tasker.vehicle.ProfileBridge
 import java.util.Locale
@@ -46,12 +48,19 @@ object CatalogPicker {
 
     fun pickCondition(context: Context, firmware: FirmwareGen?, onPick: (ConditionType) -> Unit) {
         val allowed = SupportStore.supportedConditions(context)
+        val diagnosticBlocked = SupportStore.diagnosticBlockedConditions(context)
+        // No emulator image has a paired device, a diagnostic history, or vendor services —
+        // on the head unit those gaps mean "would never work", on an emulator they just mean
+        // "nobody ran the prerequisite step yet". Skip them so every entry stays pickable to
+        // debug, whichever hardware read behind it ends up failing on its own.
+        val debug = EmulatorDetector.isEmulator()
         // Nothing paired means the device picker would be empty, and the rule would carry a
         // blank MAC that can never match. Same reasoning as the profile action below.
         val hasPairedDevice = BtDevices.bonded(context).isNotEmpty()
         val groups = ConditionType.byGroup().mapNotNull { (group, types) ->
             val supported = types
-                .filter { hasPairedDevice || it.spec.kind != ValueKind.BT_DEVICE }
+                .filter { debug || hasPairedDevice || it.spec.kind != ValueKind.BT_DEVICE }
+                .filter { debug || it.name !in diagnosticBlocked }
                 .filter { type ->
                     allow(allowed, type.name) { FirmwareSupport.isSupported(type, firmware) }
                 }
@@ -68,6 +77,10 @@ object CatalogPicker {
 
     fun pickAction(context: Context, firmware: FirmwareGen?, onPick: (ActionType) -> Unit) {
         val allowed = SupportStore.supportedActions(context)
+        val diagnosticBlocked = SupportStore.diagnosticBlockedActions(context)
+        // See pickCondition: an emulator fails every local prerequisite by construction, so
+        // none of them should hide an entry there.
+        val debug = EmulatorDetector.isEmulator()
         // The profile actions are the ones that cannot work without MG4Control. Offering them
         // with an empty profile list only produces a rule that fails at ignition.
         val hasProfiles = ProfileBridge.isMG4ControlInstalled(context)
@@ -75,14 +88,14 @@ object CatalogPicker {
         val grouped = visible.groupBy { type ->
             when (type) {
                 ActionType.APPLY_PROFILE, ActionType.SHOW_PROFILE_PICKER,
-                ActionType.WEBHOOK_GET, ActionType.WEBHOOK_POST -> IntegrationGroup
+                ActionType.WEBHOOK -> IntegrationGroup
                 else -> type.group
             }
         }
         val groups = grouped.mapNotNull { (group, types) ->
             val supported = types
-                .filter { hasProfiles || it.group != ActionGroup.PROFILE }
-                .filter { runnableHere(context, it) }
+                .filter { debug || hasProfiles || it.group != ActionGroup.PROFILE }
+                .filter { type -> debug || runnableHere(context, type) ?: (type.name !in diagnosticBlocked) }
                 .filter { type -> allow(allowed, type.name) { FirmwareSupport.isSupported(type, firmware) } }
             if (supported.isEmpty()) return@mapNotNull null
             Group(
@@ -117,20 +130,27 @@ object CatalogPicker {
         allowed?.contains(name) ?: live()
 
     /**
-     * The local actions depend on the head unit, not on the firmware matrix, so the matrix
-     * cannot filter them.
+     * Answers "can this head unit do it" for the actions that can be checked **now**, or null
+     * when only the last diagnostic run can say.
+     *
+     * These depend on the head unit rather than on the firmware matrix, so the matrix cannot
+     * filter them; and they are cheap local queries — a package lookup, no vehicle read,
+     * nothing that blocks — so they are asked live rather than read back from a stored
+     * diagnostic. That matters when the answer changes: installing a speech engine or a map
+     * app brings its action back to the picker immediately, without a second diagnostic.
      *
      * Speech was the visible case: the Diagnostic tab reported "no speech engine" while the
      * editor kept offering the action, and picking it produced a rule that could only ever
-     * fail. Both now ask [SpeechEngines] the same question — a package query, no vehicle
-     * read, nothing that blocks.
+     * fail. Both now ask [SpeechEngines] the same question.
      *
-     * The message action is not filtered: it shows on screen whatever the notification
+     * The message action is deliberately absent: it shows on screen whatever the notification
      * channel is doing, so it always has a way to reach the driver.
      */
-    private fun runnableHere(context: Context, type: ActionType): Boolean = when (type) {
+    private fun runnableHere(context: Context, type: ActionType): Boolean? = when (type) {
         ActionType.SPEAK_TEXT -> SpeechEngines.any(context)
-        else -> true
+        ActionType.NAVIGATE_TO -> MapApps.isAvailable(context)
+        ActionType.SHOW_NOTIFICATION -> true
+        else -> null
     }
 
     private class Group(val label: String, val entries: List<Entry>)

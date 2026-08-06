@@ -234,7 +234,6 @@
     <string name="console_crash_show">Afficher le rapport</string>
     <string name="console_crash_dismiss">Ignorer</string>
 
-    <string name="warn_mg4control_present">MG4Control est aussi installé — les deux apps peuvent modifier les réglages du véhicule.</string>
 
     <!-- Notifications -->
     <string name="channel_name">MG4Tasker</string>
@@ -242,7 +241,10 @@
     <string name="value_location_hint">latitude, longitude</string>
     <string name="value_location_current">Position actuelle</string>
     <string name="value_location_map">Ouvrir la carte</string>
+    <string name="value_location_map_none">Aucune application de cartographie sur cet écran</string>
     <string name="value_webhook_url">URL HTTPS du webhook</string>
+    <string name="value_webhook_method_get">GET</string>
+    <string name="value_webhook_method_post">POST</string>
     <string name="value_webhook_body">Corps POST (facultatif)</string>
     <string name="rules_threshold_standstill">Appliquer à l’arrêt uniquement</string>
     <string name="rules_threshold_value">Appliquer jusqu’à %1$d km/h</string>
@@ -256,7 +258,7 @@
     <string name="diag_reason_vendor">service véhicule indisponible sur cette voiture</string>
     <string name="diag_reason_no_navigation">aucune application de navigation</string>
     <string name="diag_reason_no_location">aucune position disponible</string>
-    <string name="diag_reason_not_driven_yet">la voiture n’a pas encore roulé</string>
+    <string name="diag_reason_not_driven_yet">aucun téléphone à bord (voiture pas encore roulée, aucun téléphone actif)</string>
     <string name="diag_reason_no_handsfree">téléphone mains-libres illisible</string>
     <string name="paste_header">**Mot de passe :** `%1$s` · expire une heure après l’envoi.\n\nHébergé gracieusement par [April](https://www.april.org) sur %2$s. Si cela vous a évité un passage au garage, [faites un don](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Vitres et verrouillage</string>

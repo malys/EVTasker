@@ -84,7 +84,37 @@ object Diagnostics {
         NOT_DRIVEN_YET,
         /** The platform would not say which phone the head unit made hands-free. */
         NO_HANDSFREE_INFO,
+        ;
+
+        /**
+         * True when this verdict describes **the car**, not the moment it was taken.
+         *
+         * The rule editor hides entries the last diagnostic blocked for one of these
+         * ([com.mg4.tasker.store.SupportStore]) — a diagnostic that says "this head unit has
+         * no radio service" and an action picker that keeps offering "tune radio" cannot both
+         * be right, and the picker was the one lying.
+         *
+         * Everything else is deliberately absent. A gate refusal, a Bluetooth radio switched
+         * off, a missing location fix, a vehicle layer still starting: all of those change
+         * within one drive, and a rule the user could not even write because the car happened
+         * to be moving during a diagnostic would be a far worse bug than the one being fixed.
+         *
+         * [NOTIFICATIONS_OFF] is left out for the same reason from the other side: it is a
+         * permission the user flips in Settings, and the entry must be there when they come
+         * back from flipping it.
+         */
+        val describesTheCar: Boolean
+            get() = this in STRUCTURAL
     }
+
+    private val STRUCTURAL = setOf(
+        Reason.UNSUPPORTED_FIRMWARE,
+        Reason.NO_VENDOR_SERVICE,
+        Reason.NO_NAVIGATION_APP,
+        Reason.NO_TTS_ENGINE,
+        Reason.NO_MG4CONTROL,
+        Reason.NOT_READABLE
+    )
 
     /**
      * One catalogue entry's verdict.
@@ -140,6 +170,14 @@ object Diagnostics {
         ConditionType.entries.map { type ->
             val outcome = ConditionEvaluator.evaluate(probeOf(type), snapshot)
             val hidden = !FirmwareSupport.isSupported(type, gen)
+            // A steering-wheel button has no resting value: the snapshot carries one only
+            // while the press is being dispatched. Probing it at rest therefore always found
+            // nothing, and the report accused the car of not reporting a signal it reports
+            // perfectly well — a false verdict the rule editor now acts on by hiding the
+            // entry. There is nothing to read here, and nothing wrong.
+            if (type == ConditionType.PHYSICAL_BUTTON) {
+                return@map Entry(type.name, Status.OK, Reason.NONE, hidden = hidden)
+            }
             if (outcome == ConditionOutcome.UNAVAILABLE) {
                 Entry(
                     name = type.name,
@@ -229,7 +267,7 @@ object Diagnostics {
 
         // These run entirely inside MG4Tasker. Their configured value can still be invalid,
         // but availability of the vehicle layer is irrelevant to whether the action exists.
-        ActionType.WEBHOOK_GET, ActionType.WEBHOOK_POST, ActionType.DELAY -> Reason.NONE
+        ActionType.WEBHOOK, ActionType.DELAY -> Reason.NONE
 
         // Everything else is a direct MG4Hardware write.
         else -> if (!caps.vehicleLayerReady) Reason.LAYER_NOT_READY else gateReason(type, caps)

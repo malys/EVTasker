@@ -217,7 +217,6 @@
     <string name="console_crash_show">Bericht anzeigen</string>
     <string name="console_crash_dismiss">Verwerfen</string>
 
-    <string name="warn_mg4control_present">MG4Control ist ebenfalls installiert — beide Apps können Fahrzeugeinstellungen ändern.</string>
 
     <!-- Notifications -->
     <string name="channel_name">MG4Tasker</string>
@@ -225,7 +224,10 @@
     <string name="value_location_hint">Breite, Länge</string>
     <string name="value_location_current">Aktuelle Position</string>
     <string name="value_location_map">Karte öffnen</string>
+    <string name="value_location_map_none">Keine Kartenanwendung auf dieser Headunit</string>
     <string name="value_webhook_url">HTTPS-Webhook-URL</string>
+    <string name="value_webhook_method_get">GET</string>
+    <string name="value_webhook_method_post">POST</string>
     <string name="value_webhook_body">POST-Text (optional)</string>
     <string name="rules_threshold_standstill">Nur im Stand anwenden</string>
     <string name="rules_threshold_value">Bis %1$d km/h anwenden</string>
