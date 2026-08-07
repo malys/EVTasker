@@ -324,4 +324,22 @@ class RuleTransferTest {
 
         assertEquals(RuleTransfer.Reason.MALFORMED, invalidReason(json))
     }
+
+    @Test
+    fun `a file written before the webhook merge imports with its verb kept`() {
+        val json = """
+            {"format":"mg4tasker-rules","version":2,"rules":[
+              {"id":"r1","name":"X","match":"ALL",
+               "conditions":[{"type":"IN_PARK","op":"EQ"}],
+               "actions":[{"type":"WEBHOOK_GET","flag":true,"text":"https://a"}],
+               "elseActions":[{"type":"WEBHOOK_POST","flag":false,"text":"https://b"}]}]}
+        """.trimIndent()
+
+        val rule = (decodeOf(json) as RuleTransfer.Result.Ok).rules.single()
+
+        assertEquals(ActionType.WEBHOOK, rule.actions.single().type)
+        assertFalse(rule.actions.single().flag)
+        assertEquals(ActionType.WEBHOOK, rule.elseActions!!.single().type)
+        assertTrue(rule.elseActions!!.single().flag)
+    }
 }

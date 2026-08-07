@@ -119,4 +119,28 @@ class RuleStoreTest {
         assertEquals(1, all.size)
         assertEquals("still valid", all[0].name)
     }
+
+    /**
+     * The webhook rule saved by an older build names WEBHOOK_GET / WEBHOOK_POST, entries this
+     * catalog merged into one. Read as-is, Gson nulls the type and the rule is dropped as
+     * unhonourable — the user's rule disappearing on update is exactly the bug being guarded.
+     */
+    @Test
+    fun `a webhook rule saved before the merge survives, verb and all`() {
+        val prefs = context()
+            .getSharedPreferences("mg4_tasker_rules", android.content.Context.MODE_PRIVATE)
+        prefs.edit().putString("rules_json", """[{"id":"r1","name":"old webhook",
+            "enabled":true,"match":"ALL",
+            "conditions":[{"type":"IN_PARK","op":"EQ","number":0.0,"flag":true,
+            "text":"","minutesFrom":0,"minutesTo":0,"days":[]}],
+            "actions":[{"type":"WEBHOOK_GET","number":0,"flag":true,"text":"https://a",
+            "minutesFrom":0,"minutesTo":0},
+            {"type":"WEBHOOK_POST","number":0,"flag":false,"text":"https://b",
+            "minutesFrom":0,"minutesTo":0}]}]""").commit()
+
+        val rule = RuleStore(context()).getAll().single()
+
+        assertEquals(listOf(ActionType.WEBHOOK, ActionType.WEBHOOK), rule.actions.map { it.type })
+        assertEquals(listOf(false, true), rule.actions.map { it.flag })
+    }
 }

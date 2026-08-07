@@ -112,7 +112,7 @@ object RuleTransfer {
 
     fun decode(json: String): Result {
         val envelope = try {
-            Gson().fromJson(json, Envelope::class.java)
+            Gson().fromJson(LegacyRuleJson.migrate(json), Envelope::class.java)
         } catch (_: Exception) {
             // Gson throws a family of unchecked types on bad input (syntax, IO, number
             // format). None of them distinguishes "corrupt rules file" from "not ours".

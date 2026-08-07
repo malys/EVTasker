@@ -49,7 +49,8 @@ class RuleStore(context: Context) {
     private fun read(): Stored {
         val json = prefs.getString(KEY_RULES, null) ?: return Stored.Rules(emptyList())
         return try {
-            val parsed = gson.fromJson(json, Array<Rule>::class.java)?.toList() ?: emptyList()
+            val parsed = gson.fromJson(LegacyRuleJson.migrate(json), Array<Rule>::class.java)
+                ?.toList() ?: emptyList()
             Stored.Rules(parsed.filter { it.isHonourable() })
         } catch (e: Exception) {
             AppLogger.w(TAG, "getAll unreadable (${json.length} chars): ${e.javaClass.simpleName}: ${e.message}")
