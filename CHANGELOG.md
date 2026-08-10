@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-10
+
 ### Added
 
 - **"Ask for a profile", an action that hands the choice back to the driver.** "Apply a

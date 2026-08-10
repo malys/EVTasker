@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Checklist : onglet Règles. Teinté par @color/nav_tab_foreground. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M3,4h5v5H3V4z M10,5h11v3H10V5z M3,10h5v5H3v-5z M10,11h11v3H10v-3z M3,16h5v5H3v-5z M10,17h11v3H10v-3z" />
+</vector>

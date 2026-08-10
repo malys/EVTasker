@@ -10,8 +10,8 @@ android {
         applicationId = "com.mg4.tasker"
         minSdk = 28
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
     }
 
     // MG4Tasker doit être signé avec la MÊME clé plateforme que MG4Control : c'est la seule
@@ -116,6 +116,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.material)
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.recyclerview)
     implementation(libs.gson)
     implementation(libs.androidx.lifecycle.viewmodel)

@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Button navigation rather than Material tabs: on a vehicle screen, always-visible
-     64 dp targets beat a thin tab bar. -->
+<!--
+    A fixed top bar above a single ViewPager2, same shape as MG4Control.
+
+    Every screen — Rules, History, Diagnostic, Console, Configuration — is a page of
+    that one pager, in the order the bar lists them. Each button goes to its page and a
+    horizontal swipe walks through them all: the gesture and the button name the same
+    thing.
+
+    Button navigation rather than Material tabs: on a vehicle screen, always-visible
+    64 dp targets beat a thin tab bar. The tabs share the remaining width equally
+    (weight 1) instead of fitting their text, so the row can be aimed at from memory
+    whatever the translated labels are.
+
+    The tabs are laid straight into the bar, without a MaterialButtonToggleGroup: the
+    group owns a checked state of its own, which would fight the pager for who decides
+    the current screen. Here the pager decides alone, and MainActivity.markCurrentPage
+    posts isSelected — the fill, text, icon and stroke come from the
+    res/color/nav_tab_*.xml selectors.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -10,12 +27,13 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="80dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingHorizontal="@dimen/spacing_lg"
-        android:paddingVertical="@dimen/spacing_sm"
-        android:background="@color/mg4_surface">
+        android:baselineAligned="false"
+        android:paddingStart="@dimen/spacing_md"
+        android:paddingEnd="@dimen/spacing_md"
+        android:background="@drawable/bg_topbar">
 
         <TextView
             android:layout_width="wrap_content"
@@ -24,51 +42,62 @@
             android:textAppearance="@style/Text.MG4.Title"
             android:layout_marginEnd="@dimen/spacing_lg" />
 
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/tabGroup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:singleSelection="true"
-            app:selectionRequired="true">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/tabRules"
+            style="@style/Widget.MG4.NavTab"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:text="@string/tab_rules"
+            app:icon="@drawable/ic_tab_rules" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/tabRules"
-                style="@style/Widget.MG4.Button.Outlined"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/tab_rules" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/tabHistory"
+            style="@style/Widget.MG4.NavTab"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:text="@string/tab_history"
+            app:icon="@drawable/ic_tab_history" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/tabHistory"
-                style="@style/Widget.MG4.Button.Outlined"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/tab_history" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/tabDiagnostic"
+            style="@style/Widget.MG4.NavTab"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:text="@string/tab_diagnostic"
+            app:icon="@drawable/ic_tab_diagnostic" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/tabDiagnostic"
-                style="@style/Widget.MG4.Button.Outlined"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/tab_diagnostic" />
+        <!-- Hidden by default (BuildConfig.CONSOLE_VISIBLE_BY_DEFAULT) and unlocked by
+             three taps on Diagnostic — see MainActivity.updateConsoleVisibility. While
+             it is GONE it is not a page either, so a swipe cannot reach a console the
+             bar does not offer; it gives its weight back to the other four tabs. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/tabConsole"
+            style="@style/Widget.MG4.NavTab"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:text="@string/tab_console"
+            app:icon="@drawable/ic_tab_console" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/tabConsole"
-                style="@style/Widget.MG4.Button.Outlined"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/tab_console" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/tabConfig"
+            style="@style/Widget.MG4.NavTab"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_weight="1"
+            android:text="@string/tab_config"
+            app:icon="@drawable/ic_tab_config" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/tabConfig"
-                style="@style/Widget.MG4.Button.Outlined"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/tab_config" />
-        </com.google.android.material.button.MaterialButtonToggleGroup>
     </LinearLayout>
 
-    <androidx.fragment.app.FragmentContainerView
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="0dp"

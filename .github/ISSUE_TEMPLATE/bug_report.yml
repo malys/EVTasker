@@ -107,21 +107,31 @@ body:
   - type: textarea
     id: logs
     attributes:
-      label: "Logs or Screenshots"
+      label: "Logs or Screenshots (mandatory)"
       description: |
-        Attach:
-        - Logcat output (from ADB: `adb logcat | grep -i mg4`)
-        - Rule execution log from app diagnostic screen
-        - Screenshots showing unexpected behavior
-      placeholder: "Paste logcat or logs here"
+        **Required.** How to get and attach the log:
+        - App: Diagnostic tab → "Export" button → pick a folder. This writes a report file
+          (`.txt`) to that folder. Pull the file off the device (file manager / USB / cloud),
+          then drag-and-drop the file directly into this text box on GitHub — it uploads and
+          inserts a link automatically. You can also paste the contents inline below.
+        - ADB (if available): `adb logcat | grep -i mg4`, save to a file, attach the same way.
+        - Screenshots: drag-and-drop image files into this box the same way.
+      placeholder: "Drag the exported diagnostic file here, or paste logcat/logs"
       rows: 8
+    validations:
+      required: true
 
   - type: textarea
     id: console
     attributes:
-      label: "Console log"
-      description: "The Console tab has a Share button. Paste the relevant lines here."
+      label: "Console log / Diagnostic export (mandatory)"
+      description: |
+        **Required.** Console tab → Share button → save the file, then drag-and-drop it into
+        this box (or paste the relevant lines below). This is separate from the Diagnostic
+        export above — attach both.
       render: text
+    validations:
+      required: true
 
   - type: dropdown
     id: vehicle_state

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Top bar surface + a 2dp accent underline, so the bar reads as a bar even against
+     a light page background. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/mg4_surface" />
+        </shape>
+    </item>
+    <item android:gravity="bottom" android:height="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/mg4_accent" />
+        </shape>
+    </item>
+</layer-list>

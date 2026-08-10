@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nav tab text + icon. The selected tab sits on @color/mg4_accent, so its foreground
+     is mg4_on_accent; unselected tabs use mg4_text_primary. Both pairs clear 7:1. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true" android:color="@color/mg4_on_accent" />
+    <item android:color="@color/mg4_text_primary" />
+</selector>
