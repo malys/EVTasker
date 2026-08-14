@@ -16,11 +16,11 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/diag_title"
-            android:textAppearance="@style/Text.MG4.Title" />
+            android:textAppearance="@style/Text.EV.Title" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/refreshButton"
-            style="@style/Widget.MG4.Button"
+            style="@style/Widget.EV.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/diag_refresh" />
@@ -30,7 +30,7 @@
              whole picture leaves the vehicle. -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/exportButton"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_sm"
@@ -42,7 +42,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_sm"
-        android:textAppearance="@style/Text.MG4.Body" />
+        android:textAppearance="@style/Text.EV.Body" />
 
     <TextView
         android:id="@+id/bridgeHint"
@@ -50,8 +50,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_xs"
         android:text="@string/diag_bridge_ko_hint"
-        android:textAppearance="@style/Text.MG4.Secondary"
-        android:textColor="@color/mg4_error"
+        android:textAppearance="@style/Text.EV.Secondary"
+        android:textColor="@color/ev_error"
         android:visibility="gone" />
 
     <!-- Feature support: which catalogue entries this firmware exposes. Computed
@@ -68,11 +68,11 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/Text.MG4.Body" />
+            android:textAppearance="@style/Text.EV.Body" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/checkSupportButton"
-            style="@style/Widget.MG4.Button"
+            style="@style/Widget.EV.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/diag_check_support" />
@@ -86,7 +86,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_sm"
         android:text="@string/diag_temp_note"
-        android:textAppearance="@style/Text.MG4.Secondary" />
+        android:textAppearance="@style/Text.EV.Secondary" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/diagList"

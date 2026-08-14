@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/mg4_background"
+    android:background="@color/ev_background"
     android:orientation="vertical"
     android:padding="@dimen/spacing_lg">
 
@@ -22,11 +22,11 @@
             android:layout_marginEnd="@dimen/spacing_lg"
             android:maxLines="1"
             android:ellipsize="end"
-            android:textAppearance="@style/Text.MG4.Display" />
+            android:textAppearance="@style/Text.EV.Display" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/editorCancel"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/spacing_sm"
@@ -34,7 +34,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/editorSave"
-            style="@style/Widget.MG4.Button"
+            style="@style/Widget.EV.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/value_ok" />
@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/spacing_md"
         android:text="@string/value_editor_instruction"
-        android:textAppearance="@style/Text.MG4.Secondary" />
+        android:textAppearance="@style/Text.EV.Secondary" />
 
     <include
         android:id="@+id/valueEditorContent"

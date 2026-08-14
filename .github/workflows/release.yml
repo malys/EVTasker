@@ -2,9 +2,9 @@ name: Release
 
 # Tag push only — publishing an APK that automates a car is a human decision.
 #
-# La signature utilise la MÊME clé plateforme que MG4Control, et ce n'est pas un détail
+# La signature utilise la MÊME clé plateforme que EVProfile, et ce n'est pas un détail
 # d'organisation : la permission signature qui protège le pont n'est accordée que si les
-# deux APK partagent la clé. Un MG4Tasker signé autrement s'installe et ne fait rien.
+# deux APK partagent la clé. Un EVTasker signé autrement s'installe et ne fait rien.
 on:
   push:
     tags:
@@ -19,7 +19,7 @@ jobs:
     name: Build and publish APK
     runs-on: ubuntu-latest
     env:
-      MG4_KEYSTORE_BASE64: ${{ secrets.MG4_KEYSTORE_BASE64 }}
+      EV_KEYSTORE_BASE64: ${{ secrets.EV_KEYSTORE_BASE64 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,16 +34,16 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Decode platform keystore
-        if: ${{ env.MG4_KEYSTORE_BASE64 != '' }}
+        if: ${{ env.EV_KEYSTORE_BASE64 != '' }}
         run: |
           # Tolerate newlines/spaces in the secret; printf avoids a stray trailing newline.
-          printf '%s' "$MG4_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > "$RUNNER_TEMP/platform.keystore"
+          printf '%s' "$EV_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > "$RUNNER_TEMP/platform.keystore"
           # A PKCS12/JKS keystore starts with 0x30 (DER SEQUENCE); anything else is corrupt.
           if [ "$(head -c1 "$RUNNER_TEMP/platform.keystore" | od -An -tx1 | tr -d ' ')" != "30" ]; then
-            echo "::error::MG4_KEYSTORE_BASE64 is invalid. Recreate the secret with: base64 -w0 platform.keystore"
+            echo "::error::EV_KEYSTORE_BASE64 is invalid. Recreate the secret with: base64 -w0 platform.keystore"
             exit 1
           fi
-          echo "MG4_KEYSTORE=$RUNNER_TEMP/platform.keystore" >> "$GITHUB_ENV"
+          echo "EV_KEYSTORE=$RUNNER_TEMP/platform.keystore" >> "$GITHUB_ENV"
 
       - name: Run checks before publishing
         run: |
@@ -53,9 +53,9 @@ jobs:
 
       - name: Build release APK
         env:
-          MG4_KEYSTORE_PASSWORD: ${{ secrets.MG4_KEYSTORE_PASSWORD }}
-          MG4_KEY_ALIAS: ${{ secrets.MG4_KEY_ALIAS }}
-          MG4_KEY_PASSWORD: ${{ secrets.MG4_KEY_PASSWORD }}
+          EV_KEYSTORE_PASSWORD: ${{ secrets.EV_KEYSTORE_PASSWORD }}
+          EV_KEY_ALIAS: ${{ secrets.EV_KEY_ALIAS }}
+          EV_KEY_PASSWORD: ${{ secrets.EV_KEY_PASSWORD }}
         run: ./gradlew assembleStableRelease --no-daemon
 
       - name: Collect APK
@@ -63,12 +63,12 @@ jobs:
           mkdir -p dist
           # AGP 9 emits app-release.apk; rename to the published convention.
           ver=$(grep -oE 'versionName = "[^"]+"' app/build.gradle.kts | head -1 | sed -E 's/.*"([^"]+)"/\1/')
-          find app/build/outputs/apk -name "app-stable-release.apk" -exec cp {} "dist/MG4Tasker-stable-${ver}.apk" \;
+          find app/build/outputs/apk -name "app-stable-release.apk" -exec cp {} "dist/EVTasker-stable-${ver}.apk" \;
           ls -la dist/
 
       - uses: actions/upload-artifact@v4
         with:
-          name: mg4tasker-apk
+          name: evtasker-apk
           path: dist/*.apk
 
       - name: Publish GitHub Release
@@ -79,15 +79,15 @@ jobs:
           prerelease: false
           files: dist/*.apk
           body: |
-            ## MG4Tasker ${{ github.ref_name }}
+            ## EVTasker ${{ github.ref_name }}
 
             Installation manuelle. Cette application n'embarque **aucun auto-updater** et
             ne contacte aucun serveur.
 
             ### Prérequis
-            - **MG4Control installé**, signé avec la même clé plateforme. Sans lui,
-              MG4Tasker démarre mais n'a accès à rien : l'onglet Diagnostic affichera
-              « Pont MG4Control : injoignable ».
+            - **EVProfile installé**, signé avec la même clé plateforme. Sans lui,
+              EVTasker démarre mais n'a accès à rien : l'onglet Diagnostic affichera
+              « Pont EVProfile : injoignable ».
             - R8 est activé sur cette build. **Vérifiez sur véhicule** avant de vous y
               fier : le code du pont est résolu par nom au moment de la liaison.
 

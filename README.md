@@ -1,16 +1,18 @@
-# MG4 Tasker
+# EVTasker
 
-<p align="center"><img src="docs/logo.svg" width="440" alt="MG4Tasker"></p>
+<p align="center"><img src="docs/logo.svg" width="440" alt="EVTasker"></p>
 
-[![Tests](https://github.com/malys/MG4Tasker/actions/workflows/tests.yml/badge.svg)](https://github.com/malys/MG4Tasker/actions/workflows/tests.yml)
-[![Security](https://github.com/malys/MG4Tasker/actions/workflows/security.yml/badge.svg)](https://github.com/malys/MG4Tasker/actions/workflows/security.yml)
-[![Unstable](https://github.com/malys/MG4Tasker/actions/workflows/unstable.yml/badge.svg)](https://github.com/malys/MG4Tasker/actions/workflows/unstable.yml)
-[![Release](https://img.shields.io/github/v/release/malys/MG4Tasker?include_prereleases&amp;sort=semver)](https://github.com/malys/MG4Tasker/releases)
+[![Tests](https://github.com/malys/EVTasker/actions/workflows/tests.yml/badge.svg)](https://github.com/malys/EVTasker/actions/workflows/tests.yml)
+[![Security](https://github.com/malys/EVTasker/actions/workflows/security.yml/badge.svg)](https://github.com/malys/EVTasker/actions/workflows/security.yml)
+[![Unstable](https://github.com/malys/EVTasker/actions/workflows/unstable.yml/badge.svg)](https://github.com/malys/EVTasker/actions/workflows/unstable.yml)
+[![Release](https://img.shields.io/github/v/release/malys/EVTasker?include_prereleases&amp;sort=semver)](https://github.com/malys/EVTasker/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 > ⚠️ **This app changes vehicle settings automatically and runs on a car.** Read
 > [DISCLAIMER.md](DISCLAIMER.md) before installing. A rule is you delegating a setting
 > change to happen without anyone touching the screen — write rules accordingly.
+> MG and MG4 are third-party marks used only to identify compatibility; this independent
+> project is not affiliated with or approved by SAIC Motor or MG Motor.
 
 Rule-based automation for the MG4: **when** conditions are met at vehicle start, **then**
 apply settings.
@@ -18,9 +20,9 @@ apply settings.
 > If my partner's phone is connected, apply the "Comfort" profile and set the volume to 14.
 > If it is below 5 °C on a weekday morning, turn on the seat heating.
 
-MG4Tasker is **independent**. It reads and writes the vehicle directly through the shared
-[MG4Hardware](https://github.com/malys/MG4Hardware) layer and works with **no MG4Control
-installed**. MG4Control is optional: when present, one extra action — *apply an MG4Control
+EVTasker is **independent**. It reads and writes the vehicle directly through the shared
+[EVHardware](https://github.com/malys/EVHardware) layer and works with **no EVProfile
+installed**. EVProfile is optional: when present, one extra action — *apply an EVProfile
 profile* — becomes available.
 
 ---
@@ -30,7 +32,7 @@ profile* — becomes available.
 - [Screenshots](#screenshots)
 - [How it works](#how-it-works)
 - [Requirements](#requirements)
-- [MG4Control (optional)](#mg4control-optional)
+- [EVProfile (optional)](#evprofile-optional)
 - [The speed gate](#the-speed-gate)
 - [Conditions and actions](#conditions-and-actions)
 - [Cases: if, else if, else](#cases-if-else-if-else)
@@ -47,13 +49,13 @@ profile* — becomes available.
 
 ## Screenshots
 <p align="center">
-  <img src="screenshots/mg4Tasker_rules1.png" width="200" alt="MG4Tasker rules screenshot 1">
-  <img src="screenshots/mg4Tasker_rules2.png" width="200" alt="MG4Tasker rules screenshot 2">
-  <img src="screenshots/mg4Tasker_rules3.png" width="200" alt="MG4Tasker rules screenshot 3">
-  <img src="screenshots/mg4Tasker_rules4.png" width="200" alt="MG4Tasker rules screenshot 4">
+  <img src="screenshots/evtasker_rules1.png" width="200" alt="EVTasker rules screenshot 1">
+  <img src="screenshots/evtasker_rules2.png" width="200" alt="EVTasker rules screenshot 2">
+  <img src="screenshots/evtasker_rules3.png" width="200" alt="EVTasker rules screenshot 3">
+  <img src="screenshots/evtasker_rules4.png" width="200" alt="EVTasker rules screenshot 4">
 </p>
 <p align="center">
-  <img src="screenshots/mg4Tasker_diagnostics.png" width="200" alt="MG4Tasker diagnostics screenshot">
+  <img src="screenshots/evtasker_diagnostics.png" width="200" alt="EVTasker diagnostics screenshot">
 </p>
 
 ---
@@ -61,10 +63,10 @@ profile* — becomes available.
 ## How it works
 ```
                     ┌──────────────────────────────────────┐
-   Ignition ON  ──► │ MG4Tasker (system app)               │
+   Ignition ON  ──► │ EVTasker (system app)               │
                     │  own foreground service               │
                     │  1. reads the vehicle  ┐              │
-                    │  2. evaluates rules    │ MG4Hardware  │
+                    │  2. evaluates rules    │ EVHardware  │
                     │  3. applies actions    ┘ (direct)     │
                     │     VehicleWriteGate → write / refuse │
                     │  4. logs the outcome                  │
@@ -72,20 +74,20 @@ profile* — becomes available.
                                    │ only for the "apply profile" action
                                    ▼
                     ┌──────────────────────────────────────┐
-                    │ MG4Control (optional)                │
+                    │ EVProfile (optional)                │
                     │  applyProfile(id) via TaskerBridge   │
                     └──────────────────────────────────────┘
 ```
 
-MG4Tasker runs its **own** persistent service: it initialises MG4Hardware, listens for
-ignition directly (no dependency on MG4Control), reads the vehicle and applies the rules'
-actions through MG4Hardware. Started at boot and on app open.
+EVTasker runs its **own** persistent service: it initialises EVHardware, listens for
+ignition directly (no dependency on EVProfile), reads the vehicle and applies the rules'
+actions through EVHardware. Started at boot and on app open.
 
 **Triggers: vehicle start and vehicle switch-off.** Physical buttons are conditions, not a
 third “Runs at” choice: adding one makes that rule event-driven and hides the ignition choice.
 Button rules can choose short or long press on phone, center, directional/OK, source,
 volume up/down, next/previous, mute, left star, right star, or assistant. Decoding and press-state handling live in the
-shared MG4Hardware library.
+shared EVHardware library.
 A long press fires once and suppresses the following short-release event. The known right-button
 codes (`286` and `18`) are both accepted for firmware compatibility; the assistant uses the
 OEM voice keycode `287`. The SAIC broadcast is
@@ -107,29 +109,29 @@ automation without deleting rules.
 ## Requirements
 - Signed with the ROM **platform key** and `sharedUserId="android.uid.system"` — the car
   permissions are `signature|privileged`, so this is what grants direct vehicle access (the
-  same footing as MG4Control). The Diagnostic tab shows whether the vehicle layer came up.
+  same footing as EVProfile). The Diagnostic tab shows whether the vehicle layer came up.
 
-That's it. MG4Control is **not** required.
+That's it. EVProfile is **not** required.
 
 ---
 
-## MG4Control (optional)
-If [MG4Control](https://github.com/malys/MG4Control) is installed (and signed with the same
-key), one extra action appears: **apply an MG4Control profile**. It reaches MG4Control's
-`applyProfile` over the signature-protected bridge. It is the *only* MG4Control-dependent
-capability; when MG4Control is absent the action is **not offered at all** — an action that
+## EVProfile (optional)
+If [EVProfile](https://github.com/malys/EVProfile) is installed (and signed with the same
+key), one extra action appears: **apply an EVProfile profile**. It reaches EVProfile's
+`applyProfile` over the signature-protected bridge. It is the *only* EVProfile-dependent
+capability; when EVProfile is absent the action is **not offered at all** — an action that
 can only ever fail has no business in the picker — and everything else works.
 
 > ⚠️ With both apps installed, **two apps can write the vehicle**. Each gates writes at
 > 0 km/h independently, but a concurrent profile application and rule run can interleave
-> multi-step ADAS writes. MG4Tasker warns once at start when it detects MG4Control.
+> multi-step ADAS writes. EVTasker warns once at start when it detects EVProfile.
 
 ---
 
 ## The speed gate
-MG4Hardware refuses any write that changes road behaviour while the car is moving, or when
-its speed is unreadable (*fail closed*) — the gate lives in the shared layer, so MG4Tasker
-and MG4Control enforce the identical rule.
+EVHardware refuses any write that changes road behaviour while the car is moving, or when
+its speed is unreadable (*fail closed*) — the gate lives in the shared layer, so EVTasker
+and EVProfile enforce the identical rule.
 
 | | Speed-gated |
 |---|---|
@@ -139,48 +141,17 @@ and MG4Control enforce the identical rule.
 The editor shows "When stopped only" **at the moment you pick the action**, not after. When
 an action is refused, the history gives the exact reason instead of staying silent.
 
-### Raising the threshold
-
-The Configuration tab lets you move the limit from 0 to 50 km/h. **0 — apply only when stopped —
-is the default**, and the value that needs no justification: a car creeping in a car park
-reads as moving, and a rule refused there is the most common false negative.
-
-Two things do not change when you raise it:
-
-- **An unreadable speed still refuses.** The gate fails closed whatever the threshold, and
-  that is the case it exists for.
-- **The vehicle still refuses whatever it refuses.** MG4 firmware declines several of these
-  settings while moving on its own. Raising the threshold does not make a drive-mode change
-  succeed at 40 km/h; it only stops MG4Tasker from being the one that declines first. The
-  history then shows the vehicle's refusal instead of the app's.
-
-The threshold in force is reported on the Diagnostic tab and in every exported report, so a
-report from a car that had it raised says so.
-
 ### When the speed cannot be read at all
 
-Failing closed is right, and it is also the most frustrating refusal there is: nothing was
-wrong, the car simply did not answer. So one other signal is consulted, and only in that
-case — **the gear**. A car in P is not moving whatever the speedometer failed to say, and
-the gear arrives by a different route from `PERF_VEHICLE_SPEED`, so one can answer when the
-other is silent.
+The action is refused. The threshold is fixed at exactly 0 km/h, cannot be raised, and no
+secondary signal — including the gear position — can rescue an unreadable speed. The
+Diagnostic tab reports this fixed policy and the current verdict.
 
-It is never allowed to contradict a speed that *did* read. Park while the speedometer says
-30 km/h means one of the two is wrong, and a gate that trusted the gear there would let a
-stale signal unlock writes at speed — the single outcome it exists to prevent.
+### Refused because you were moving? The refusal is final
 
-The Diagnostic tab prints `park=yes/no/?` next to the threshold.
-
-### Refused because you were moving? It waits for the next red light
-
-Rules fire when the ignition comes on, and by then the car is usually already rolling. "Eco
-mode when my phone connects" was therefore refused about as often as it worked, for a rule
-with nothing wrong with it — it was asked one moment too late.
-
-Gate refusals are now kept and re-attempted at the first standstill. Three limits:
-
-- **Only gate refusals.** "Moving" and "speed unreadable" mean *not now*. An unsupported
-  action or a failed write is not retried — waiting adds no missing firmware feature.
+EVTasker does not retain or reapply a refused vehicle write at a later red light. A moving
+or unreadable-speed refusal cancels that attempt. This prevents a setting from changing
+after the moment and conditions that triggered the rule have passed.
 
 Transient action failures are different: each failed action is retried independently up to
 three times with exponential backoff (250 ms, then 500 ms). Actions that already succeeded
@@ -192,7 +163,7 @@ action row move it up or down. Where one write must land before the next is aske
 switching the climate on, then setting the fan level — the **Wait** action (1 to 60 seconds)
 holds the sequence in between. It touches nothing in the car, and appears in the history at
 its place in the sequence. A rule made only of waits is refused at save time: it would hold
-the cycle and change nothing.
+  the cycle and change nothing.
 
 One cycle may spend **two minutes waiting in total**, every wait of every rule it evaluates
 counted together — the rules of a cycle run one after the other, so a rule that waits also
@@ -200,15 +171,6 @@ delays the ones after it. Past that budget the wait is cut short and the history
 what follows would otherwise be applied against a snapshot taken before the driver left the
 car. A single rule whose waits exceed the budget is refused at save time, so the limit is
 learned in the editor rather than after the drive.
-- **15 minutes, and never across an ignition cycle.** A rule that fired for this drive
-  belongs to this drive. At switch-off the queue is dropped, not applied: the car is stopped
-  then, which is exactly what makes it the wrong moment to change the setting the next
-  driver will find.
-- **Nothing is hidden.** Each one writes a history entry marked *Applied at a standstill*,
-  and the Diagnostic tab reports how many are waiting.
-
-Applying a profile is never deferred: it needs a live MG4Control bind belonging to the cycle
-that opened it.
 
 `VEHICLE_POWER_OFF` is **deliberately absent** from the catalogue, and a unit test enforces
 that no catalogue entry can reach it. Cutting the vehicle stays an explicit human gesture.
@@ -303,18 +265,18 @@ adding them up would refuse a rule that can never wait that long.
 
 ## Firmware compatibility
 Every vehicle catalogue entry carries a `@SupportedOn(...)` annotation naming the firmware
-generations it works on, derived from MG4Hardware's `FirmwareInfo` and per-generation
+generations it works on, derived from EVHardware's `FirmwareInfo` and per-generation
 routing. That annotation is the single source of truth for three things:
 
 1. **Self-documenting source** — the support set sits next to the entry.
-2. **The compatibility matrix** — [MG4Hardware/docs/firmware-matrix.md](MG4Hardware/docs/firmware-matrix.md) is
+2. **The compatibility matrix** — [EVHardware/docs/firmware-matrix.md](EVHardware/docs/firmware-matrix.md) is
    *generated* from the annotations by `FirmwareMatrix`, checked by a unit test. It is
    never edited by hand.
 3. **The runtime filter** — the editor offers only the entries supported on the connected
-   car's firmware (detected via MG4Hardware). One APK adapts to the car; there is no separate
+   car's firmware (detected via EVHardware). One APK adapts to the car; there is no separate
    per-firmware build.
 
-> The matrix is derived from MG4Hardware's code, **not** from on-vehicle testing. The app's
+> The matrix is derived from EVHardware's code, **not** from on-vehicle testing. The app's
 > Diagnostic tab is the source of truth for your own car: it reads each signal and shows
 > "unreadable" where the firmware does not expose it.
 
@@ -381,6 +343,21 @@ intent, then `google.navigation:`, and reports honestly when the head unit has n
 Its destination can be either `latitude,longitude` or a place name/address. HTTPS webhooks
 are available as GET and POST actions; POST accepts an optional JSON body.
 
+Both the **near a place** condition and the **Navigate to** action take their point the same
+way: type it, take the car's current position, open the map, or pick a **saved place**. Saved
+places are EVTasker's own list — the head unit's navigation app exposes no provider and no
+intent for its favourites — and are named from the editor, from whatever point is in the
+field. The location condition opens on the car's current position, because the place a rule
+is about is usually the place it is written at; the destination does not, because that is the
+one place a rule never navigates to.
+
+**Ask for confirmation** is the one action whose answer decides the rest of the rule. It
+shows its question full-screen and runs the actions after it only on "yes". Anything else —
+"no", leaving the screen, or 30 s of silence — stops the branch where it stands, and the
+history shows the rule as *skipped* rather than failed. Actions that never ran get no
+history line, since there is no verdict to report for them. One prompt at a time: a second
+rule asking while one is open is refused its answer rather than given someone else's.
+
 ---
 
 ## Diagnostic
@@ -392,7 +369,7 @@ implementation. A condition is called readable only when `ConditionEvaluator` �
 the engine calls — returns something other than `UNAVAILABLE` on the same snapshot the cycle
 would evaluate. An action is called runnable only after every check `DirectExecutor` performs
 before it writes has passed: the firmware matrix, the 0 km/h standstill gate, a real bind to
-MG4Control's bridge for the profile action, a speech engine for the spoken action, a live
+EVProfile's bridge for the profile action, a speech engine for the spoken action, a live
 notification channel for the notify action.
 
 The one step it cannot take is the write itself — applying a drive mode to see whether it
@@ -408,7 +385,7 @@ Three sections:
 - **Execution context** — the prerequisites that decide whether rules run at all: vehicle
   layer, the ignition-listening service, the automation master switch, notifications, the
   standstill gate as it stands now, whether the cached supported-feature set is stale,
-  whether MG4Control is installed alongside, which speech engine the car exposes, and which
+  whether EVProfile is installed alongside, which speech engine the car exposes, and which
   Bluetooth devices are connected right now. The last one is listed by MAC on purpose:
   comparing it with the address a rule names is what turns "my Bluetooth rule never fires"
   into an answer.
@@ -435,7 +412,7 @@ the diagnostic verdicts, the current rules (in the import format, so they can be
 another car), the run history, the in-app log and the last crash report.
 
 The head unit has no cable, no logcat and no crash reporter. Writing
-`mg4tasker-diagnostic-<yyyyMMdd-HHmmss>.txt` to
+`evtasker-diagnostic-<yyyyMMdd-HHmmss>.txt` to
 the USB stick already used for rules is the path that works on the vehicle itself. The folder
 is chosen with the same browser as the rules export, and the file is written to a `.tmp` then
 renamed, so a stick pulled mid-write never leaves a half-report that reads as complete.
@@ -453,7 +430,7 @@ because the car has no share target worth the name.
 
 - **Encrypted on the device.** PrivateBin is zero-knowledge: the key never reaches the
   server, it travels only in the URL fragment. The paste is additionally protected by the
-  password `mg4taskerR0ck$`.
+  password `evtaskerR0ck$`.
 - **Gone in an hour.** The expiry is set to `1hour`, short enough that a car's diagnostic is
   not left lying around.
 - **Confirmed every time.** A dialog names the host before anything leaves the vehicle.
@@ -510,14 +487,14 @@ dialogs, one per directory, sized for a one-finger tap on a car screen.
 │ USB storage                      │   │ ⬆ Up one level                 │
 │ /storage/1A2B-3C4D               │ → │ Android/                       │
 │ Internal storage                 │   │ backup/                        │
-│ /storage/emulated/0              │   │ mg4tasker-rules-20260727.json  │
+│ /storage/emulated/0              │   │ evtasker-rules-20260727.json  │
 └──────────────────── Cancel ──────┘   └──────────── Cancel ────────────┘
 ```
 
 Release builds run as `android.uid.system` (see [`AndroidManifest.xml`](app/src/main/AndroidManifest.xml)),
 which is what makes the **whole stick** browsable rather than only the app's own folder. On a
 build without the platform signature the volume root is not listable, so the browser falls back
-to `Android/data/com.mg4.tasker/files/` — readable on every build at every API level with no
+to `Android/data/com.evsuite.tasker/files/` — readable on every build at every API level with no
 storage permission. A single volume opens directly; several offer the list above.
 
 **Finding the stick takes three sources, not one.** `getExternalFilesDirs()` alone is what an
@@ -532,7 +509,7 @@ app-specific folder **on that same volume**, so the file still lands on the stic
 picked. The **Storage** section of the diagnostic report prints all of this, which is the way
 to see what a given car actually exposes.
 
-- **Export** asks for a folder ("Save here"), writes `mg4tasker-rules-<yyyyMMdd-HHmmss>.json`
+- **Export** asks for a folder ("Save here"), writes `evtasker-rules-<yyyyMMdd-HHmmss>.json`
   into it and shows the full path. The name is timestamped: an export is a backup, and
   overwriting the previous one loses it. The write is temp-file-then-rename, so a stick pulled
   mid-write leaves a `.tmp`, never a truncated rules file.
@@ -558,7 +535,7 @@ are refused on their length, before anything is read into memory.
 
 ```json
 {
-  "format": "mg4tasker-rules",
+  "format": "evtasker-rules",
   "version": 2,
   "rules": [
     {
@@ -614,22 +591,22 @@ mise run check      # what CI runs
 mise run release    # release APK (R8 on)
 ```
 
-The Android SDK is shared with MG4Control: `mise run bootstrap` lives there.
+The Android SDK is shared with EVProfile: `mise run bootstrap` lives there.
 
 To sign locally, in `gradle.properties` (never committed) or as environment variables:
 
 ```
-mg4.keystore=/path/to/platform.keystore
-mg4.keystore.password=…
-mg4.key.alias=platform
-mg4.key.password=…
+evsuite.keystore=/path/to/platform.keystore
+evsuite.keystore.password=…
+evsuite.key.alias=platform
+evsuite.key.password=…
 ```
 
 ### Layout
 
 ```
-app/src/main/java/com/mg4/tasker/
-  vehicle/   direct MG4Hardware access, executor, snapshot reader, profile bridge
+app/src/main/java/com/evsuite/tasker/
+  vehicle/   direct EVHardware access, executor, snapshot reader, profile bridge
   model/     Rule, Condition, Action, catalogues, @SupportedOn, FirmwareMatrix
   engine/    condition and rule evaluation — no Android dependency
   store/     JSON persistence of rules and history, rules file format, storage browsing
@@ -646,8 +623,8 @@ refusals and missing data — is testable on the JVM, with no vehicle.
 
 One enum line in `ConditionType` or `ActionType`, one string, and — for a vehicle entry —
 one `@SupportedOn(...)`. The editor builds itself from the `ValueSpec`; no screen to write.
-For a vehicle action, add the matching branch to `DirectExecutor` (MG4Tasker writes the
-vehicle directly through MG4Hardware, where the catalogue lives). The firmware matrix
+For a vehicle action, add the matching branch to `DirectExecutor` (EVTasker writes the
+vehicle directly through EVHardware, where the catalogue lives). The firmware matrix
 regenerates on the next test run.
 
 ---
@@ -658,10 +635,10 @@ Two build flavors, like the sibling apps:
 
 - **stable** — tagged releases, **no self-update** and no network permission. The updater
   class is not in the APK.
-- **unstable** — pre-releases published on every push to `master`, with **OTA**: the app
-  checks GitHub pre-releases, downloads into private cache, validates every redirect and
-  the APK signature, then installs it automatically via `pm` and deletes it. Installs
-  beside stable as `com.mg4.tasker.unstable`.
+- **unstable** — pre-releases published on every push to `master`. Its OTA trigger is
+  **suspended during the suite safety and legal audit**; updates are manual. The isolated
+  updater policy remains covered by tests for a possible reviewed reactivation. Installs
+  beside stable as `com.evsuite.tasker.unstable`.
 
 The Console tab is always visible on unstable builds. On the stable/offline channel it is
 hidden from the normal navigation and appears after three taps on the Diagnostic tab.
@@ -674,7 +651,7 @@ mise run test            # both flavors
 ## Project documents
 | Document | What it covers |
 |---|---|
-| [DESIGN.md](DESIGN.md) | The MG4Suite design system — colour, type, touch targets, icons |
+| [DESIGN.md](DESIGN.md) | The EVSuite design system — colour, type, touch targets, icons |
 | [AGENTS.md](AGENTS.md) | Context for AI agents working in this repository |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to build, test and submit a change |
 | [SECURITY.md](SECURITY.md) | Threat model and vulnerability disclosure |
@@ -685,11 +662,11 @@ mise run test            # both flavors
 ## Security
 See [SECURITY.md](SECURITY.md) for reporting and scope. Three structural decisions:
 
-1. **The speed gate lives in MG4Hardware.** MG4Tasker writes the vehicle directly, but the
-   0 km/h gate is enforced in the shared write primitives — the same code MG4Control uses.
+1. **The speed gate lives in EVHardware.** EVTasker writes the vehicle directly, but the
+   0 km/h gate is enforced in the shared write primitives — the same code EVProfile uses.
 2. **The action catalogue is closed.** No arbitrary property write crosses the IPC contract.
-3. **The optional MG4Control bridge is signature-protected.** MG4Control's exported
-   `ProfileControlService` requires `com.mg4.control.permission.CONTROL_PROFILES`, at
+3. **The optional EVProfile bridge is signature-protected.** EVProfile's exported
+   `ProfileControlService` requires `com.evsuite.profile.permission.CONTROL_PROFILES`, at
    `protectionLevel="signature"` — only apps signed with the same platform key can bind.
 
 See also [DISCLAIMER.md](DISCLAIMER.md) — this software runs on a vehicle.

@@ -13,8 +13,8 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MG4Tasker"
+rootProject.name = "EVTasker"
 include(":app")
 
-include(":mg4hardware")
-project(":mg4hardware").projectDir = file("MG4Hardware/lib")
+include(":evhardware")
+project(":evhardware").projectDir = file("EVHardware/lib")

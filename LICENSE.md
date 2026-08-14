@@ -2,15 +2,15 @@
 
 This project is released under the **MIT Licence** — see [`LICENSE`](LICENSE).
 
-## Relationship to MG4Control
+## Relationship to EVProfile
 
-MG4Tasker is a companion to [MG4Control](../MG4Control) and useless without it: it holds no
-vehicle privileges and reaches the car only through MG4Control's signature-protected
+EVTasker is a companion to [EVProfile](../EVProfile) and useless without it: it holds no
+vehicle privileges and reaches the car only through EVProfile's signature-protected
 bridge. The two are signed with the same platform key by necessity, not coincidence.
 
-MG4Control is itself a fork governed by its own licence situation. MG4Tasker adds no new
-dependency on that code — it talks to MG4Control over IPC, it does not embed it — so the
-MIT licence here applies to MG4Tasker's own sources.
+EVProfile is itself a fork governed by its own licence situation. EVTasker adds no new
+dependency on that code — it talks to EVProfile over IPC, it does not embed it — so the
+MIT licence here applies to EVTasker's own sources.
 
 ## No warranty
 

@@ -3,40 +3,40 @@ plugins {
 }
 
 android {
-    namespace = "com.mg4.tasker"
+    namespace = "com.evsuite.tasker"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.mg4.tasker"
+        applicationId = "com.evsuite.tasker"
         minSdk = 28
         targetSdk = 34
         versionCode = 2
         versionName = "1.1.0"
     }
 
-    // MG4Tasker doit être signé avec la MÊME clé plateforme que MG4Control : c'est la seule
-    // façon d'obtenir com.mg4.control.permission.TASKER_BRIDGE (protectionLevel="signature").
+    // EVTasker doit être signé avec la MÊME clé plateforme que EVProfile : c'est la seule
+    // façon d'obtenir com.evsuite.profile.permission.TASKER_BRIDGE (protectionLevel="signature").
     // Sans elle, le bind au pont est refusé par le système et l'app est inerte.
-    // À la différence de MG4Control, l'app ne déclare PAS sharedUserId="android.uid.system" :
+    // À la différence de EVProfile, l'app ne déclare PAS sharedUserId="android.uid.system" :
     // elle n'accède jamais au véhicule directement, donc n'a aucun privilège à réclamer.
-    val keystorePath = System.getenv("MG4_KEYSTORE") ?: (project.findProperty("mg4.keystore") as String?)
+    val keystorePath = System.getenv("EV_KEYSTORE") ?: (project.findProperty("evsuite.keystore") as String?)
     signingConfigs {
         if (keystorePath != null && file(keystorePath).exists()) {
             create("platform") {
                 storeFile = file(keystorePath)
-                storePassword = System.getenv("MG4_KEYSTORE_PASSWORD") ?: (project.findProperty("mg4.keystore.password") as String?)
-                keyAlias = System.getenv("MG4_KEY_ALIAS") ?: (project.findProperty("mg4.key.alias") as String?) ?: "platform"
-                keyPassword = System.getenv("MG4_KEY_PASSWORD") ?: (project.findProperty("mg4.key.password") as String?)
+                storePassword = System.getenv("EV_KEYSTORE_PASSWORD") ?: (project.findProperty("evsuite.keystore.password") as String?)
+                keyAlias = System.getenv("EV_KEY_ALIAS") ?: (project.findProperty("evsuite.key.alias") as String?) ?: "platform"
+                keyPassword = System.getenv("EV_KEY_PASSWORD") ?: (project.findProperty("evsuite.key.password") as String?)
             }
         }
     }
 
-    // Distribution channels (mirrors ABRP / MG4Control):
+    // Distribution channels (mirrors ABRP / EVProfile):
     //  - stable  : tagged releases, NO self-update. The updater class is not in the APK.
     //  - unstable: pre-releases published on every push to master, with OTA so testers stay
     //              current without manual work. Installs alongside stable (.unstable suffix).
-    // Note: MG4Control targets the ignition broadcast at package "com.mg4.tasker"; the
-    // unstable id is "com.mg4.tasker.unstable", so an unstable build is a test/manual-run
+    // Note: EVProfile targets the ignition broadcast at package "com.evsuite.tasker"; the
+    // unstable id is "com.evsuite.tasker.unstable", so an unstable build is a test/manual-run
     // channel and does not receive the auto ignition trigger.
     flavorDimensions += "channel"
     productFlavors {
@@ -78,7 +78,7 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
-        // ITaskerBridge : copie conforme du contrat déclaré par MG4Control.
+        // ITaskerBridge : copie conforme du contrat déclaré par EVProfile.
         aidl = true
     }
 
@@ -100,7 +100,7 @@ kotlin {
 }
 
 // Prints the unstable versionName so the release workflow can name the APK asset
-// numerically comparable ("MG4Tasker-unstable-1.0.0.42.apk"). The pre-release itself is
+// numerically comparable ("EVTasker-unstable-1.0.0.42.apk"). The pre-release itself is
 // always tagged "unstable" and overwritten, so the asset name is what the updater reads.
 tasks.register("printUnstableVersion") {
     doLast {
@@ -109,7 +109,7 @@ tasks.register("printUnstableVersion") {
 }
 
 dependencies {
-    implementation(project(":mg4hardware"))
+    implementation(project(":evhardware"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

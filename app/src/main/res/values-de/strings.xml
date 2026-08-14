@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MG4 Tasker</string>
+    <string name="app_name">EVTasker</string>
 
     <!-- Tabs -->
     <string name="tab_rules">Regeln</string>
@@ -52,7 +52,7 @@
     <string name="rules_import_title">Regeln importieren</string>
     <string name="rules_import_confirm">Alle aktuellen Regeln durch die aus „%1$s“ ersetzen?</string>
     <string name="rules_import_ok">Regeln importiert</string>
-    <string name="rules_import_err_version">„%1$s“ wurde von einer neueren MG4Tasker-Version geschrieben</string>
+    <string name="rules_import_err_version">„%1$s“ wurde von einer neueren EVTasker-Version geschrieben</string>
     <string name="rules_import_err_unknown">„%1$s“ verwendet eine dieser Version unbekannte Bedingung oder Aktion (%2$s)</string>
     <string name="rules_import_err_malformed">„%1$s“ ist keine lesbare Regeldatei</string>
     <string name="rules_import_err_too_many">„%1$s“ enthält mehr als %2$d Regeln</string>
@@ -84,9 +84,9 @@
     <string name="editor_store_unreadable">Die gespeicherten Regeln sind unlesbar; Speichern würde sie überschreiben. Importieren Sie eine Regeldatei.</string>
     <string name="editor_remove">Entfernen</string>
     <string name="profile_automation_warning_title">Doppelte Profil-Automatisierung vermeiden</string>
-    <string name="profile_automation_warning_message">MG4Control ist verbunden. Deaktivieren Sie vor der Nutzung dieser Profilaktion die Profil-Automatisierungen von MG4Control sowie das automatische Anwenden seines Standardprofils, damit nicht beide Apps beim Start ein Profil anwenden.</string>
+    <string name="profile_automation_warning_message">EVProfile ist verbunden. Deaktivieren Sie vor der Nutzung dieser Profilaktion die Profil-Automatisierungen von EVProfile sowie das automatische Anwenden seines Standardprofils, damit nicht beide Apps beim Start ein Profil anwenden.</string>
     <string name="editor_gated_hint">Nur im Stand</string>
-    <string name="editor_gated_explain">Diese Einstellung ändert das Fahrverhalten: MG4Control verweigert sie während der Fahrt.</string>
+    <string name="editor_gated_explain">Diese Einstellung ändert das Fahrverhalten: EVProfile verweigert sie während der Fahrt.</string>
     <string name="editor_pick_condition">Bedingung wählen</string>
     <string name="editor_pick_action">Aktion wählen</string>
     <string name="picker_empty">Nichts davon wird von diesem Fahrzeug unterstützt.</string>
@@ -104,7 +104,7 @@
     <string name="value_no_contacts">Keine synchronisierten Kontakte. Kontaktfreigabe am gekoppelten Telefon erlauben.</string>
     <string name="value_contact_hint">Kontakt oder Nummer suchen</string>
     <string name="value_call_required">Telefonnummer eingeben oder Kontakt auswählen</string>
-    <string name="value_no_profiles">Kein MG4Control-Profil erreichbar</string>
+    <string name="value_no_profiles">Kein EVProfile-Profil erreichbar</string>
     <string name="value_notification_hint">Anzuzeigende Nachricht</string>
 
     <string name="op_eq">ist gleich</string>
@@ -145,7 +145,7 @@
     <string name="verdict_unknown_speed">verweigert — Geschwindigkeit unlesbar</string>
     <string name="verdict_unsupported">nicht unterstützt</string>
     <string name="verdict_error">fehlgeschlagen</string>
-    <string name="verdict_no_bridge">MG4Control nicht erreichbar</string>
+    <string name="verdict_no_bridge">EVProfile nicht erreichbar</string>
 
     <!-- Diagnostic -->
     <string name="diag_title">Ausführungsdiagnose</string>
@@ -167,7 +167,7 @@
     <string name="diag_env_notifications">Benachrichtigungen</string>
     <string name="diag_env_gate">Stillstandssperre</string>
     <string name="diag_env_cache">Cache unterstützter Funktionen</string>
-    <string name="diag_env_mg4control">MG4Control</string>
+    <string name="diag_env_evprofile">EVProfile</string>
     <string name="diag_env_tts">Sprachausgabe</string>
     <string name="diag_env_bluetooth">Bluetooth</string>
     <string name="diag_bt_off">aus</string>
@@ -191,10 +191,10 @@
     <string name="diag_reason_not_readable">in diesem Fahrzeug nicht lesbar</string>
     <string name="diag_reason_layer">Fahrzeugebene nicht bereit</string>
     <string name="diag_reason_firmware">von dieser Firmware nicht unterstützt</string>
-    <string name="diag_reason_no_mg4control">MG4Control nicht installiert</string>
+    <string name="diag_reason_no_evprofile">EVProfile nicht installiert</string>
     <string name="diag_reason_no_tts">keine Sprachausgabe verfügbar</string>
     <string name="diag_reason_notifications">Benachrichtigungen deaktiviert</string>
-    <string name="diag_bridge_ko_hint">Öffnen Sie MG4Tasker im Fahrzeug, damit sein Fahrzeugdienst starten kann. Er benötigt die Plattformsignatur und Systemberechtigungen.</string>
+    <string name="diag_bridge_ko_hint">Öffnen Sie EVTasker im Fahrzeug, damit sein Fahrzeugdienst starten kann. Er benötigt die Plattformsignatur und Systemberechtigungen.</string>
     <string name="diag_temp_note">Die Außentemperatur wird nicht von jeder MG4-Firmware bereitgestellt. Bleibt sie hier unlesbar, werden Regeln, die sie verwenden, nie ausgelöst.</string>
     <string name="diag_check_support">Unterstützung prüfen</string>
     <string name="diag_support_checking">Unterstützte Funktionen werden geprüft…</string>
@@ -219,12 +219,22 @@
 
 
     <!-- Notifications -->
-    <string name="channel_name">MG4Tasker</string>
+    <string name="channel_name">EVTasker</string>
     <string name="notif_running_title">Regeln werden angewendet…</string>
     <string name="value_location_hint">Breite, Länge</string>
     <string name="value_location_current">Aktuelle Position</string>
     <string name="value_location_map">Karte öffnen</string>
     <string name="value_location_map_none">Keine Kartenanwendung auf dieser Headunit</string>
+    <string name="value_destination_hint">Adresse oder Breite, Länge</string>
+    <string name="value_place_pick">Gespeicherten Ort wählen</string>
+    <string name="value_place_save">Ort speichern</string>
+    <string name="value_place_name">Name des Ortes</string>
+    <string name="value_place_empty">Punkt eingeben oder wählen, bevor er gespeichert wird</string>
+    <string name="confirm_title">Bestätigung</string>
+    <string name="confirm_yes">Ja</string>
+    <string name="confirm_no">Nein</string>
+    <string name="confirm_countdown">Ohne Antwort endet die Regel in %1$d s</string>
+    <string name="verdict_declined">vom Fahrer abgelehnt</string>
     <string name="value_webhook_url">HTTPS-Webhook-URL</string>
     <string name="value_webhook_method_get">GET</string>
     <string name="value_webhook_method_post">POST</string>
@@ -232,12 +242,12 @@
     <string name="rules_threshold_standstill">Nur im Stand anwenden</string>
     <string name="rules_threshold_value">Bis %1$d km/h anwenden</string>
     <string name="rules_threshold_title">Höchstgeschwindigkeit für Änderungen</string>
-    <string name="rules_threshold_explain">0 km/h: Einstellungen werden nur im Stand angewendet. Darüber verweigert MG4Tasker nichts mehr — das Fahrzeug verweigert aber weiterhin, was es von sich aus verweigert.</string>
+    <string name="rules_threshold_explain">0 km/h: Einstellungen werden nur im Stand angewendet. Darüber verweigert EVTasker nichts mehr — das Fahrzeug verweigert aber weiterhin, was es von sich aus verweigert.</string>
     <string name="rules_result_title">Testergebnis</string>
     <string name="rules_result_none">Keine Regel wurde ausgewertet.</string>
     <string name="diag_env_vendor">Fahrzeugdienste (SAIC)</string>
     <string name="diag_env_location">Position</string>
-    <string name="diag_env_threshold">Höchstgeschwindigkeit für Änderungen</string>
+    <string name="diag_env_threshold">Schreibschutz</string>
     <string name="diag_reason_vendor">Fahrzeugdienst auf diesem Fahrzeug nicht verfügbar</string>
     <string name="diag_reason_no_navigation">keine Navigations-App</string>
     <string name="diag_reason_no_location">keine Position verfügbar</string>
@@ -275,13 +285,13 @@
     </plurals>
     <string name="editor_button_cases">Eine Regel, die eine Taste nennt, muss in jedem Fall eine nennen und darf kein „sonst“ haben</string>
     <string name="config_section_about">Über</string>
-    <string name="about_action">Über MG4 Tasker</string>
-    <string name="about_title">Über MG4 Tasker</string>
+    <string name="about_action">Über EVTasker</string>
+    <string name="about_title">Über EVTasker</string>
     <string name="about_version">Version %1$s</string>
     <string name="about_attribution">Autor und Betreuer: malys</string>
-    <string name="about_repository">github.com/malys/MG4Tasker</string>
+    <string name="about_repository">github.com/malys/EVTasker</string>
     <string name="about_made_with_love">Mit ❤ erstellt von malys</string>
-    <string name="about_logo_description">MG4 Tasker Logo</string>
+    <string name="about_logo_description">EVTasker Logo</string>
     <string name="about_qr_description">QR-Code für das Projekt-Repository</string>
     <string name="about_version_unknown">unbekannt</string>
     <string name="about_close">Schließen</string>

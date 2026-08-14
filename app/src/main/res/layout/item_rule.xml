@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/spacing_sm"
-    app:cardBackgroundColor="@color/mg4_surface_raised"
+    app:cardBackgroundColor="@color/ev_surface_raised"
     app:cardCornerRadius="12dp"
-    app:strokeColor="@color/mg4_outline"
+    app:strokeColor="@color/ev_outline"
     app:strokeWidth="1dp"
     android:checkable="true"
     android:focusable="true">
@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:maxLines="1"
                 android:ellipsize="end"
-                android:textAppearance="@style/Text.MG4.Body" />
+                android:textAppearance="@style/Text.EV.Body" />
 
             <TextView
                 android:id="@+id/ruleSummary"
@@ -42,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:maxLines="1"
                 android:ellipsize="end"
-                android:textAppearance="@style/Text.MG4.Secondary" />
+                android:textAppearance="@style/Text.EV.Secondary" />
         </LinearLayout>
 
         <!-- Switch inline in the list: enabling or muting a rule is the most frequent

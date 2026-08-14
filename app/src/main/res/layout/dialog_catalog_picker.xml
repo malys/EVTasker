@@ -5,7 +5,7 @@
 
      ConstraintLayout et pas des LinearLayout imbriqués : deux poids imbriqués font
      remesurer l'écran entier, et le sélecteur s'ouvre en pleine conduite.
-     Pas de fond ici non plus : la fenêtre en peint déjà un (Theme.MG4.Picker). -->
+     Pas de fond ici non plus : la fenêtre en peint déjà un (Theme.EV.Picker). -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:background="@color/mg4_surface"
+        android:background="@color/ev_surface"
         android:padding="@dimen/spacing_md"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,11 +32,11 @@
             android:layout_marginEnd="@dimen/spacing_lg"
             android:maxLines="1"
             android:ellipsize="end"
-            android:textAppearance="@style/Text.MG4.Title" />
+            android:textAppearance="@style/Text.EV.Title" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/pickerClose"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/editor_cancel" />
@@ -46,7 +46,7 @@
         android:id="@+id/pickerBarDivider"
         android:layout_width="0dp"
         android:layout_height="1dp"
-        android:background="@color/mg4_outline"
+        android:background="@color/ev_outline"
         app:layout_constraintTop_toBottomOf="@id/pickerBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -55,7 +55,7 @@
         android:id="@+id/pickerRailScroll"
         android:layout_width="@dimen/pane_rail_width"
         android:layout_height="0dp"
-        android:background="@color/mg4_surface"
+        android:background="@color/ev_surface"
         android:scrollbars="none"
         app:layout_constraintTop_toBottomOf="@id/pickerBarDivider"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -73,7 +73,7 @@
         android:id="@+id/pickerRailDivider"
         android:layout_width="1dp"
         android:layout_height="0dp"
-        android:background="@color/mg4_outline"
+        android:background="@color/ev_outline"
         app:layout_constraintTop_toBottomOf="@id/pickerBarDivider"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/pickerRailScroll" />
@@ -97,7 +97,7 @@
         android:layout_margin="@dimen/spacing_lg"
         android:gravity="center"
         android:text="@string/picker_empty"
-        android:textAppearance="@style/Text.MG4.Secondary"
+        android:textAppearance="@style/Text.EV.Secondary"
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/pickerBarDivider"
         app:layout_constraintBottom_toBottomOf="parent"

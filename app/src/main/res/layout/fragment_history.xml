@@ -16,11 +16,11 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/tab_history"
-            android:textAppearance="@style/Text.MG4.Title" />
+            android:textAppearance="@style/Text.EV.Title" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/clearButton"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/history_clear" />
@@ -38,7 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/history_empty_title"
-            android:textAppearance="@style/Text.MG4.Title" />
+            android:textAppearance="@style/Text.EV.Title" />
 
         <TextView
             android:layout_width="match_parent"
@@ -46,7 +46,7 @@
             android:layout_marginTop="@dimen/spacing_sm"
             android:gravity="center"
             android:text="@string/history_empty_body"
-            android:textAppearance="@style/Text.MG4.Secondary" />
+            android:textAppearance="@style/Text.EV.Secondary" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

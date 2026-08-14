@@ -8,9 +8,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/spacing_sm"
-    app:cardBackgroundColor="@color/mg4_surface_raised"
+    app:cardBackgroundColor="@color/ev_surface_raised"
     app:cardCornerRadius="12dp"
-    app:strokeColor="@color/mg4_outline"
+    app:strokeColor="@color/ev_outline"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -38,14 +38,14 @@
                 android:id="@+id/branchKind"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/Text.MG4.SectionHeader" />
+                android:textAppearance="@style/Text.EV.SectionHeader" />
 
             <TextView
                 android:id="@+id/branchSummary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xs"
-                android:textAppearance="@style/Text.MG4.Body" />
+                android:textAppearance="@style/Text.EV.Body" />
 
             <!-- Only the "else" carries it: it is the one case with no condition to read. -->
             <TextView
@@ -53,7 +53,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/editor_branch_else_hint"
-                android:textAppearance="@style/Text.MG4.Secondary"
+                android:textAppearance="@style/Text.EV.Secondary"
                 android:visibility="gone" />
         </LinearLayout>
 

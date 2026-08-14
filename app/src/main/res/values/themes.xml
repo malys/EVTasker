@@ -5,46 +5,46 @@
          setting. Dark is still the mode that matters - a light background filling the
          windscreen at night is glare - which is why the light palette was raised to
          the same 7:1 floor as the dark one rather than the other way round.
-         Shared component styles live in styles_mg4.xml. -->
-    <style name="Theme.MG4Tasker" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/mg4_accent</item>
-        <item name="colorOnPrimary">@color/mg4_on_accent</item>
-        <item name="colorSurface">@color/mg4_surface</item>
-        <item name="colorSurfaceContainer">@color/mg4_surface_raised</item>
-        <item name="android:colorBackground">@color/mg4_background</item>
-        <item name="android:windowBackground">@color/mg4_background</item>
-        <item name="colorError">@color/mg4_error</item>
-        <item name="android:statusBarColor">@color/mg4_background</item>
+         Shared component styles live in styles_ev.xml. -->
+    <style name="Theme.EVTasker" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/ev_accent</item>
+        <item name="colorOnPrimary">@color/ev_on_accent</item>
+        <item name="colorSurface">@color/ev_surface</item>
+        <item name="colorSurfaceContainer">@color/ev_surface_raised</item>
+        <item name="android:colorBackground">@color/ev_background</item>
+        <item name="android:windowBackground">@color/ev_background</item>
+        <item name="colorError">@color/ev_error</item>
+        <item name="android:statusBarColor">@color/ev_background</item>
         <!-- Material3's "on surface" is a grey-mauve that is comfortable indoors and
              too weak in full sun: a hard contrast is imposed instead. -->
-        <item name="colorOnSurface">@color/mg4_text_primary</item>
-        <item name="colorOnSurfaceVariant">@color/mg4_text_secondary</item>
-        <item name="colorOnBackground">@color/mg4_text_primary</item>
-        <item name="colorOutline">@color/mg4_outline</item>
-        <item name="android:textColorPrimary">@color/mg4_text_primary</item>
-        <item name="android:textColorSecondary">@color/mg4_text_secondary</item>
-        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MG4Tasker.Dialog</item>
+        <item name="colorOnSurface">@color/ev_text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/ev_text_secondary</item>
+        <item name="colorOnBackground">@color/ev_text_primary</item>
+        <item name="colorOutline">@color/ev_outline</item>
+        <item name="android:textColorPrimary">@color/ev_text_primary</item>
+        <item name="android:textColorSecondary">@color/ev_text_secondary</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.EVTasker.Dialog</item>
     </style>
 
     <!-- Dialog text at the same sizes as the rest of the app. Material's defaults are
          14sp body / 24sp title, sized for a phone held at arm's length; a test result or
          a language list read at 70 cm through a windscreen reflection needs the suite's
-         floor. The shared overlay in styles_mg4.xml is generated, so the sizes are added
+         floor. The shared overlay in styles_ev.xml is generated, so the sizes are added
          here rather than edited there. -->
-    <style name="ThemeOverlay.MG4Tasker.Dialog" parent="ThemeOverlay.MG4.Dialog">
-        <item name="materialAlertDialogTitleTextStyle">@style/MG4Tasker.Dialog.Title</item>
+    <style name="ThemeOverlay.EVTasker.Dialog" parent="ThemeOverlay.EV.Dialog">
+        <item name="materialAlertDialogTitleTextStyle">@style/EVTasker.Dialog.Title</item>
         <!-- Also the type of the list items: single-choice rows read this attribute. -->
-        <item name="materialAlertDialogBodyTextStyle">@style/MG4Tasker.Dialog.Body</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/EVTasker.Dialog.Body</item>
     </style>
 
-    <style name="MG4Tasker.Dialog.Title" parent="MaterialAlertDialog.Material3.Title.Text">
+    <style name="EVTasker.Dialog.Title" parent="MaterialAlertDialog.Material3.Title.Text">
         <item name="android:textSize">@dimen/text_title</item>
-        <item name="android:textColor">@color/mg4_text_primary</item>
+        <item name="android:textColor">@color/ev_text_primary</item>
     </style>
 
-    <style name="MG4Tasker.Dialog.Body" parent="MaterialAlertDialog.Material3.Body.Text">
+    <style name="EVTasker.Dialog.Body" parent="MaterialAlertDialog.Material3.Body.Text">
         <item name="android:textSize">@dimen/text_body</item>
-        <item name="android:textColor">@color/mg4_text_primary</item>
+        <item name="android:textColor">@color/ev_text_primary</item>
         <item name="android:lineSpacingMultiplier">1.3</item>
     </style>
 
@@ -52,9 +52,9 @@
          sheet left only a third of the height in landscape, so one column and a
          scrollbar by the fifth entry. There is nothing behind a picker worth seeing,
          so the window does not float and dims nothing. -->
-    <style name="Theme.MG4.Picker" parent="Theme.MG4Tasker">
+    <style name="Theme.EV.Picker" parent="Theme.EVTasker">
         <item name="android:windowIsFloating">false</item>
-        <item name="android:windowBackground">@color/mg4_background</item>
+        <item name="android:windowBackground">@color/ev_background</item>
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 </resources>

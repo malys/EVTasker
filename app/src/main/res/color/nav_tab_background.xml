@@ -4,6 +4,6 @@
      never applied by hand in code, which guarantees a tab cannot stay painted "active"
      if the list of screens changes. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_selected="true" android:color="@color/mg4_accent" />
-    <item android:color="@color/mg4_surface_raised" />
+    <item android:state_selected="true" android:color="@color/ev_accent" />
+    <item android:color="@color/ev_surface_raised" />
 </selector>

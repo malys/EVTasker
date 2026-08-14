@@ -73,7 +73,7 @@ jobs:
         if: always()
         run: |
           {
-            echo "# MG4Tasker security report"
+            echo "# EVTasker security report"
             echo "_$(date -u)_"
             echo
             echo "## mobsfscan"
@@ -106,7 +106,7 @@ jobs:
         if: ${{ env.NVD_API_KEY != '' }}
         uses: dependency-check/Dependency-Check_Action@main
         with:
-          project: MG4Tasker
+          project: EVTasker
           path: "."
           format: "SARIF"
           args: --nvdApiKey ${{ env.NVD_API_KEY }}

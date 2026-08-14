@@ -1,4 +1,4 @@
-# Versions alignées sur MG4Control : les deux APK partagent la clé de signature et le
+# Versions alignées sur EVProfile : les deux APK partagent la clé de signature et le
 # contrat AIDL, il n'y a aucun intérêt à faire diverger les toolchains.
 [versions]
 agp = "9.1.1"

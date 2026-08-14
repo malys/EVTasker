@@ -4,10 +4,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="760dp"
     android:layout_height="wrap_content"
-    app:cardBackgroundColor="@color/mg4_surface"
-    app:cardCornerRadius="@dimen/mg4_corner"
+    app:cardBackgroundColor="@color/ev_surface"
+    app:cardCornerRadius="@dimen/ev_corner"
     app:cardElevation="0dp"
-    app:strokeColor="@color/mg4_outline"
+    app:strokeColor="@color/ev_outline"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -23,12 +23,12 @@
             android:paddingEnd="@dimen/spacing_lg"
             android:paddingBottom="@dimen/spacing_md"
             android:text="@string/about_title"
-            android:textAppearance="@style/Text.MG4.SectionHeader" />
+            android:textAppearance="@style/Text.EV.SectionHeader" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/mg4_outline" />
+            android:background="@color/ev_outline" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -58,14 +58,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_md"
                     android:text="@string/app_name"
-                    android:textAppearance="@style/Text.MG4.Title" />
+                    android:textAppearance="@style/Text.EV.Title" />
 
                 <TextView
                     android:id="@+id/about_version"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_xs"
-                    android:textAppearance="@style/Text.MG4.Secondary" />
+                    android:textAppearance="@style/Text.EV.Secondary" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -73,14 +73,14 @@
                     android:layout_marginTop="@dimen/spacing_md"
                     android:lineSpacingMultiplier="1.25"
                     android:text="@string/about_attribution"
-                    android:textAppearance="@style/Text.MG4.Body" />
+                    android:textAppearance="@style/Text.EV.Body" />
             </LinearLayout>
 
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
                 android:layout_marginEnd="@dimen/spacing_lg"
-                android:background="@color/mg4_outline" />
+                android:background="@color/ev_outline" />
 
             <LinearLayout
                 android:layout_width="264dp"
@@ -106,15 +106,15 @@
                     android:focusable="true"
                     android:gravity="center"
                     android:text="@string/about_repository"
-                    android:textAppearance="@style/Text.MG4.Secondary"
-                    android:textColor="@color/mg4_accent" />
+                    android:textAppearance="@style/Text.EV.Secondary"
+                    android:textColor="@color/ev_accent" />
             </LinearLayout>
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/mg4_outline" />
+            android:background="@color/ev_outline" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -128,11 +128,11 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/about_made_with_love"
-                android:textAppearance="@style/Text.MG4.Body" />
+                android:textAppearance="@style/Text.EV.Body" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/about_close"
-                style="@style/Widget.MG4.Button.Outlined"
+                style="@style/Widget.EV.Button.Outlined"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minHeight="@dimen/touch_target"

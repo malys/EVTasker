@@ -1,8 +1,8 @@
-# AGENTS.md — MG4Tasker
+# AGENTS.md — EVTasker
 
-Rule-based automation for the SAIC MG4 and part of **MG4Suite**. At ignition it evaluates
-rules and applies supported actions directly through the shared MG4Hardware safety layer.
-MG4Control is optional and is used only for the "apply saved profile" action.
+Rule-based automation for the SAIC MG4 and part of **EVSuite**. At ignition it evaluates
+rules and applies supported actions directly through the shared EVHardware safety layer.
+EVProfile is optional and is used only for the "apply saved profile" action.
 
 The workspace `AGENTS.md` and normative workspace `DESIGN.md` apply; this file contains
 only automation-specific additions.
@@ -11,20 +11,20 @@ Commit author: malys.training@gmail.com
 
 ## The one rule that shapes everything
 
-**Automation never bypasses MG4Hardware.** MG4Tasker reads a snapshot and executes named,
-typed catalogue actions through MG4Hardware; it never accepts or sends a raw property ID.
+**Automation never bypasses EVHardware.** EVTasker reads a snapshot and executes named,
+typed catalogue actions through EVHardware; it never accepts or sends a raw property ID.
 The low-level safety gate applies regardless of which app invokes the library. So:
 
-- Vehicle access code, firmware routing and property/transaction IDs live in MG4Hardware,
+- Vehicle access code, firmware routing and property/transaction IDs live in EVHardware,
   not in this app.
 - Rule actions are serialized; no two automation writes may interleave.
-- MG4Control IPC is limited to profile discovery/application and takes no raw property ID.
+- EVProfile IPC is limited to profile discovery/application and takes no raw property ID.
 
-## MG4Control profile boundary
+## EVProfile profile boundary
 
-The MG4Control profile bridge is protected by a signature permission. Both apps must be
+The EVProfile profile bridge is protected by a signature permission. Both apps must be
 signed with the same key for profile discovery/application; all other Tasker actions work
-without MG4Control. The Diagnostic tab reports profile-bridge and hardware-layer state
+without EVProfile. The Diagnostic tab reports profile-bridge and hardware-layer state
 separately.
 
 ## Unreadable ≠ false
@@ -37,7 +37,7 @@ Covered by `ConditionEvaluatorTest` and `RuleEngineTest`.
 ## Firmware compatibility is annotation-driven
 
 Every vehicle `ConditionType` / `ActionType` entry carries `@SupportedOn(...)`, derived
-from MG4Hardware's `FirmwareInfo` and its per-generation routing. It is the single source
+from EVHardware's `FirmwareInfo` and its per-generation routing. It is the single source
 of truth for:
 
 - `docs/firmware-matrix.md` — **generated** by `FirmwareMatrix`, refreshed by the test
@@ -49,10 +49,10 @@ Adding a vehicle entry without `@SupportedOn` fails `FirmwareSupportTest`.
 
 ## Triggers are events already received, not new listeners
 
-`TaskerVehicleService` gets every ignition transition from one MG4Hardware listener. The
+`TaskerVehicleService` gets every ignition transition from one EVHardware listener. The
 switch-off trigger reads the other end of that same stream — no second listener, no bind, no
 poll. Physical buttons are conditions (never a `RuleTrigger`): a rule containing one is
-addressed by that event and excluded from ignition cycles. MG4Hardware owns the OEM keycode
+addressed by that event and excluded from ignition cycles. EVHardware owns the OEM keycode
 catalogue and short/long-press state machine; the app only receives the broadcast and feeds
 its payload to that decoder. The receiver requires the
 signature sender permission because that action is otherwise forgeable. Long press fires on
@@ -76,24 +76,21 @@ negative or moving speed refuses the action; park state does not rescue an unrea
 Do not expose a user-configurable moving threshold. Any existing `allowUpToKmh` or park-rescue
 path is safety debt to remove, not a pattern to extend.
 
-## A gate refusal is "not now", so it is kept
+## A gate refusal is final
 
-`DeferredWrites` holds writes refused for MOVING or UNKNOWN_SPEED and re-applies them at the
-next standstill. What keeps it honest: only those two verdicts (an unsupported action will
-still be unsupported in ten minutes), a 15-minute expiry, dropped at IGNITION_OFF rather than
-applied, one attempt each, and a history entry per drain. The poller is a single thread that
-exists only while the queue does — `stopIfEmpty()` clears the flag under the lock `offer`
-takes, otherwise an entry can be stranded with no poller running.
+MOVING and UNKNOWN_SPEED refusals are reported and are not queued or retried at a later
+standstill. `DeferredWrites` is retained only as disabled legacy code during the audit; do
+not reconnect its poller or introduce another delayed-write path.
 
-## Vehicle primitives go in MG4Hardware
+## Vehicle primitives go in EVHardware
 
-MG4Tasker adds no low-level vehicle access code. When a new action needs a capability,
-implement it in the standalone MG4Hardware repository (branched per firmware generation),
+EVTasker adds no low-level vehicle access code. When a new action needs a capability,
+implement it in the standalone EVHardware repository (branched per firmware generation),
 update the typed catalogue and tests, then update this app's submodule and executor.
-Property IDs and per-generation routing never live in MG4Tasker or MG4Control app code.
+Property IDs and per-generation routing never live in EVTasker or EVProfile app code.
 
 Climate, charging, radio and hands-free calls do **not** go through property ids. They use
-the SAIC vendor binder services the car's own apps use (`com.mg4.hardware.saic`). Keep every
+the SAIC vendor binder services the car's own apps use (`com.evsuite.hardware.saic`). Keep every
 descriptor and transaction code documented as a project implementation detail. The earlier AOSP
 climate ids were standard ids that no MG4 confirmed, so writing them
 would have been a guess.
@@ -105,7 +102,7 @@ Whether a car has a given vendor service is a **bind, not a table**: the `@Suppo
 records the generations we have evidence for (SWI68/SWI165, the R69 platform), and the
 Diagnostic tab's *Vehicle services* row is what widens it.
 
-## Reference patterns (inherited from MG4Control / MG4ABRPUploader)
+## Reference patterns (inherited from EVProfile / EVABRPUploader)
 
 - **Signing**: keystore path + passwords from env vars (CI) or `gradle.properties`
   (local); `signingConfig` created only if the file exists. Never a literal secret in a
@@ -117,9 +114,9 @@ Diagnostic tab's *Vehicle services* row is what widens it.
 - **In-app console**: `AppLogger` ring buffer + Console screen, so the car is diagnosable
   without ADB.
 - **Atomic file writes**: temp file → rename over target. Never delete-then-write.
-- **Channel isolation**: stable has no network permission and no updater implementation;
-  unstable automatically downloads to private cache, verifies every redirect and the APK
-  certificate, then installs through `pm` and deletes the cached APK.
+- **Channel isolation**: stable has no network permission and no updater implementation.
+  The unstable updater implementation remains isolated and tested, but its `UpdateHook` is
+  intentionally inert while the suite safety and legal audit is open.
 - **Language**: English by default (code, comments, commits, docs). User strings in
   `values/` (English) + `values-fr/` (French).
 
@@ -132,4 +129,4 @@ unknown, unreadable property, missing bridge) is covered. Run `mise run test`.
 ## Build
 
 `mise run test | build | check | release`. JDK 17 (AGP 8.5.2). The Android SDK is shared
-with MG4Control (`mise run bootstrap` lives there).
+with EVProfile (`mise run bootstrap` lives there).

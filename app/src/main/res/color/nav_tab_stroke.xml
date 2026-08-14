@@ -2,6 +2,6 @@
 <!-- Nav tab outline. Checked tab keeps the same stroke color as its fill so its size
      doesn't jump a dp on selection. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_selected="true" android:color="@color/mg4_accent" />
-    <item android:color="@color/mg4_outline" />
+    <item android:state_selected="true" android:color="@color/ev_accent" />
+    <item android:color="@color/ev_outline" />
 </selector>

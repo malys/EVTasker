@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/spacing_sm"
-    app:cardBackgroundColor="@color/mg4_surface_raised"
+    app:cardBackgroundColor="@color/ev_surface_raised"
     app:cardCornerRadius="12dp">
 
     <LinearLayout
@@ -18,7 +18,7 @@
             android:id="@+id/runHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/Text.MG4.Body"
+            android:textAppearance="@style/Text.EV.Body"
             android:textStyle="bold" />
 
         <TextView
@@ -26,8 +26,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_xs"
-            android:textAppearance="@style/Text.MG4.Secondary"
-            android:textColor="@color/mg4_warn"
+            android:textAppearance="@style/Text.EV.Secondary"
+            android:textColor="@color/ev_warn"
             android:visibility="gone" />
 
         <!-- Detail as text rather than a nested list: a run fits in a few lines, and a
@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_sm"
-            android:textAppearance="@style/Text.MG4.Secondary"
+            android:textAppearance="@style/Text.EV.Secondary"
             android:lineSpacingMultiplier="1.3" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

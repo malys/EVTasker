@@ -97,7 +97,7 @@ body:
         - Firmware: SWI133
         - Android Automotive: v9
         - App Version: 1.0.0
-        - MG4Control: Connected/Version X.Y.Z
+        - EVProfile: Connected/Version X.Y.Z
         - Number of rules: 5
         - Active triggers: speed, time, location
       rows: 5
@@ -173,9 +173,9 @@ body:
       required: true
 
   - type: dropdown
-    id: mg4control_bridge
+    id: evprofile_bridge
     attributes:
-      label: "MG4Control Bridge"
+      label: "EVProfile Bridge"
       description: "Connection status shown in Diagnostic tab"
       options:
         - "Connected"

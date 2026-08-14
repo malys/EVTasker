@@ -17,20 +17,20 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/tab_console"
-            android:textAppearance="@style/Text.MG4.Title" />
+            android:textAppearance="@style/Text.EV.Title" />
 
         <!-- Export before Share: the head unit rarely has an app to share text to, so
              writing the file to storage is the path that actually works on the car. -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/exportButton"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/diag_export" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/shareButton"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_sm"
@@ -38,7 +38,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/clearButton"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_sm"
@@ -52,7 +52,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_md"
-        app:cardBackgroundColor="@color/mg4_surface_raised"
+        app:cardBackgroundColor="@color/ev_surface_raised"
         app:cardCornerRadius="12dp"
         android:visibility="gone">
 
@@ -68,19 +68,19 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:text="@string/console_crash_title"
-                android:textAppearance="@style/Text.MG4.Body"
-                android:textColor="@color/mg4_error" />
+                android:textAppearance="@style/Text.EV.Body"
+                android:textColor="@color/ev_error" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/crashShowButton"
-                style="@style/Widget.MG4.Button"
+                style="@style/Widget.EV.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/console_crash_show" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/crashDismissButton"
-                style="@style/Widget.MG4.Button.Outlined"
+                style="@style/Widget.EV.Button.Outlined"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_sm"

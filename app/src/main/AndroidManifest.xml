@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MG4Tasker is an independent system app: it reads and writes the vehicle directly
-     through the shared MG4Hardware layer, and works with no MG4Control installed.
+<!-- EVTasker is an independent system app: it reads and writes the vehicle directly
+     through the shared EVHardware layer, and works with no EVProfile installed.
      sharedUserId + the platform signature are what grant vehicle access (the car
-     permissions are signature|privileged), exactly as MG4Control does.
+     permissions are signature|privileged), exactly as EVProfile does.
 
-     MG4Control is optional: when it is installed, the "Apply MG4Control profile" action
+     EVProfile is optional: when it is installed, the "Apply EVProfile profile" action
      becomes available (via its signature-protected bridge). That is the only capability
-     that needs MG4Control. -->
+     that needs EVProfile. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:sharedUserId="android.uid.system">
 
-    <!-- Vehicle access (Android Automotive / SAIC) — same set MG4Control uses. -->
+    <!-- Vehicle access (Android Automotive / SAIC) — same set EVProfile uses. -->
     <uses-permission android:name="android.car.permission.CAR_ENERGY" />
     <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />
     <uses-permission android:name="android.car.permission.CAR_VENDOR_EXTENSION" />
@@ -28,7 +28,7 @@
     <!-- The SAIC hard-key report is otherwise forgeable by any app. Requiring this from
          the sender admits the platform-signed OEM hard-key service only. -->
     <permission
-        android:name="com.mg4.tasker.permission.RECEIVE_HARDKEY"
+        android:name="com.evsuite.tasker.permission.RECEIVE_HARDKEY"
         android:protectionLevel="signature" />
 
     <!-- Bluetooth: paired list for the editor, and live connection tracking for rules. -->
@@ -52,24 +52,24 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- Optional MG4Control bridge (the "apply profile" action only). Signature-level,
+    <!-- Optional EVProfile bridge (the "apply profile" action only). Signature-level,
          obtained solely because both APKs are signed with the same platform key. -->
-    <uses-permission android:name="com.mg4.control.permission.CONTROL_PROFILES" />
+    <uses-permission android:name="com.evsuite.profile.permission.CONTROL_PROFILES" />
 
-    <!-- API 30+: list installed apps for the "launch an app" action; detect MG4Control. -->
+    <!-- API 30+: list installed apps for the "launch an app" action; detect EVProfile. -->
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
-        <!-- Every MG4Control channel: the offline and unstable builds carry a suffixed
+        <!-- Every EVProfile channel: the offline and unstable builds carry a suffixed
              application id and are the same app. Declaring only the stable id made
-             MG4Control invisible on a car that had it, and the profile actions vanished
+             EVProfile invisible on a car that had it, and the profile actions vanished
              from the rule editor with it. -->
-        <package android:name="com.mg4.control" />
-        <package android:name="com.mg4.control.offline" />
-        <package android:name="com.mg4.control.unstable" />
-        <package android:name="com.mg4.control.offline.unstable" />
+        <package android:name="com.evsuite.profile" />
+        <package android:name="com.evsuite.profile.offline" />
+        <package android:name="com.evsuite.profile.unstable" />
+        <package android:name="com.evsuite.profile.offline.unstable" />
         <!-- API 30+: without this the TTS engine is invisible and the "speak" action
              would report "no speech engine" on a car that has one installed. -->
         <intent>
@@ -83,9 +83,8 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="google.navigation" />
         </intent>
-        <!-- The head unit's own map apps. They publish no geo: filter, so the intent
-             declarations above never see them and "Open map" resolved to nothing. Names
-             taken from the vendor launcher and its navigation widget. -->
+        <!-- Runtime-compatible map components that publish no geo: filter; explicit
+             package visibility lets the app offer navigation when either is installed. -->
         <package android:name="com.saicmotor.navigation" />
         <package android:name="com.telenav.app.arp" />
         <package android:name="com.nng.igo.primong" />
@@ -93,10 +92,10 @@
     </queries>
 
     <application
-        android:name=".MG4TaskerApp"
+        android:name=".EVTaskerApp"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
-        android:theme="@style/Theme.MG4Tasker"
+        android:theme="@style/Theme.EVTasker"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:supportsRtl="true">
@@ -135,7 +134,17 @@
             android:exported="false"
             android:screenOrientation="landscape" />
 
-        <!-- Persistent vehicle service: inits MG4Hardware, listens for ignition, evaluates
+        <!-- A rule's own yes/no question. Launched from the vehicle service while a rule is
+             running, so it comes up over whatever the head unit is showing; excluded from
+             recents because it belongs to that one rule and means nothing after it. -->
+        <activity
+            android:name=".ui.ConfirmActionActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape" />
+
+        <!-- Persistent vehicle service: inits EVHardware, listens for ignition, evaluates
              rules and applies actions directly. connectedDevice matches what it does. -->
         <service
             android:name=".service.TaskerVehicleService"

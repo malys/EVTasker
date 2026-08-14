@@ -4,12 +4,12 @@
     <item android:state_selected="true">
         <layer-list>
             <item>
-                <color android:color="@color/mg4_surface_raised" />
+                <color android:color="@color/ev_surface_raised" />
             </item>
             <item
                 android:width="6dp"
                 android:gravity="start|fill_vertical">
-                <color android:color="@color/mg4_accent" />
+                <color android:color="@color/ev_accent" />
             </item>
         </layer-list>
     </item>

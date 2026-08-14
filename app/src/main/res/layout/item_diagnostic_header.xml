@@ -8,4 +8,4 @@
     android:layout_height="wrap_content"
     android:paddingTop="@dimen/spacing_lg"
     android:paddingBottom="@dimen/spacing_xs"
-    android:textAppearance="@style/Text.MG4.SectionHeader" />
+    android:textAppearance="@style/Text.EV.SectionHeader" />

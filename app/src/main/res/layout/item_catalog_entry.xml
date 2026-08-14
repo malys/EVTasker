@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:maxLines="3"
         android:ellipsize="end"
-        android:textAppearance="@style/Text.MG4.Body" />
+        android:textAppearance="@style/Text.EV.Body" />
 
     <TextView
         android:id="@+id/entryNote"
@@ -28,7 +28,7 @@
         android:layout_marginTop="@dimen/spacing_xs"
         android:maxLines="1"
         android:ellipsize="end"
-        android:textAppearance="@style/Text.MG4.Secondary"
-        android:textColor="@color/mg4_warn"
+        android:textAppearance="@style/Text.EV.Secondary"
+        android:textColor="@color/ev_warn"
         android:visibility="gone" />
 </LinearLayout>

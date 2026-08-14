@@ -22,7 +22,7 @@ body:
       options:
         - label: I've checked existing issues/discussions and found no duplicate
           required: true
-        - label: This is an automation/rule feature (not vehicle control — that's MG4Control)
+        - label: This is an automation/rule feature (not vehicle control — that's EVProfile)
           required: true
         - label: I understand this feature must have no safety issues
           required: true

@@ -2,7 +2,7 @@
 <resources>
     <!-- Supported display languages. Order must match language_names. Add a language by
          dropping a values-xx/ translation and appending its tag + endonym here. Parity
-         target is MG4Control (de/en/es/fr/it/pt); only shipped translations are listed. -->
+         target is EVProfile (de/en/es/fr/it/pt); only shipped translations are listed. -->
     <string-array name="language_tags" translatable="false">
         <item>system</item>
         <item>de</item>

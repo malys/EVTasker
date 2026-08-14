@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/mg4_background">
+    android:background="@color/ev_background">
 
     <!-- Action bar at the top, always visible: on a vehicle screen you do not scroll to
          find "Save". -->
@@ -13,14 +13,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:background="@color/mg4_surface"
+        android:background="@color/ev_surface"
         android:padding="@dimen/spacing_md">
 
         <TextView
             android:id="@+id/editorTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/Text.MG4.Title"
+            android:textAppearance="@style/Text.EV.Title"
             android:layout_marginEnd="@dimen/spacing_lg" />
 
         <View
@@ -30,14 +30,14 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/cancelButton"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/editor_cancel" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/saveButton"
-            style="@style/Widget.MG4.Button"
+            style="@style/Widget.EV.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_sm"
@@ -78,7 +78,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_lg"
                 android:text="@string/editor_trigger"
-                android:textAppearance="@style/Text.MG4.SectionHeader" />
+                android:textAppearance="@style/Text.EV.SectionHeader" />
 
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/triggerGroup"
@@ -90,14 +90,14 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/triggerIgnitionOn"
-                    style="@style/Widget.MG4.Button.Outlined"
+                    style="@style/Widget.EV.Button.Outlined"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/editor_trigger_on" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/triggerIgnitionOff"
-                    style="@style/Widget.MG4.Button.Outlined"
+                    style="@style/Widget.EV.Button.Outlined"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/editor_trigger_off" />
@@ -123,8 +123,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_sm"
                 android:text="@string/editor_expert_branches_notice"
-                android:textAppearance="@style/Text.MG4.Secondary"
-                android:textColor="@color/mg4_warn"
+                android:textAppearance="@style/Text.EV.Secondary"
+                android:textColor="@color/ev_warn"
                 android:visibility="gone" />
 
             <LinearLayout
@@ -137,7 +137,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/addElseIfButton"
-                    style="@style/Widget.MG4.Button.Outlined"
+                    style="@style/Widget.EV.Button.Outlined"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
@@ -145,7 +145,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/addElseButton"
-                    style="@style/Widget.MG4.Button.Outlined"
+                    style="@style/Widget.EV.Button.Outlined"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"

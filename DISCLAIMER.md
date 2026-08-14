@@ -20,22 +20,22 @@ arising from, out of or in connection with the software or its use.
   while you are not paying attention, because that is exactly what happens.
 - **Do not configure rules while driving.** Do it parked. Nothing in this app needs
   attention on the move.
-- The **safety gate is not a substitute for judgement**. MG4Control refuses road-behaviour
-  writes above 0 km/h, and MG4Tasker respects that. It does not make an ill-considered rule
+- The **safety gate is not a substitute for judgement**. EVProfile refuses road-behaviour
+  writes above 0 km/h, and EVTasker respects that. It does not make an ill-considered rule
   safe — it only prevents it from landing mid-drive.
-- **Compatibility is inferred, not tested.** The firmware table in the README is derived by
-  reading MG4Control's code, not by running on cars. Use the app's Diagnostic tab for what
-  your own vehicle actually reports.
-- Reading and writing vehicle settings uses **undocumented OEM interfaces** discovered by
-  inspection. They can change or disappear with any firmware update.
+- **Compatibility is inferred, not certified.** Not every build has been tested on every
+  car. Use the app's Diagnostic tab for what your own vehicle actually reports.
+- Reading and writing vehicle settings uses **undocumented runtime interfaces**. They can
+  change or disappear with any firmware update.
 - Release builds are **minified with R8**, and the IPC bridge is resolved by name at bind
   time. Verify a release build on the vehicle before relying on it.
 
 ## Not affiliated
 
 This project is **not affiliated with, endorsed by, or supported by** SAIC Motor, MG Motor,
-or Google. All trademarks belong to their respective owners. "MG4" is used only to identify
-the vehicle the software targets.
+or Google. MG, MG4 and related names and logos are trademarks of their respective owners.
+They are used solely to identify compatibility with certain vehicles; no official origin,
+certification or approval is claimed.
 
 ## Contributors
 

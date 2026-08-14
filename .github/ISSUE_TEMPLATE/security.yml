@@ -31,7 +31,7 @@ body:
         - label: "State corruption (rule state becomes inconsistent)"
         - label: "Condition bypass (gate condition ignored)"
         - label: "Unauthorized vehicle action (unintended profile/setting change)"
-        - label: "MG4Control bridge exploitation (improper IPC validation)"
+        - label: "EVProfile bridge exploitation (improper IPC validation)"
         - label: "Data exfiltration (personal data leaked via rule log/export)"
         - label: "Privilege escalation or permission abuse"
         - label: "Code execution vulnerability"
@@ -83,7 +83,7 @@ body:
     attributes:
       label: "Affected Versions"
       description: "Which versions are affected?"
-      placeholder: "MG4Tasker < 1.0.0 (all builds)"
+      placeholder: "EVTasker < 1.0.0 (all builds)"
     validations:
       required: true
 

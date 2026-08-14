@@ -1,4 +1,4 @@
-# Allowed permissions for MG4Tasker.
+# Allowed permissions for EVTasker.
 # Any uses-permission in a manifest NOT listed here FAILS the CI.
 # Why: this app decides when settings get written to a car, and now writes them directly
 # (system app). Every new permission widens what a rule can reach and must be reviewed here.
@@ -6,9 +6,9 @@
 # One line = one full permission name. '#' = comment.
 
 # --- Vehicle access (system app) ---
-# MG4Tasker reads and writes the vehicle directly through MG4Hardware. These car
+# EVTasker reads and writes the vehicle directly through EVHardware. These car
 # permissions are signature|privileged and are granted because the app is signed with the
-# ROM platform key and declares sharedUserId="android.uid.system" (same as MG4Control).
+# ROM platform key and declares sharedUserId="android.uid.system" (same as EVProfile).
 android.car.permission.CAR_ENERGY
 android.car.permission.CAR_POWERTRAIN
 android.car.permission.CAR_VENDOR_EXTENSION
@@ -16,7 +16,7 @@ android.car.permission.CONTROL_CAR_CLIMATE
 android.permission.WRITE_SETTINGS
 
 # --- Own vehicle service ---
-# A persistent foreground service inits MG4Hardware and listens for ignition; it starts at
+# A persistent foreground service inits EVHardware and listens for ignition; it starts at
 # boot to catch the first ignition without the app being opened.
 android.permission.FOREGROUND_SERVICE
 android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE
@@ -37,13 +37,13 @@ android.permission.BLUETOOTH_PRIVILEGED
 # publishes the paired phone's explicitly shared phone book through ContactsContract.
 android.permission.READ_CONTACTS
 
-# Signature permission defined by MG4Tasker to reject forged OEM hard-key broadcasts.
-com.mg4.tasker.permission.RECEIVE_HARDKEY
+# Signature permission defined by EVTasker to reject forged OEM hard-key broadcasts.
+com.evsuite.tasker.permission.RECEIVE_HARDKEY
 
-# --- Optional MG4Control bridge (profile action only) ---
+# --- Optional EVProfile bridge (profile action only) ---
 # Signature-level, obtained solely because both APKs share the platform key. Used only to
-# apply an MG4Control profile when MG4Control is installed.
-com.mg4.control.permission.CONTROL_PROFILES
+# apply an EVProfile profile when EVProfile is installed.
+com.evsuite.profile.permission.CONTROL_PROFILES
 
 # --- Position ---
 # The "near a place" condition, and nothing else. Last known fix only (no live request), read

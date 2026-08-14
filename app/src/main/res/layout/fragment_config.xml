@@ -5,7 +5,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/mg4_background"
+    android:background="@color/ev_background"
     android:padding="@dimen/spacing_lg">
 
     <LinearLayout
@@ -16,37 +16,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/config_section_speed"
-            android:textAppearance="@style/Text.MG4.SectionHeader" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/thresholdButton"
-            style="@style/Widget.MG4.Button.Outlined"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="@dimen/touch_target"
-            android:layout_marginTop="@dimen/spacing_sm" />
-
-        <TextView
-            android:id="@+id/thresholdExplain"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:text="@string/rules_threshold_explain"
-            android:textAppearance="@style/Text.MG4.Secondary"
-            android:lineSpacingMultiplier="1.3" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_lg"
             android:text="@string/config_section_language"
-            android:textAppearance="@style/Text.MG4.SectionHeader" />
+            android:textAppearance="@style/Text.EV.SectionHeader" />
 
         <!-- Full wording here, unlike the two-letter code the rules pane could afford. -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/languageButton"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="@dimen/touch_target"
@@ -57,11 +33,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_lg"
             android:text="@string/config_section_rule_editor"
-            android:textAppearance="@style/Text.MG4.SectionHeader" />
+            android:textAppearance="@style/Text.EV.SectionHeader" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/expertRulesSwitch"
-            style="@style/Widget.MG4.Switch"
+            style="@style/Widget.EV.Switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_sm"
@@ -73,7 +49,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_xs"
             android:text="@string/config_expert_rules_explain"
-            android:textAppearance="@style/Text.MG4.Secondary"
+            android:textAppearance="@style/Text.EV.Secondary"
             android:lineSpacingMultiplier="1.3" />
 
         <TextView
@@ -81,14 +57,14 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_lg"
             android:text="@string/config_section_rules_file"
-            android:textAppearance="@style/Text.MG4.SectionHeader" />
+            android:textAppearance="@style/Text.EV.SectionHeader" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_sm"
             android:text="@string/config_rules_file_explain"
-            android:textAppearance="@style/Text.MG4.Secondary"
+            android:textAppearance="@style/Text.EV.Secondary"
             android:lineSpacingMultiplier="1.3" />
 
         <LinearLayout
@@ -99,7 +75,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/exportButton"
-                style="@style/Widget.MG4.Button.Outlined"
+                style="@style/Widget.EV.Button.Outlined"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
@@ -108,7 +84,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/importButton"
-                style="@style/Widget.MG4.Button.Outlined"
+                style="@style/Widget.EV.Button.Outlined"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
@@ -122,11 +98,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_lg"
             android:text="@string/config_section_about"
-            android:textAppearance="@style/Text.MG4.SectionHeader" />
+            android:textAppearance="@style/Text.EV.SectionHeader" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/aboutButton"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_sm"

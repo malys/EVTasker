@@ -9,5 +9,5 @@
     android:gravity="center_vertical"
     android:minHeight="@dimen/touch_target"
     android:paddingHorizontal="@dimen/spacing_md"
-    android:textColor="@color/mg4_text_primary"
+    android:textColor="@color/ev_text_primary"
     android:textSize="@dimen/text_title" />

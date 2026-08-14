@@ -1,10 +1,10 @@
-# Contributing to MG4Tasker
+# Contributing to EVTasker
 
 Thank you for contributing! This guide keeps your work aligned with the project's automation safety, security, and quality requirements.
 
 ## 🚨 Critical Context: Automated Vehicle Actions
 
-**MG4Tasker runs unattended automation sequences on your car.** Incorrect rule execution, gating, or sequencing can:
+**EVTasker runs unattended automation sequences on your car.** Incorrect rule execution, gating, or sequencing can:
 - Execute unintended vehicle actions
 - Corrupt automation state
 - Create a security vulnerability where malicious inputs trigger bad behavior
@@ -16,7 +16,9 @@ Thank you for contributing! This guide keeps your work aligned with the project'
 
 ## 🎯 Ground Rules
 
-1. **MG4Tasker never writes to the vehicle directly.** All vehicle writes must go through MG4Control, which owns privileges and the speed gate.
+1. **EVTasker writes only through the typed EVHardware catalogue.** Raw property ids and
+   independent safety decisions do not belong in this app. EVProfile is optional and is
+   used only to discover or apply a saved profile.
 2. **Unreadable is not false.** A missing or unreadable condition makes a rule *not evaluable* — it must not fire.
 3. **Fail closed.** Unknown firmware, unreadable speed, missing bridge: refuse or omit. Do not guess.
 4. **Atomic execution only.** When multiple rules fire together, they execute in order without interleaving. Do not expose partial state to other rules.
@@ -42,7 +44,7 @@ bash .github/security/check-permissions.sh
 
 - **Unit tests:** rule parsing, input validation, condition evaluation, sequencing, state transitions
 - **Emulator tests:** non-vehicle logic, rule editor, rule persistence
-- **Vehicle tests:** simultaneous rule firing, condition gating, MG4Control writes, speed gate enforcement, fail-closed behavior
+- **Vehicle tests:** simultaneous rule firing, condition gating, EVProfile writes, speed gate enforcement, fail-closed behavior
 
 ### Task Sequencing Protocol
 
@@ -110,7 +112,7 @@ fun setRuleName(ruleName: String): Boolean {
 
 ### Vehicle Safety
 
-- No direct vehicle writes in MG4Tasker
+- No direct vehicle writes in EVTasker
 - Speed gate enforced before any vehicle action
 - ADAS actions require explicit approval
 - Fail-closed on missing or stale data
@@ -125,7 +127,7 @@ fun setRuleName(ruleName: String): Boolean {
 4. Address review feedback
 5. Merge when approved
 
-> Use the PR template to document verification, sequencing tests, MG4Control interaction, and security impact.
+> Use the PR template to document verification, sequencing tests, EVProfile interaction, and security impact.
 
 ---
 
@@ -163,7 +165,7 @@ Any new `uses-permission` fails CI until added to `.github/security/permission-a
 ## 📚 Project Structure
 
 ```
-MG4Tasker/
+EVTasker/
 ├── app/src/main/          # Automation engine and rule runtime
 ├── app/src/test/          # Unit tests for rules, sequencing, validation
 ├── .github/               # Issue templates, PR template, security gate

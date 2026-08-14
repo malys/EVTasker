@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MG4 Tasker</string>
+    <string name="app_name">EVTasker</string>
 
     <!-- Tabs -->
     <string name="tab_rules">Rules</string>
@@ -36,6 +36,10 @@
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automation enabled</string>
+    <string name="write_consent_title">Enable vehicle-setting automation?</string>
+    <string name="write_consent_message">Rules can change vehicle settings without an immediate screen tap. Driving mode, regeneration and driver-assistance settings affect vehicle behaviour. Writes are allowed only when an immediate speed read returns exactly 0 km/h and are refused on unknown firmware, but these safeguards are not a certification or guarantee. Configure and test each rule while the vehicle is stationary on private property. You are responsible for compatibility, warranty, insurance and legal compliance. This independent project is not affiliated with or approved by SAIC Motor or MG Motor.</string>
+    <string name="write_consent_cancel">Keep disabled</string>
+    <string name="write_consent_accept">I understand — enable</string>
     <string name="rules_language">Language: %1$s</string>
     <string name="rules_language_title">Language</string>
     <string name="rules_language_auto">Auto</string>
@@ -69,7 +73,7 @@
     <string name="rules_import_title">Import rules</string>
     <string name="rules_import_confirm">Replace all current rules with those from “%1$s”?</string>
     <string name="rules_import_ok">Rules imported</string>
-    <string name="rules_import_err_version">“%1$s” was written by a newer version of MG4Tasker</string>
+    <string name="rules_import_err_version">“%1$s” was written by a newer version of EVTasker</string>
     <string name="rules_import_err_unknown">“%1$s” uses a condition or action unknown to this version (%2$s)</string>
     <string name="rules_import_err_malformed">“%1$s” is not a readable rules file</string>
     <string name="rules_import_err_too_many">“%1$s” holds more than %2$d rules</string>
@@ -95,7 +99,7 @@
     <string name="editor_save">Save</string>
     <string name="editor_cancel">Cancel</string>
     <string name="profile_automation_warning_title">Avoid duplicate profile automation</string>
-    <string name="profile_automation_warning_message">MG4Control is connected. Before using this profile action, disable MG4Control’s profile automations and automatic application of its default profile to prevent both apps from applying profiles at startup.</string>
+    <string name="profile_automation_warning_message">EVProfile is connected. Before using this profile action, disable EVProfile’s profile automations and automatic application of its default profile to prevent both apps from applying profiles at startup.</string>
     <string name="editor_expert_branches_notice">Advanced branches from this rule remain editable. Enable Expert mode in Configuration to add more.</string>
     <string name="editor_name_required">Give the rule a name</string>
     <string name="editor_incomplete">At least one condition and one action are required</string>
@@ -103,7 +107,7 @@
     <string name="editor_store_unreadable">The stored rules cannot be read, so saving would overwrite them. Import a rules file to restore them.</string>
     <string name="editor_remove">Remove</string>
     <string name="editor_gated_hint">When stopped only</string>
-    <string name="editor_gated_explain">This setting changes vehicle behaviour: MG4Control refuses it while the car is moving.</string>
+    <string name="editor_gated_explain">This setting changes vehicle behaviour: EVProfile refuses it while the car is moving.</string>
     <string name="editor_pick_condition">Choose a condition</string>
     <string name="editor_pick_action">Choose an action</string>
     <string name="picker_empty">Nothing here is supported by this vehicle.</string>
@@ -121,7 +125,7 @@
     <string name="value_no_contacts">No synchronized contact. Allow contact sharing on the paired phone.</string>
     <string name="value_contact_hint">Search a contact or number</string>
     <string name="value_call_required">Enter a phone number or select a contact</string>
-    <string name="value_no_profiles">No MG4Control profile reachable</string>
+    <string name="value_no_profiles">No EVProfile profile reachable</string>
     <string name="value_notification_hint">Message to display</string>
 
     <string name="op_eq">is equal to</string>
@@ -162,7 +166,7 @@
     <string name="verdict_unknown_speed">refused — speed unreadable</string>
     <string name="verdict_unsupported">not supported</string>
     <string name="verdict_error">failed</string>
-    <string name="verdict_no_bridge">MG4Control unreachable</string>
+    <string name="verdict_no_bridge">EVProfile unreachable</string>
 
     <!-- Diagnostic -->
     <string name="diag_title">Execution diagnostic</string>
@@ -184,7 +188,7 @@
     <string name="diag_env_notifications">Notifications</string>
     <string name="diag_env_gate">Standstill gate</string>
     <string name="diag_env_cache">Supported-feature cache</string>
-    <string name="diag_env_mg4control">MG4Control</string>
+    <string name="diag_env_evprofile">EVProfile</string>
     <string name="diag_env_tts">Speech engine</string>
     <string name="diag_env_bluetooth">Bluetooth</string>
     <string name="diag_bt_off">off</string>
@@ -208,10 +212,10 @@
     <string name="diag_reason_not_readable">not readable on this car</string>
     <string name="diag_reason_layer">vehicle layer not ready</string>
     <string name="diag_reason_firmware">not supported by this firmware</string>
-    <string name="diag_reason_no_mg4control">MG4Control not installed</string>
+    <string name="diag_reason_no_evprofile">EVProfile not installed</string>
     <string name="diag_reason_no_tts">no speech engine</string>
     <string name="diag_reason_notifications">notifications turned off</string>
-    <string name="diag_bridge_ko_hint">Open MG4Tasker on the car so its vehicle service can start. It needs the platform signature and system permissions.</string>
+    <string name="diag_bridge_ko_hint">Open EVTasker on the car so its vehicle service can start. It needs the platform signature and system permissions.</string>
     <string name="diag_temp_note">Outside temperature is not exposed by every MG4 firmware. If it stays unreadable here, rules using it will never fire.</string>
     <string name="diag_check_support">Check support</string>
     <string name="diag_support_checking">Checking supported features…</string>
@@ -236,12 +240,22 @@
 
 
     <!-- Notifications -->
-    <string name="channel_name">MG4Tasker</string>
+    <string name="channel_name">EVTasker</string>
     <string name="notif_running_title">Applying rules…</string>
     <string name="value_location_hint">latitude, longitude</string>
     <string name="value_location_current">Use current position</string>
     <string name="value_location_map">Open map</string>
     <string name="value_location_map_none">No map application on this head unit</string>
+    <string name="value_destination_hint">Address, or latitude, longitude</string>
+    <string name="value_place_pick">Pick a saved place</string>
+    <string name="value_place_save">Save place</string>
+    <string name="value_place_name">Name of the place</string>
+    <string name="value_place_empty">Enter or pick a point before saving it</string>
+    <string name="confirm_title">Confirmation</string>
+    <string name="confirm_yes">Yes</string>
+    <string name="confirm_no">No</string>
+    <string name="confirm_countdown">Without an answer, the rule stops in %1$d s</string>
+    <string name="verdict_declined">declined by the driver</string>
     <string name="value_webhook_url">HTTPS webhook URL</string>
     <string name="value_webhook_method_get">GET</string>
     <string name="value_webhook_method_post">POST</string>
@@ -249,12 +263,12 @@
     <string name="rules_threshold_standstill">Apply only when stopped</string>
     <string name="rules_threshold_value">Apply up to %1$d km/h</string>
     <string name="rules_threshold_title">Speed limit for applying settings</string>
-    <string name="rules_threshold_explain">0 km/h means settings are only applied when the vehicle is stopped. Above that, MG4Tasker stops refusing — but the vehicle still refuses whatever it refuses on its own.</string>
+    <string name="rules_threshold_explain">0 km/h means settings are only applied when the vehicle is stopped. Above that, EVTasker stops refusing — but the vehicle still refuses whatever it refuses on its own.</string>
     <string name="rules_result_title">Test result</string>
     <string name="rules_result_none">No rule was evaluated.</string>
     <string name="diag_env_vendor">Vehicle services (SAIC)</string>
     <string name="diag_env_location">Position</string>
-    <string name="diag_env_threshold">Speed limit for writes</string>
+    <string name="diag_env_threshold">Write safety gate</string>
     <string name="diag_reason_vendor">vehicle service unavailable on this car</string>
     <string name="diag_reason_no_navigation">no navigation app</string>
     <string name="diag_reason_no_location">no position available</string>
@@ -296,13 +310,13 @@
     </plurals>
     <string name="editor_button_cases">A rule that names a button must name one in every case, and cannot have an “else”</string>
     <string name="config_section_about">About</string>
-    <string name="about_action">About MG4 Tasker</string>
-    <string name="about_title">About MG4 Tasker</string>
+    <string name="about_action">About EVTasker</string>
+    <string name="about_title">About EVTasker</string>
     <string name="about_version">Version %1$s</string>
     <string name="about_attribution">Author and maintainer: malys</string>
-    <string name="about_repository">github.com/malys/MG4Tasker</string>
+    <string name="about_repository">github.com/malys/EVTasker</string>
     <string name="about_made_with_love">Made with ❤ by malys</string>
-    <string name="about_logo_description">MG4 Tasker logo</string>
+    <string name="about_logo_description">EVTasker logo</string>
     <string name="about_qr_description">QR code for the project repository</string>
     <string name="about_version_unknown">unknown</string>
     <string name="about_close">Close</string>

@@ -1,4 +1,4 @@
-# Environnement de développement MG4Tasker — aligné sur MG4Control.
+# Environnement de développement EVTasker — aligné sur EVProfile.
 #
 #   mise install       installe le JDK
 #   mise run bootstrap installe le SDK Android si absent
@@ -50,7 +50,7 @@ if [ -d "$ANDROID_HOME/platforms/android-$COMPILE_SDK" ]; then
   echo "sdk.dir=$ANDROID_HOME" > local.properties
   exit 0
 fi
-echo "SDK $COMPILE_SDK absent — lancez 'mise run bootstrap' dans MG4Control, qui l'installe."
+echo "SDK $COMPILE_SDK absent — lancez 'mise run bootstrap' dans EVProfile, qui l'installe."
 exit 1
 """
 
@@ -60,10 +60,10 @@ run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME assembleStableDebug'
 
 [tasks.test]
 description = "Tests unitaires JVM"
-# :mg4hardware inclus : c'est sa suite qui régénère docs/firmware-matrix.md à partir des
+# :evhardware inclus : c'est sa suite qui régénère docs/firmware-matrix.md à partir des
 # annotations @SupportedOn. Sans elle, la matrice publiée diverge du filtre appliqué à
 # l'exécution sans que rien n'échoue.
-run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME testStableDebugUnitTest testUnstableDebugUnitTest :mg4hardware:testDebugUnitTest'
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME testStableDebugUnitTest testUnstableDebugUnitTest :evhardware:testDebugUnitTest'
 
 [tasks.lint]
 description = "Analyse lint Android"
@@ -158,6 +158,6 @@ fi
 APK=$(ls -t app/build/outputs/apk/stable/debug/*.apk | head -1)
 echo "Installation de $APK"
 $ADB install -r -g "$APK"
-$ADB shell am start -n "com.mg4.tasker/com.mg4.tasker.ui.MainActivity"
+$ADB shell am start -n "com.evsuite.tasker/com.evsuite.tasker.ui.MainActivity"
 echo "Lancé."
 '''

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The rule's own question, asked full-screen: it interrupts a running rule, so it must be
+     readable and answerable at a glance from the driver's seat. The two answers sit at the
+     upper-right like every other editor's actions; the question owns the rest of the panel,
+     with the remaining time under it so an unanswered prompt is not a surprise. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ev_background"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/ev_surface"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_md">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_lg"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="@string/confirm_title"
+            android:textAppearance="@style/Text.EV.Title" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/confirmNo"
+            style="@style/Widget.EV.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/confirm_no" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/confirmYes"
+            style="@style/Widget.EV.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:text="@string/confirm_yes" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/confirmQuestion"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="start|center_vertical"
+        android:padding="@dimen/spacing_lg"
+        android:textAppearance="@style/Text.EV.Title" />
+
+    <TextView
+        android:id="@+id/confirmCountdown"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/spacing_lg"
+        android:paddingEnd="@dimen/spacing_lg"
+        android:paddingBottom="@dimen/spacing_lg"
+        android:textAppearance="@style/Text.EV.Body" />
+
+</LinearLayout>

@@ -20,8 +20,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/spacing_md"
             android:text="@string/editor_gated_explain"
-            android:textAppearance="@style/Text.MG4.Secondary"
-            android:textColor="@color/mg4_warn"
+            android:textAppearance="@style/Text.EV.Secondary"
+            android:textColor="@color/ev_warn"
             android:visibility="gone" />
 
         <!-- Operator — comparable numeric conditions only -->
@@ -54,7 +54,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:textAppearance="@style/Text.MG4.Title" />
+                android:textAppearance="@style/Text.EV.Title" />
 
             <!-- Slider, not keyboard entry: adjusting a bounded value should be one
                  gesture, without opening a keyboard on the vehicle screen. -->
@@ -103,7 +103,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical">
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="@dimen/spacing_sm" android:text="@string/physical_button_label" android:textAppearance="@style/Text.MG4.SectionHeader" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="@dimen/spacing_sm" android:text="@string/physical_button_label" android:textAppearance="@style/Text.EV.SectionHeader" />
                 <Spinner android:id="@+id/physicalButtonSpinner" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/touch_target" />
             </LinearLayout>
 
@@ -113,7 +113,7 @@
                 android:layout_marginStart="@dimen/spacing_lg"
                 android:layout_weight="1"
                 android:orientation="vertical">
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="@dimen/spacing_sm" android:text="@string/physical_event_label" android:textAppearance="@style/Text.MG4.SectionHeader" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="@dimen/spacing_sm" android:text="@string/physical_event_label" android:textAppearance="@style/Text.EV.SectionHeader" />
                 <Spinner android:id="@+id/physicalPressSpinner" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/touch_target" />
             </LinearLayout>
         </LinearLayout>
@@ -122,8 +122,8 @@
             android:id="@+id/choiceEmpty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/Text.MG4.Secondary"
-            android:textColor="@color/mg4_error"
+            android:textAppearance="@style/Text.EV.Secondary"
+            android:textColor="@color/ev_error"
             android:visibility="gone" />
 
         <!-- TIME_RANGE -->
@@ -139,11 +139,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/value_from"
-                android:textAppearance="@style/Text.MG4.Body" />
+                android:textAppearance="@style/Text.EV.Body" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/timeFrom"
-                style="@style/Widget.MG4.Button.Outlined"
+                style="@style/Widget.EV.Button.Outlined"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
@@ -154,11 +154,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_sm"
                 android:text="@string/value_to"
-                android:textAppearance="@style/Text.MG4.Body" />
+                android:textAppearance="@style/Text.EV.Body" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/timeTo"
-                style="@style/Widget.MG4.Button.Outlined"
+                style="@style/Widget.EV.Button.Outlined"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
@@ -176,7 +176,7 @@
         <!-- DATE -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/dateButton"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="@dimen/touch_target"
@@ -219,6 +219,15 @@
                 android:textSize="@dimen/text_body" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Saved places, shown only when there is at least one to pick. -->
+        <Spinner
+            android:id="@+id/placeSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:minHeight="@dimen/touch_target"
+            android:visibility="gone" />
+
         <LinearLayout
             android:id="@+id/locationActions"
             android:layout_width="match_parent"
@@ -229,7 +238,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/locationCurrent"
-                style="@style/Widget.MG4.Button.Outlined"
+                style="@style/Widget.EV.Button.Outlined"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -237,12 +246,21 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/locationMap"
-                style="@style/Widget.MG4.Button.Outlined"
+                style="@style/Widget.EV.Button.Outlined"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_sm"
                 android:layout_weight="1"
                 android:text="@string/value_location_map" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/locationSave"
+                style="@style/Widget.EV.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:layout_weight="1"
+                android:text="@string/value_place_save" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

@@ -1,6 +1,6 @@
 ---
-name: MG4Suite
-description: One design system for the MG4 app suite — a driver-facing instrument surface, not a phone UI parked in a car.
+name: EVSuite
+description: One design system for the EVSuite — a driver-facing instrument surface, not a phone UI parked in a car.
 colors:
   background: "#F2F4F7"
   background-dark: "#0B0D0F"
@@ -82,10 +82,10 @@ components:
     typography: "{typography.label}"
 ---
 
-# Design System: MG4Suite
+# Design System: EVSuite
 
-Applies to **MG4 Control**, **MG4 Tasker**, **MG4 ABRP Uploader**, **MG4 Simple Launcher**,
-**MG4 Swipe Launcher** and the shared **MG4Hardware** library. This file is the normative
+Applies to **EVProfile**, **EVTasker**, **EVABRPUploader**, **EVLauncher**,
+**EVSwipe** and the shared **EVHardware** library. This file is the normative
 source; a copy lives at the root of every suite repository and they are kept identical.
 
 ## Overview
@@ -133,20 +133,20 @@ Every ratio below is measured, not estimated. Re-run the check after any change:
 
 | Token | Light | Dark | Role |
 |---|---|---|---|
-| `mg4_background` | `#F2F4F7` | `#0B0D0F` | The window. Never holds content directly. |
-| `mg4_surface` | `#FFFFFF` | `#15181C` | Cards, panes, list rows. |
-| `mg4_surface_raised` | `#E4E8ED` | `#272C33` | Buttons, chips, selected rows, dialogs. |
-| `mg4_outline` | `#737F8F` | `#7A8492` | Hairline on every card. 4.07:1 / 4.70:1. |
-| `mg4_text_primary` | `#101418` | `#F4F7FA` | 18.5:1 / 16.6:1 on surface. |
-| `mg4_text_secondary` | `#414B55` | `#C6CFD8` | 7.2:1 worst case (on `surface_raised`). |
+| `ev_background` | `#F2F4F7` | `#0B0D0F` | The window. Never holds content directly. |
+| `ev_surface` | `#FFFFFF` | `#15181C` | Cards, panes, list rows. |
+| `ev_surface_raised` | `#E4E8ED` | `#272C33` | Buttons, chips, selected rows, dialogs. |
+| `ev_outline` | `#737F8F` | `#7A8492` | Hairline on every card. 4.07:1 / 4.70:1. |
+| `ev_text_primary` | `#101418` | `#F4F7FA` | 18.5:1 / 16.6:1 on surface. |
+| `ev_text_secondary` | `#414B55` | `#C6CFD8` | 7.2:1 worst case (on `surface_raised`). |
 
 ### Primary
 
-- **Instrument Cyan** (`mg4_accent`, `#044C63` light / `#7FD4FA` dark): section headers,
+- **Instrument Cyan** (`ev_accent`, `#044C63` light / `#7FD4FA` dark): section headers,
   selected state, links, the active value in a control. 7.7:1 worst case in light, 10.8:1
   in dark. Light mode uses a deep cyan rather than tinting the dark one — a pale cyan on
   white is 1.5:1 and disappears entirely in daylight.
-- **On-accent** (`mg4_on_accent`, `#FFFFFF` / `#04121A`): the only colour permitted on a
+- **On-accent** (`ev_on_accent`, `#FFFFFF` / `#04121A`): the only colour permitted on a
   filled accent surface.
 
 ### Status
@@ -155,14 +155,14 @@ Never used alone. Each is paired with a text label, because a driver glancing si
 reads shape and text faster than hue, and because ~8% of male drivers cannot separate
 these three by colour at all.
 
-- **OK** (`mg4_ok`, `#09501F` / `#8FE6A6`) — the rule ran, the write landed, the upload succeeded.
-- **Warn / refused** (`mg4_warn`, `#6B3A00` / `#FFC978`) — the speed gate refused a write,
+- **OK** (`ev_ok`, `#09501F` / `#8FE6A6`) — the rule ran, the write landed, the upload succeeded.
+- **Warn / refused** (`ev_warn`, `#6B3A00` / `#FFC978`) — the speed gate refused a write,
   a deferred action is queued, firmware support is unknown.
-- **Error** (`mg4_error`, `#8F0F18` / `#FFACAC`) — the operation failed.
+- **Error** (`ev_error`, `#8F0F18` / `#FFACAC`) — the operation failed.
 
 ### Pressed state
 
-- `mg4_pressed` (`#14000000` / `#1FFFFFFF`) and `mg4_pressed_strong` (`#29000000` /
+- `ev_pressed` (`#14000000` / `#1FFFFFFF`) and `ev_pressed_strong` (`#29000000` /
   `#33FFFFFF`). Alpha overlays on the surface beneath, not a separate hue, so a pressed
   card still reads as the same card.
 
@@ -177,7 +177,7 @@ most rewrites in this codebase — `#9EA6AE` secondary text (6:1) and the origin
 **The Meaning Rule.** A colour outside the neutral ladder must encode state. If it is
 there to look nice, delete it. This is why the suite has one accent and not a palette.
 
-**The Role Rule.** Layouts reference roles (`mg4_surface`), never values and never
+**The Role Rule.** Layouts reference roles (`ev_surface`), never values and never
 theme-specific names. A layout that needs to know whether it is day or night is a bug.
 
 ## Typography
@@ -245,7 +245,7 @@ why, and they never redefine a suite token.
 
 **There are no shadows.** Not one, in any app. A shadow on this display is a grey smear
 that costs a composite pass and reads as dirt under sunlight. Depth is tonal:
-`background` → `surface` → `surface_raised`, three steps, plus a 1dp `mg4_outline`
+`background` → `surface` → `surface_raised`, three steps, plus a 1dp `ev_outline`
 hairline on every card.
 
 The hairline is not decoration. `surface` and `surface_raised` differ by roughly one
@@ -256,11 +256,11 @@ State is expressed by the pressed overlay, never by lift.
 
 ## Shapes
 
-One radius: **12dp** (`mg4_corner`), on cards, buttons, chips, tiles and dialogs. Not two,
+One radius: **12dp** (`ev_corner`), on cards, buttons, chips, tiles and dialogs. Not two,
 not a scale. A single radius is what makes five apps by different hands read as one suite,
 and it is the cheapest consistency there is.
 
-Borders are 1dp `mg4_outline`. No dividers where a gap will do — `spacing_md` between two
+Borders are 1dp `ev_outline`. No dividers where a gap will do — `spacing_md` between two
 cards separates them better than a line, and costs no ink.
 
 The launcher icon is the one place a different silhouette appears: a squircle tile, which
@@ -269,36 +269,36 @@ is the platform's shape, not ours.
 ## Components
 
 Component styles are named identically in every app so a screen can be moved between
-repositories without a rename: `Theme.MG4<App>`, `Widget.MG4.*`, `Text.MG4.*`,
-`ThemeOverlay.MG4.*`.
+repositories without a rename: `Theme.EV<App>`, `Widget.EV.*`, `Text.EV.*`,
+`ThemeOverlay.EV.*`.
 
 ### Buttons
 - **Shape:** 12dp radius.
-- **Primary** (`Widget.MG4.Button`): filled accent, `on_accent` label, `text_body` (20sp),
+- **Primary** (`Widget.EV.Button`): filled accent, `on_accent` label, `text_body` (20sp),
   min height 72dp, `spacing_lg` horizontal padding.
-- **Outlined** (`Widget.MG4.Button.Outlined`): 1dp accent border, accent label, same metrics.
-- **Dialog** (`Widget.MG4.DialogButton`): text button, but pulled up to the same 72dp
+- **Outlined** (`Widget.EV.Button.Outlined`): 1dp accent border, accent label, same metrics.
+- **Dialog** (`Widget.EV.DialogButton`): text button, but pulled up to the same 72dp
   target and 140dp min width. Dialog buttons are the smallest thing in any app and the
   most likely to be mis-tapped.
-- **Pressed:** `mg4_pressed_strong` overlay. No ripple travel, no scale, no lift.
+- **Pressed:** `ev_pressed_strong` overlay. No ripple travel, no scale, no lift.
 
 ### Cards / containers
-- 12dp radius, `mg4_surface`, 1dp `mg4_outline`, `spacing_md` internal padding.
-- Selected state: background steps to `mg4_surface_raised` **and** the leading label
+- 12dp radius, `ev_surface`, 1dp `ev_outline`, `spacing_md` internal padding.
+- Selected state: background steps to `ev_surface_raised` **and** the leading label
   turns accent. Two signals, because one is a colour.
 
 ### Switches
-- `Widget.MG4.Switch`, 72dp min height, `text_body` label. A switch that needs a precise
+- `Widget.EV.Switch`, 72dp min height, `text_body` label. A switch that needs a precise
   tap is a switch that gets missed at 90 km/h.
 
 ### Section headers
-- `Text.MG4.SectionHeader`: 16sp, bold, `0.12` tracking, accent. The only tracked type in
+- `Text.EV.SectionHeader`: 16sp, bold, `0.12` tracking, accent. The only tracked type in
   the suite; the tracking is what lets it work at the size floor without shouting.
 
 ### Dialogs
-- `ThemeOverlay.MG4.Dialog` on `mg4_surface_raised`. Material's default dialog palette is
+- `ThemeOverlay.EV.Dialog` on `ev_surface_raised`. Material's default dialog palette is
   a grey-mauve tuned for indoors and it is the first thing to wash out; every app overrides it.
-- A picker that fills the screen (`Theme.MG4.Picker`) is not floating and does not dim:
+- A picker that fills the screen (`Theme.EV.Picker`) is not floating and does not dim:
   `windowIsFloating=false`, `backgroundDimEnabled=false`. In landscape, a bottom sheet
   leaves a third of the height, which means one column and a scrollbar by the fifth entry.
   There is nothing behind a picker worth seeing.
@@ -310,7 +310,7 @@ repositories without a rename: `Theme.MG4<App>`, `Widget.MG4.*`, `Text.MG4.*`,
   at 70 cm.
 
 ### Lists
-- Row height ≥ 72dp, `mg4_surface`, `spacing_sm` gaps. No swipe-to-delete: a gesture with
+- Row height ≥ 72dp, `ev_surface`, `spacing_sm` gaps. No swipe-to-delete: a gesture with
   no visible affordance and no undo does not belong in a vehicle. Destructive actions are
   a button plus a confirmation.
 
@@ -321,11 +321,11 @@ The launcher icon is the suite's signature and the one place it is allowed to ha
 **The system.** Adaptive icon, 108dp, safe zone 66dp centred. Three fixed elements:
 
 1. **Tile** — flat `#2A2A2A` charcoal. No gradient. Identical in every app, and identical
-   in light and dark: this is the tile MG4 Control has always had, and it is what makes a
+   in light and dark: this is the tile EVProfile has always had, and it is what makes a
    row of suite apps read as a row.
 2. **Glyph** — `#F4F7FA`, geometric, 5dp stroke, round caps and joins, with exactly one
    `#E0424C` red element as the accent (3.45:1 on the tile — it is a mark, not text).
-   The glyph says what the app does at 48px. MG4 Control's glyph is the `MG⁴` lockup: it
+   The glyph says what the app does at 48px. EVProfile's glyph is the `MG⁴` lockup: it
    is the flagship, so it wears the suite mark.
 3. **Caption** — the product word beneath the glyph, `#C6CFD8`, small caps, `0.18` tracking.
 
@@ -333,11 +333,11 @@ The launcher icon is the suite's signature and the one place it is allowed to ha
 
 | App | Glyph |
 |---|---|
-| MG4 Control | `MG⁴` lockup — white letters, red superscript 4 |
-| MG4 Tasker | A branch: one input, a condition, two outcomes |
-| MG4 ABRP Uploader | An upward arrow leaving two broadcast arcs |
-| MG4 Simple Launcher | A four-tile grid, one tile red |
-| MG4 Swipe Launcher | Two chevrons and a swipe trail |
+| EVProfile | `MG⁴` lockup — white letters, red superscript 4 |
+| EVTasker | A branch: one input, a condition, two outcomes |
+| EVABRPUploader | An upward arrow leaving two broadcast arcs |
+| EVLauncher | A four-tile grid, one tile red |
+| EVSwipe | Two chevrons and a swipe trail |
 
 **Rules.** Vector (`VectorDrawable`) only — the same file serves every density and costs
 one file instead of five PNGs. Every icon ships a `<monochrome>` layer for themed icons.
@@ -346,21 +346,21 @@ legible at 48px in greyscale, it is the wrong glyph.
 
 ## Nomenclature
 
-**Product names** are `MG4 <Word>` — space, title case: *MG4 Control*, *MG4 Tasker*,
-*MG4 ABRP Uploader*, *MG4 Simple Launcher*, *MG4 Swipe Launcher*. This is what
+**Product names** are `EV<Word>` — space, title case: *EVProfile*, *EVTasker*,
+*EVABRPUploader*, *EVLauncher*, *EVSwipe*. This is what
 `app_name` holds and what the driver sees under the icon.
 
-**Repositories, modules and directories** are `MG4<Word>` — no space: `MG4Control`,
-`MG4Tasker`, `MG4ABRPUploader`, `MG4SimpleLauncher`, `MG4SwipeLauncher`, `MG4Hardware`.
+**Repositories, modules and directories** are `EV<Word>` — no space: `EVProfile`,
+`EVTasker`, `EVABRPUploader`, `EVLauncher`, `EVSwipe`, `EVHardware`.
 
-**Package ids** are `com.mg4.<lowercase>`; a family shares a segment
-(`com.mg4.launcher.simple`, `com.mg4.launcher.swipe`).
+**Package ids** are `com.evsuite.<lowercase>`; a family shares a segment
+(`com.evsuite.launcher`, `com.evsuite.swipe`).
 
 **Resources** are `snake_case` with a suite prefix when the token is shared
-(`mg4_surface`, `mg4_corner`) and unprefixed when app-local (`catalog_tile_height`).
-Styles are `Theme.MG4<App>`, `Widget.MG4.<Thing>`, `Text.MG4.<Role>`.
+(`ev_surface`, `ev_corner`) and unprefixed when app-local (`catalog_tile_height`).
+Styles are `Theme.EV<App>`, `Widget.EV.<Thing>`, `Text.EV.<Role>`.
 
-**The suite** is *MG4Suite* — one word, when referring to all of it.
+**The suite** is *EVSuite* — one word, when referring to all of it.
 
 ## Documentation
 
@@ -380,7 +380,7 @@ Every repository carries the same files, in the same order, with the same headin
 **README skeleton** — sections in this order, omitting any that do not apply:
 
 ```
-# MG4 <Name>
+# EV<Name>
 <one-line description>
 <badges>
 ## Contents
@@ -442,7 +442,7 @@ Why the rules above are the shape they are. Each of these was paid for.
 - **Do** put the reason in the resource file. Every override of a Material default in this
   suite carries a comment saying what would break without it. That comment is why the rule
   survives the next refactor.
-- **Do** reference roles (`@color/mg4_surface`, `@dimen/touch_target`), never literals.
+- **Do** reference roles (`@color/ev_surface`, `@dimen/touch_target`), never literals.
   A hex value in a layout is a bug.
 - **Do** give every state two signals — colour plus text, or colour plus position.
 - **Do** design landscape first, and check that nothing needs a scroll before the fifth item.

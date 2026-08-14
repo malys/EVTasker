@@ -1,4 +1,4 @@
-# Pull Request: MG4Tasker
+# Pull Request: EVTasker
 
 ## 📝 What and Why
 
@@ -25,8 +25,8 @@
 - [ ] No race conditions when two rules fire simultaneously
 - [ ] State transitions correctly (e.g., entry/exit geofence)
 
-**Vehicle Safety (if any MG4Control interaction added):**
-- [ ] All vehicle writes go through MG4Control (never direct access)
+**Vehicle Safety (if any EVProfile interaction added):**
+- [ ] All vehicle writes go through EVProfile (never direct access)
 - [ ] Speed gate enforced before any vehicle write (0 km/h only)
 - [ ] ADAS/safety-critical actions require explicit user confirmation
 - [ ] Unreadable conditions make rule **not evaluable** (fail closed, not default-fire)
@@ -51,8 +51,8 @@
 - [ ] State corruption impossible (consistent before/after rule execution)
 
 **Permissions & IPC:**
-- [ ] MG4Tasker holds no vehicle privileges (no `android.car.*`, no `sharedUserId`)
-- [ ] MG4Control bridge properly authenticated (calls validated)
+- [ ] EVTasker holds no vehicle privileges (no `android.car.*`, no `sharedUserId`)
+- [ ] EVProfile bridge properly authenticated (calls validated)
 - [ ] No new `uses-permission` (or added to allowlist with justification)
 - [ ] App does NOT self-grant permissions at runtime
 
@@ -73,7 +73,7 @@ If you'd like Claude AI to help review this PR, include this checklist:
 ```
 Please review this automation PR for:
 1. Task sequencing correctness (atomicity, no race conditions)
-2. Vehicle safety (MG4Control interaction, speed gate, ADAS handling)
+2. Vehicle safety (EVProfile interaction, speed gate, ADAS handling)
 3. Input validation (prompt injection, task injection, bounds)
 4. State machine consistency (no corruption)
 5. Offline operation verification

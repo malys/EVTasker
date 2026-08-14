@@ -11,14 +11,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/mg4_background">
+    android:background="@color/ev_background">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:background="@color/mg4_surface"
+        android:background="@color/ev_surface"
         android:padding="@dimen/spacing_md">
 
         <LinearLayout
@@ -32,7 +32,7 @@
                 android:id="@+id/branchTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/Text.MG4.Title" />
+                android:textAppearance="@style/Text.EV.Title" />
 
             <!-- Shown for the "else", which has no condition pane to explain itself. -->
             <TextView
@@ -40,20 +40,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/editor_branch_else_hint"
-                android:textAppearance="@style/Text.MG4.Secondary"
+                android:textAppearance="@style/Text.EV.Secondary"
                 android:visibility="gone" />
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/branchCancelButton"
-            style="@style/Widget.MG4.Button.Outlined"
+            style="@style/Widget.EV.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/editor_cancel" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/branchDoneButton"
-            style="@style/Widget.MG4.Button"
+            style="@style/Widget.EV.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_sm"
@@ -82,7 +82,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/rules_when"
-                android:textAppearance="@style/Text.MG4.SectionHeader" />
+                android:textAppearance="@style/Text.EV.SectionHeader" />
 
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/matchGroup"
@@ -94,14 +94,14 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/matchAll"
-                    style="@style/Widget.MG4.Button.Outlined"
+                    style="@style/Widget.EV.Button.Outlined"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/editor_match_all" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/matchAny"
-                    style="@style/Widget.MG4.Button.Outlined"
+                    style="@style/Widget.EV.Button.Outlined"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/editor_match_any" />
@@ -123,7 +123,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/addConditionButton"
-                style="@style/Widget.MG4.Button.Outlined"
+                style="@style/Widget.EV.Button.Outlined"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_sm"
@@ -145,7 +145,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/rules_then"
-                android:textAppearance="@style/Text.MG4.SectionHeader" />
+                android:textAppearance="@style/Text.EV.SectionHeader" />
 
             <!-- Holds the height of the match toggle opposite, so both lists start on the
                  same line. Two panes whose first row is off by 72dp read as two screens. -->
@@ -171,7 +171,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/addActionButton"
-                style="@style/Widget.MG4.Button.Outlined"
+                style="@style/Widget.EV.Button.Outlined"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_sm"

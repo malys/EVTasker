@@ -15,7 +15,7 @@ jobs:
     name: Build and publish unstable APK
     runs-on: ubuntu-latest
     env:
-      MG4_KEYSTORE_BASE64: ${{ secrets.MG4_KEYSTORE_BASE64 }}
+      EV_KEYSTORE_BASE64: ${{ secrets.EV_KEYSTORE_BASE64 }}
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 1, submodules: recursive }
@@ -29,14 +29,14 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Decode platform keystore
-        if: ${{ env.MG4_KEYSTORE_BASE64 != '' }}
+        if: ${{ env.EV_KEYSTORE_BASE64 != '' }}
         run: |
-          printf '%s' "$MG4_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > "$RUNNER_TEMP/platform.keystore"
+          printf '%s' "$EV_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > "$RUNNER_TEMP/platform.keystore"
           if [ "$(head -c1 "$RUNNER_TEMP/platform.keystore" | od -An -tx1 | tr -d ' ')" != "30" ]; then
-            echo "::error::MG4_KEYSTORE_BASE64 is invalid. Recreate the secret with: base64 -w0 platform.keystore"
+            echo "::error::EV_KEYSTORE_BASE64 is invalid. Recreate the secret with: base64 -w0 platform.keystore"
             exit 1
           fi
-          echo "MG4_KEYSTORE=$RUNNER_TEMP/platform.keystore" >> "$GITHUB_ENV"
+          echo "EV_KEYSTORE=$RUNNER_TEMP/platform.keystore" >> "$GITHUB_ENV"
 
       - name: Run checks
         run: |
@@ -52,9 +52,9 @@ jobs:
 
       - name: Build unstable release APK
         env:
-          MG4_KEYSTORE_PASSWORD: ${{ secrets.MG4_KEYSTORE_PASSWORD }}
-          MG4_KEY_ALIAS: ${{ secrets.MG4_KEY_ALIAS }}
-          MG4_KEY_PASSWORD: ${{ secrets.MG4_KEY_PASSWORD }}
+          EV_KEYSTORE_PASSWORD: ${{ secrets.EV_KEYSTORE_PASSWORD }}
+          EV_KEY_ALIAS: ${{ secrets.EV_KEY_ALIAS }}
+          EV_KEY_PASSWORD: ${{ secrets.EV_KEY_PASSWORD }}
         run: ./gradlew assembleUnstableRelease -PunstableBuild=${{ github.run_number }} --no-daemon
 
       - name: Collect APK
@@ -63,7 +63,7 @@ jobs:
           # The release tag is the fixed string "unstable", so the version lives in the asset
           # name: the updater matches ".apk" + "unstable" and reads the version from it.
           find app/build/outputs/apk -name "app-unstable-release.apk" \
-            -exec cp {} "dist/MG4Tasker-unstable-${{ steps.version.outputs.value }}.apk" \;
+            -exec cp {} "dist/EVTasker-unstable-${{ steps.version.outputs.value }}.apk" \;
           ls -la dist/
 
       - name: Build timestamp
@@ -99,8 +99,8 @@ jobs:
             the same certificate as the running app — otherwise it deletes the file. Install
             is still a manual tap.
 
-            Requires MG4Control installed and signed with the same platform key. The unstable
-            id is `com.mg4.tasker.unstable` (installs beside stable); it does not receive the
+            Requires EVProfile installed and signed with the same platform key. The unstable
+            id is `com.evsuite.tasker.unstable` (installs beside stable); it does not receive the
             auto ignition trigger — use "Test now" to run rules.
 
             Commit: ${{ github.sha }}

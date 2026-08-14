@@ -1,0 +1,70 @@
+package com.evsuite.tasker.model
+
+/**
+ * Vehicle and context state at evaluation time.
+ *
+ * [readings] is keyed by the bridge snapshot keys. A MISSING key means "unreadable" —
+ * never "zero". The whole engine rests on that distinction: it is what stops a
+ * "temperature > 10" rule from firing on a firmware that does not expose temperature.
+ */
+data class Snapshot(
+    val readings: Map<String, Any> = emptyMap(),
+    /** MAC addresses of Bluetooth devices currently connected to the vehicle. */
+    val btMacs: Set<String> = emptySet(),
+    /**
+     * Whether [btMacs] means anything: false when the radio is off or unreadable, and the
+     * Bluetooth conditions are then unavailable rather than "nothing connected".
+     *
+     * Separate from [bridgeAvailable] on purpose — the Bluetooth context conditions are
+     * firmware-independent, and a vehicle layer that is not ready says nothing about which
+     * phone is paired to the head unit.
+     */
+    val btAvailable: Boolean = true,
+    /**
+     * MAC addresses of devices that were still connected once the car had moved — the ones
+     * that are in it rather than merely in range of it.
+     *
+     * null until the car has driven: the answer does not exist yet, and the conditions
+     * built on it are then unavailable. An empty set is a real answer, "nobody's phone
+     * came along", and does make those conditions false.
+     */
+    val btOnboardMacs: Set<String>? = null,
+    /**
+     * MAC addresses the head unit made active for hands-free, null when unreadable.
+     *
+     * Same distinction once more: empty means the head unit chose no phone, null means the
+     * platform would not say.
+     */
+    val btHandsFreeMacs: Set<String>? = null,
+    /** Minutes since midnight, local time. */
+    val minutesOfDay: Int = 0,
+    /** Current day, java.util.Calendar.MONDAY…SUNDAY values. */
+    val dayOfWeek: Int = 0,
+    /** Current local calendar date in ISO-8601 format (yyyy-MM-dd). */
+    val localDate: String = "",
+    /**
+     * Last known position, null when there is no fix. Like every vehicle signal, absent
+     * means "cannot tell", so a location rule does not fire on a car that has not yet
+     * acquired GPS rather than firing as if it were somewhere else.
+     */
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    /** false when EVProfile did not answer: everything is unreadable, nothing fires. */
+    val bridgeAvailable: Boolean = true
+) {
+    fun number(key: String): Float? = when (val v = readings[key]) {
+        is Float -> v
+        is Int   -> v.toFloat()
+        else     -> null
+    }
+
+    fun int(key: String): Int? = when (val v = readings[key]) {
+        is Int   -> v
+        is Float -> v.toInt()
+        else     -> null
+    }
+
+    fun bool(key: String): Boolean? = readings[key] as? Boolean
+
+    fun string(key: String): String? = readings[key] as? String
+}

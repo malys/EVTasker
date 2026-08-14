@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    A fixed top bar above a single ViewPager2, same shape as MG4Control.
+    A fixed top bar above a single ViewPager2, same shape as EVProfile.
 
     Every screen — Rules, History, Diagnostic, Console, Configuration — is a page of
     that one pager, in the order the bar lists them. Each button goes to its page and a
@@ -23,7 +23,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/mg4_background">
+    android:background="@color/ev_background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -39,12 +39,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_name"
-            android:textAppearance="@style/Text.MG4.Title"
+            android:textAppearance="@style/Text.EV.Title"
             android:layout_marginEnd="@dimen/spacing_lg" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/tabRules"
-            style="@style/Widget.MG4.NavTab"
+            style="@style/Widget.EV.NavTab"
             android:layout_width="0dp"
             android:layout_height="64dp"
             android:layout_weight="1"
@@ -54,7 +54,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/tabHistory"
-            style="@style/Widget.MG4.NavTab"
+            style="@style/Widget.EV.NavTab"
             android:layout_width="0dp"
             android:layout_height="64dp"
             android:layout_weight="1"
@@ -64,7 +64,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/tabDiagnostic"
-            style="@style/Widget.MG4.NavTab"
+            style="@style/Widget.EV.NavTab"
             android:layout_width="0dp"
             android:layout_height="64dp"
             android:layout_weight="1"
@@ -78,7 +78,7 @@
              bar does not offer; it gives its weight back to the other four tabs. -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/tabConsole"
-            style="@style/Widget.MG4.NavTab"
+            style="@style/Widget.EV.NavTab"
             android:layout_width="0dp"
             android:layout_height="64dp"
             android:layout_weight="1"
@@ -88,7 +88,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/tabConfig"
-            style="@style/Widget.MG4.NavTab"
+            style="@style/Widget.EV.NavTab"
             android:layout_width="0dp"
             android:layout_height="64dp"
             android:layout_weight="1"
