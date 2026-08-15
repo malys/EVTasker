@@ -4,7 +4,14 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - 2026-08-15
+
+### ⚠️ Breaking — existing users must install once more
+
+- Application id changed from `com.mg4.tasker` to **`com.evsuite.tasker`**. Android treats
+  this as a different app, so it does not update an existing install: it is added next to
+  it and starts with no rules, no permissions and no history. Export what you need from the
+  old app, install this one, check a rule while parked, and only then uninstall the old app.
 
 ### Added
 
