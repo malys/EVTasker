@@ -19,6 +19,10 @@
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automação ativada</string>
+    <string name="write_consent_title">Ativar a automação das definições do veículo?</string>
+    <string name="write_consent_message">As regras podem alterar as definições do veículo sem uma ação imediata no ecrã. O modo de condução, a regeneração e os sistemas de apoio à condução afetam o comportamento do veículo. As escritas só são permitidas quando uma leitura imediata da velocidade devolve exatamente 0 km/h e são recusadas em firmware desconhecido, mas estas proteções não constituem uma certificação nem uma garantia. Configure e teste cada regra com o veículo parado, em terreno privado. É responsável pela compatibilidade, pela garantia, pelo seguro e pelo cumprimento da lei. Este projeto independente não está associado à SAIC Motor nem à MG Motor, nem é aprovado por estas.</string>
+    <string name="write_consent_cancel">Manter desativado</string>
+    <string name="write_consent_accept">Compreendo — ativar</string>
     <string name="rules_language">Idioma: %1$s</string>
     <string name="rules_language_title">Idioma</string>
     <string name="rules_language_auto">Auto</string>

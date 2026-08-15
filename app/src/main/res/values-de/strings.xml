@@ -19,6 +19,10 @@
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automatisierung aktiviert</string>
+    <string name="write_consent_title">Automatisierung der Fahrzeugeinstellungen aktivieren?</string>
+    <string name="write_consent_message">Regeln können Fahrzeugeinstellungen ohne unmittelbare Bildschirmeingabe ändern. Fahrmodus, Rekuperation und Fahrassistenzeinstellungen wirken sich auf das Fahrverhalten aus. Schreibvorgänge sind nur zulässig, wenn eine unmittelbare Geschwindigkeitsmessung genau 0 km/h ergibt, und werden bei unbekannter Firmware abgelehnt; diese Schutzmaßnahmen sind jedoch weder eine Zertifizierung noch eine Garantie. Konfigurieren und testen Sie jede Regel bei stehendem Fahrzeug auf Privatgelände. Sie sind für Kompatibilität, Garantie, Versicherung und die Einhaltung gesetzlicher Vorschriften verantwortlich. Dieses unabhängige Projekt steht in keiner Verbindung zu SAIC Motor oder MG Motor und ist von diesen nicht genehmigt.</string>
+    <string name="write_consent_cancel">Deaktiviert lassen</string>
+    <string name="write_consent_accept">Ich verstehe — aktivieren</string>
     <string name="rules_language">Sprache: %1$s</string>
     <string name="rules_language_title">Sprache</string>
     <string name="rules_language_auto">Auto</string>

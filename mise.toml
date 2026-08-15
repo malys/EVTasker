@@ -67,7 +67,7 @@ run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME testStableDebugUnitTest testU
 
 [tasks.lint]
 description = "Analyse lint Android"
-run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME lintStableDebug'
+run = './gradlew -Dorg.gradle.java.home=$JAVA_HOME lintStableDebug lintUnstableDebug'
 
 [tasks.check]
 description = "Ce que la CI exécute"

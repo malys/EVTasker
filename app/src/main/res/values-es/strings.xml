@@ -19,6 +19,10 @@
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automatización activada</string>
+    <string name="write_consent_title">¿Activar la automatización de los ajustes del vehículo?</string>
+    <string name="write_consent_message">Las reglas pueden modificar los ajustes del vehículo sin una acción inmediata en la pantalla. El modo de conducción, la regeneración y las ayudas a la conducción afectan al comportamiento del vehículo. Las escrituras solo se permiten cuando una lectura inmediata de la velocidad devuelve exactamente 0 km/h y se rechazan con firmware desconocido, pero estas protecciones no constituyen una certificación ni una garantía. Configure y pruebe cada regla con el vehículo detenido, en terreno privado. Usted es responsable de la compatibilidad, la garantía, el seguro y el cumplimiento de la ley. Este proyecto independiente no está afiliado a SAIC Motor ni a MG Motor, ni cuenta con su aprobación.</string>
+    <string name="write_consent_cancel">Mantener desactivado</string>
+    <string name="write_consent_accept">Lo entiendo — activar</string>
     <string name="rules_language">Idioma: %1$s</string>
     <string name="rules_language_title">Idioma</string>
     <string name="rules_language_auto">Auto</string>
