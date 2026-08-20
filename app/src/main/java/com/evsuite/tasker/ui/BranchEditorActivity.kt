@@ -419,6 +419,7 @@ class BranchEditorActivity : AppCompatActivity() {
                             currentPoint = currentPoint()
                         ) { updated ->
                             actions[index] = updated
+                            ActionBundles.resync(actions, index)
                             renderActions()
                         }
                     }

@@ -17,6 +17,7 @@ import com.evsuite.tasker.databinding.ScreenValueEditorBinding
 import com.evsuite.tasker.model.Action
 import com.evsuite.tasker.model.CompareOp
 import com.evsuite.tasker.model.Condition
+import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.ConditionType
 import com.evsuite.hardware.catalog.ValueKind
 import com.evsuite.tasker.util.BtDevices
@@ -171,6 +172,15 @@ object ValueEditorDialog {
             initialDays = emptyList()
         )
 
+        // The catalogue entry is the merged "tune and play radio"; this switch is what
+        // un-merges it, so changing station without starting playback stays reachable. On by
+        // default, and TEXT leaves [Action.flag] free for it.
+        val radioPlay = action.type == ActionType.TUNE_RADIO
+        if (radioPlay) {
+            binding.radioPlaySwitch.visibility = View.VISIBLE
+            binding.radioPlaySwitch.isChecked = action.flag
+        }
+
         showEditor(context, action.type.labelRes, binding) {
                 if (spec.kind == ValueKind.CONTACT && state.text().isBlank()) {
                     binding.contactBlock.error = context.getString(R.string.value_call_required)
@@ -179,7 +189,7 @@ object ValueEditorDialog {
                 onDone(
                     action.copy(
                         number = state.number().toInt(),
-                        flag = state.flag(),
+                        flag = if (radioPlay) binding.radioPlaySwitch.isChecked else state.flag(),
                         text = state.text(),
                         payload = state.payload(),
                         displayName = if (spec.kind == ValueKind.CONTACT)

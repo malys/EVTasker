@@ -4,6 +4,18 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-08-20
+
+### Added
+
+- **Radio playback is now optional in "Tune and play radio".** Merging the two actions into
+  one entry removed the only way to change station without also starting the radio — which
+  is what a rule that sets the station for later, or one that runs while the driver is
+  listening to something else, actually needs. The action editor carries an "Enable radio"
+  switch, on by default: turned off, the rule tunes and stops there. Rules saved before this
+  release keep the merged behaviour, and turning the switch off on an existing action also
+  removes the wait and the play step that followed it.
+
 ## [2.0.0] - 2026-08-15
 
 ### ⚠️ Breaking — existing users must install once more

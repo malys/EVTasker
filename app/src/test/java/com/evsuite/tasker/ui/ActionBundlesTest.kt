@@ -19,6 +19,36 @@ class ActionBundlesTest {
     }
 
     @Test
+    fun `tune radio with playback off stays single`() {
+        val action = Action(type = ActionType.TUNE_RADIO, text = "103.5", flag = false)
+        assertEquals(listOf(action), ActionBundles.expand(action))
+    }
+
+    @Test
+    fun `resync drops the play tail when playback is turned off`() {
+        val actions = ActionBundles
+            .expand(Action(type = ActionType.TUNE_RADIO, text = "103.5"))
+            .toMutableList()
+
+        actions[0] = actions[0].copy(flag = false)
+        ActionBundles.resync(actions, 0)
+
+        assertEquals(listOf(ActionType.TUNE_RADIO), actions.map { it.type })
+    }
+
+    @Test
+    fun `resync adds the play tail when playback is turned back on`() {
+        val actions = mutableListOf(Action(type = ActionType.TUNE_RADIO, text = "103.5", flag = true))
+
+        ActionBundles.resync(actions, 0)
+
+        assertEquals(
+            listOf(ActionType.TUNE_RADIO, ActionType.DELAY, ActionType.PLAY_RADIO),
+            actions.map { it.type }
+        )
+    }
+
+    @Test
     fun `ordinary action stays single`() {
         val action = Action(type = ActionType.SET_DRIVE_MODE, number = 2)
         assertEquals(listOf(action), ActionBundles.expand(action))

@@ -104,6 +104,7 @@
     <string name="group_integration">Integrazione</string>
     <string name="editor_tune_and_play_radio">Sintonizza e riproduci la radio</string>
     <string name="editor_radio_sequence_hint">Sintonizza, attende 1 secondo, quindi avvia la radio</string>
+    <string name="editor_radio_play_switch">Attiva la radio</string>
     <string name="value_no_bt_devices">Nessun dispositivo Bluetooth associato</string>
     <string name="value_no_contacts">Nessun contatto sincronizzato. Consenti la condivisione dei contatti sul telefono associato.</string>
     <string name="value_contact_hint">Cerca contatto o numero</string>

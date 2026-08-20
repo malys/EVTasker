@@ -200,6 +200,16 @@
                 android:inputType="textCapSentences" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- TUNE_RADIO only: tuning without starting playback stays possible. -->
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/radioPlaySwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target"
+            android:text="@string/editor_radio_play_switch"
+            android:textSize="@dimen/text_body"
+            android:visibility="gone" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/payloadBlock"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
