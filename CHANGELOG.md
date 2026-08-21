@@ -4,6 +4,19 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-08-21
+
+### Fixed
+
+- **The outside temperature was always 0 °C.** `OUTSIDE_TEMP` was read only from the AAOS
+  `ENV_OUTSIDE_TEMPERATURE` property, which on SWI68 answers `0.0` rather than failing. The
+  reading was therefore present and wrong, so the usual protection — a value the car cannot
+  report stays out of the snapshot and its conditions never match — did not apply: a rule of
+  *outside temperature below 10 °C* fired on a 25 °C afternoon. The value now comes from the
+  vendor climate service, the one the car's own HVAC screen reads, and falls back to the
+  AAOS property only where that service does not answer. Rules that had been firing year
+  round should be checked once after updating.
+
 ## [2.1.0] - 2026-08-20
 
 ### Added

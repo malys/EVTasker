@@ -10,8 +10,8 @@ android {
         applicationId = "com.evsuite.tasker"
         minSdk = 28
         targetSdk = 34
-        versionCode = 4
-        versionName = "2.1.0"
+        versionCode = 5
+        versionName = "2.1.1"
     }
 
     // EVTasker doit être signé avec la MÊME clé plateforme que EVProfile : c'est la seule
