@@ -142,6 +142,9 @@ object VehicleReader {
         SaicClimate.recirculationOn()?.let { put(SnapshotKeys.KEY_RECIRC, it) }
         SaicClimate.fanLevel()?.let { put(SnapshotKeys.KEY_FAN_SPEED, it) }
         SaicClimate.driverTemp()?.let { put(SnapshotKeys.KEY_TEMPERATURE_SET, it) }
+        // The AAOS ENV_OUTSIDE_TEMPERATURE property answers 0.0 on SWI68 rather than
+        // failing, so the key is present and wrong. The vendor read is the only honest one.
+        SaicClimate.outsideTempCelsius()?.let { put(SnapshotKeys.KEY_OUTSIDE_TEMP, it) }
 
         // Windows: the vendor read is a measured position, unlike the AOSP window id above
         // which no MG4 confirmed. Where it answers it also settles WINDOW_OPEN.
