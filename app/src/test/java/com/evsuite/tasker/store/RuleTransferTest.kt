@@ -49,11 +49,33 @@ class RuleTransferTest {
 
     @Test
     fun `round trip preserves every field`() {
-        val rules = listOf(rule(), rule(id = "r2", name = "Weekend"))
+        val rules = listOf(
+            rule().copy(
+                actions = listOf(
+                    Action(
+                        type = ActionType.WEBHOOK,
+                        text = "https://example.invalid/hook",
+                        payload = "{\"ready\":true}",
+                        displayName = "Example webhook",
+                        minutesFrom = 1320,
+                        minutesTo = 360
+                    )
+                )
+            ),
+            rule(id = "r2", name = "Weekend")
+        )
 
         val decoded = decodeOf(RuleTransfer.encode(rules))
 
         assertEquals(RuleTransfer.Result.Ok(rules), decoded)
+    }
+
+    @Test
+    fun `an MG4Tasker export remains importable after the rename`() {
+        val legacy = RuleTransfer.encode(listOf(rule()))
+            .replace("\"format\":\"evtasker-rules\"", "\"format\":\"mg4tasker-rules\"")
+
+        assertEquals(RuleTransfer.Result.Ok(listOf(rule())), decodeOf(legacy))
     }
 
     @Test

@@ -1,0 +1,45 @@
+{
+  "format": "evtasker-rules",
+  "version": 1,
+  "rules": [
+    {
+      "id": "example-night-display",
+      "name": "Night: dim display",
+      "enabled": false,
+      "match": "ALL",
+      "conditions": [
+        { "type": "TIME_OF_DAY", "op": "EQ", "minutesFrom": 1200, "minutesTo": 390 }
+      ],
+      "actions": [
+        { "type": "SET_SCREEN_BRIGHTNESS", "number": 25 }
+      ]
+    },
+    {
+      "id": "example-quiet-morning",
+      "name": "Weekday morning: quiet media",
+      "enabled": false,
+      "match": "ALL",
+      "conditions": [
+        { "type": "TIME_OF_DAY", "op": "EQ", "minutesFrom": 360, "minutesTo": 540 },
+        { "type": "DAY_OF_WEEK", "op": "EQ", "days": [2, 3, 4, 5, 6] }
+      ],
+      "actions": [
+        { "type": "SET_MEDIA_VOLUME", "number": 8 }
+      ]
+    },
+    {
+      "id": "example-eco-start",
+      "name": "Parked start: Eco and high regen",
+      "enabled": false,
+      "match": "ALL",
+      "conditions": [
+        { "type": "IN_PARK", "op": "EQ", "flag": true },
+        { "type": "SPEED", "op": "EQ", "number": 0 }
+      ],
+      "actions": [
+        { "type": "SET_DRIVE_MODE", "number": 2 },
+        { "type": "SET_REGEN_LEVEL", "number": 2 }
+      ]
+    }
+  ]
+}

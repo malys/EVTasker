@@ -563,6 +563,11 @@ refuses it whole rather than applying its first case alone.
 Renaming a `ConditionType` / `ActionType` constant therefore invalidates older files — the
 import reports the unknown entry rather than guessing.
 
+An import-ready [example rule set](examples/useful-rules.json) contains three broadly useful
+starting points. They are disabled on import so each driver can review the values before
+enabling them. Exports from the former MG4Tasker name (`mg4tasker-rules`) remain accepted;
+new exports always use `evtasker-rules`.
+
 ---
 
 ## Install

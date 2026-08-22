@@ -4,6 +4,20 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.4] - 2026-08-22
+
+### Fixed
+
+- Rule exports made before the MG4Tasker to EVTasker rename are importable again. The
+  importer accepts the former `mg4tasker-rules` format marker while new exports keep the
+  `evtasker-rules` marker.
+- Rule exports preserve action time ranges, webhook payloads and contact display names.
+
+### Added
+
+- An import-ready, disabled-by-default example set with useful rules for display brightness,
+  morning media volume and an Eco/high-regeneration parked start.
+
 ## [2.1.3] - 2026-08-22
 
 ### Fixed

@@ -30,6 +30,9 @@ object RuleTransfer {
 
     const val FORMAT = "evtasker-rules"
 
+    /** Format written before MG4Tasker was renamed to EVTasker. Import remains compatible. */
+    private const val LEGACY_FORMAT = "mg4tasker-rules"
+
     /** The format this build writes and reads. Version 2 added the "else if" / "else" branches. */
     const val VERSION = 2
 
@@ -107,7 +110,11 @@ object RuleTransfer {
         type = action.type.name,
         number = action.number,
         flag = action.flag,
-        text = action.text
+        text = action.text,
+        payload = action.payload,
+        displayName = action.displayName,
+        minutesFrom = action.minutesFrom,
+        minutesTo = action.minutesTo
     )
 
     fun decode(json: String): Result {
@@ -119,7 +126,9 @@ object RuleTransfer {
             return Result.NotARulesFile
         } ?: return Result.NotARulesFile
 
-        if (envelope.format != FORMAT) return Result.NotARulesFile
+        if (envelope.format != FORMAT && envelope.format != LEGACY_FORMAT) {
+            return Result.NotARulesFile
+        }
 
         val version = envelope.version ?: return Result.Invalid(Reason.MALFORMED)
         if (version > VERSION) return Result.Invalid(Reason.VERSION)
@@ -262,6 +271,8 @@ object RuleTransfer {
                 number = raw.number ?: 0,
                 flag = raw.flag ?: true,
                 text = raw.text.orEmpty(),
+                payload = raw.payload,
+                displayName = raw.displayName,
                 minutesFrom = raw.minutesFrom ?: 0,
                 minutesTo = raw.minutesTo ?: 0
             )
@@ -318,6 +329,8 @@ object RuleTransfer {
         val number: Int? = null,
         val flag: Boolean? = null,
         val text: String? = null,
+        val payload: String? = null,
+        val displayName: String? = null,
         val minutesFrom: Int? = null,
         val minutesTo: Int? = null
     )

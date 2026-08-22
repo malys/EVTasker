@@ -112,4 +112,14 @@ class RuleFilesTest {
 
         assertEquals(RuleTransfer.Result.NotARulesFile, RuleFiles.read(other))
     }
+
+    @Test
+    fun `the bundled useful rules example is importable`() {
+        val example = File("../examples/useful-rules.json")
+
+        assertTrue(example.absolutePath, example.isFile)
+        val imported = RuleFiles.read(example) as RuleTransfer.Result.Ok
+        assertEquals(3, imported.rules.size)
+        assertTrue(imported.rules.all { !it.enabled })
+    }
 }
