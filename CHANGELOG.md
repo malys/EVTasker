@@ -4,6 +4,21 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.3] - 2026-08-22
+
+### Fixed
+
+- **"Tune and play radio" still started the radio with the switch off.** 2.1.2 stopped
+  EVTasker from asking for playback, which was not enough: the head unit's radio service
+  requests the audio focus and unmutes the tuner from inside its own `tune` call, so
+  changing station starts the radio whether anyone asked for it or not. The action now
+  pauses the radio again as soon as it is tuned when the switch is off (EVHardware 1.2.0),
+  which is the only thing the vendor service offers.
+
+  One limitation remains, and it is the vendor's: the radio keeps the audio focus while
+  silent, so music that was playing before the rule fired does not resume by itself. The
+  service exposes no way to hand the focus back for AM/FM.
+
 ## [2.1.2] - 2026-08-22
 
 ### Fixed

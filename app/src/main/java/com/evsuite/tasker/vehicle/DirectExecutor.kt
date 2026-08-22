@@ -182,15 +182,16 @@ class DirectExecutor(
      * retrying "FM 250" three times with backoff will not make it a station, and the history
      * showing what was typed is what lets the user find the typo.
      *
-     * Playback follows [Action.flag], the editor's "enable radio" switch, even though
-     * [com.evsuite.tasker.ui.ActionBundles] also appends a play tail when it is on: rules
-     * saved before that tail existed carry the flag but no tail, and would otherwise tune in
-     * silence. Playing twice is a no-op — the source is already the radio.
+     * Playback follows [Action.flag], the editor's "enable radio" switch. It has to be
+     * decided here rather than by a separate play action after the tune, because the vendor
+     * service starts the radio from inside `tune` itself: switching the station always takes
+     * the audio focus, so "do not play" is something EVHardware has to undo, not something a
+     * caller can achieve by not asking for playback.
      */
     private fun tuneRadio(a: Action): ActionResult {
         val station = RadioFrequency.parse(a.text)
             ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "not a frequency: ${a.text}")
-        val ok = SaicRadio.tune(station.band, station.frequencyKhz) && (!a.flag || SaicRadio.play())
+        val ok = SaicRadio.tune(station.band, station.frequencyKhz, andPlay = a.flag)
         return ActionResult(
             a.type,
             ok,
