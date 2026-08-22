@@ -71,6 +71,15 @@ jobs:
           name: evtasker-apk
           path: dist/*.apk
 
+      - name: Extract changelog
+        id: changelog
+        run: |
+          {
+            echo 'notes<<CHANGELOG_EOF'
+            ./release-notes.sh "${{ github.ref_name }}" || ./release-notes.sh --latest
+            echo 'CHANGELOG_EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -81,16 +90,18 @@ jobs:
           body: |
             ## EVTasker ${{ github.ref_name }}
 
-            Installation manuelle. Cette application n'embarque **aucun auto-updater** et
-            ne contacte aucun serveur.
+            Manual installation. This application embeds **no auto-updater** and contacts
+            no server.
 
-            ### Prérequis
-            - **EVProfile installé**, signé avec la même clé plateforme. Sans lui,
-              EVTasker démarre mais n'a accès à rien : l'onglet Diagnostic affichera
-              « Pont EVProfile : injoignable ».
-            - R8 est activé sur cette build. **Vérifiez sur véhicule** avant de vous y
-              fier : le code du pont est résolu par nom au moment de la liaison.
+            ### Requirements
+            - **EVProfile installed**, signed with the same platform key. Without it,
+              EVTasker starts but has no access to anything: the Diagnostic tab will show
+              "EVProfile bridge: unreachable".
+            - R8 is enabled on this build. **Verify on the vehicle** before relying on it:
+              the bridge code is resolved by name at bind time.
 
-            ### Installation
-            Copiez l'APK sur une clé USB, ouvrez l'application Fichiers de la voiture
-            et appuyez dessus.
+            ### Install
+            Copy the APK to a USB stick, open the car's Files app and tap it.
+
+            ### Changelog
+            ${{ steps.changelog.outputs.notes }}

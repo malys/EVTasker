@@ -70,6 +70,15 @@ jobs:
         id: date
         run: echo "value=$(date -u +'%Y-%m-%d %H:%M UTC')" >> "$GITHUB_OUTPUT"
 
+      - name: Extract changelog
+        id: changelog
+        run: |
+          {
+            echo 'notes<<CHANGELOG_EOF'
+            ./release-notes.sh --latest
+            echo 'CHANGELOG_EOF'
+          } >> "$GITHUB_OUTPUT"
+
       # One rolling pre-release: drop the previous release and its tag so the new one is
       # published at this commit instead of leaving the tag behind on the old sha.
       - name: Reset rolling unstable release
@@ -102,5 +111,8 @@ jobs:
             Requires EVProfile installed and signed with the same platform key. The unstable
             id is `com.evsuite.tasker.unstable` (installs beside stable); it does not receive the
             auto ignition trigger — use "Test now" to run rules.
+
+            ### Changelog
+            ${{ steps.changelog.outputs.notes }}
 
             Commit: ${{ github.sha }}
