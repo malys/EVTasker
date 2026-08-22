@@ -4,6 +4,19 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.2] - 2026-08-22
+
+### Fixed
+
+- **"Tune and play radio" started the radio even with the switch turned off.** The switch
+  added in 2.1.0 only controlled the wait/play rows the editor appends after the tune
+  action; the tune itself went through `SaicRadio.tune`, which called the vendor's
+  `srcPlayRadio` on every tune and made the radio the current audio source regardless. A
+  rule meant to preset a station while music kept playing took over the speakers instead.
+  Tuning and playback are now separate vendor calls, and the action starts playback only
+  when the switch is on. Rules saved before 2.1.0, which carry no wait/play rows, keep
+  playing as they always did.
+
 ## [2.1.1] - 2026-08-21
 
 ### Fixed
