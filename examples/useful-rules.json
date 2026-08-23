@@ -40,6 +40,19 @@
         { "type": "SET_DRIVE_MODE", "number": 2 },
         { "type": "SET_REGEN_LEVEL", "number": 2 }
       ]
+    },
+    {
+      "id": "example-gate-webhook",
+      "name": "Star right, long press: open the gate",
+      "enabled": false,
+      "match": "ALL",
+      "conditions": [
+        { "type": "PHYSICAL_BUTTON", "op": "EQ", "number": 286, "text": "LONG" }
+      ],
+      "actions": [
+        { "type": "ASK_CONFIRM", "text": "Open the gate?" },
+        { "type": "WEBHOOK", "flag": false, "text": "https://example.com/gate" }
+      ]
     }
   ]
 }

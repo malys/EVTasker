@@ -23,6 +23,8 @@ import com.evsuite.tasker.model.ActionResult
 import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.tasker.ui.ConfirmPrompt
 import com.evsuite.tasker.util.EmulatorDetector
+import com.evsuite.tasker.util.BtMessaging
+import com.evsuite.tasker.util.ContactDirectory
 import com.evsuite.tasker.util.Notifier
 import com.evsuite.tasker.util.Speaker
 import com.evsuite.tasker.util.WebhookClient
@@ -67,6 +69,7 @@ class DirectExecutor(
         ActionType.NAVIGATE_TO       -> navigate(action)
         ActionType.ASK_CONFIRM       -> askConfirm(action)
         ActionType.WEBHOOK           -> webhook(action, if (action.flag) "POST" else "GET")
+        ActionType.SEND_SMS          -> sendSms(action)
         ActionType.TUNE_RADIO        -> tuneRadio(action)
         else                         -> applyVehicle(action)
         }
@@ -167,6 +170,7 @@ class DirectExecutor(
             ActionType.NAVIGATE_TO,
             ActionType.WEBHOOK,
             ActionType.ASK_CONFIRM,
+            ActionType.SEND_SMS,
             // TUNE_RADIO is a vehicle write, but it carries a frequency the driver typed, and
             // "103,5 FM" that parsed to nothing must be reported as that rather than as a radio
             // that refused.
@@ -301,7 +305,34 @@ class DirectExecutor(
     }
 
     /**
-     * Puts the rule's question on screen and waits for the driver.
+     * Hands a message to the paired phone.
+     *
+     * Never [BridgeContract.VERDICT_ERROR], whatever went wrong. That verdict is retried three
+     * times with backoff, and a send call that failed after the message left the car would
+     * then deliver it twice — the one outcome worse than not sending it at all. Every failure
+     * is reported as unsupported, with the reason, and stops there.
+     */
+    private fun sendSms(a: Action): ActionResult {
+        val number = ContactDirectory.normalize(a.text)
+        if (number.isBlank()) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no recipient")
+        }
+        val message = a.payload?.trim().orEmpty()
+        if (message.isBlank()) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no message")
+        }
+        val result = BtMessaging.send(context, number, message)
+        return ActionResult(
+            a.type,
+            result.ok,
+            if (result.ok) BridgeContract.VERDICT_ALLOWED else BridgeContract.VERDICT_UNSUPPORTED,
+            result.detail
+        )
+    }
+
+    /**
+     * Puts the rule's question on screen and waits for the driver, for as long as the action
+     * says.
      *
      * The three answers are three different things and the history says which:
      *   • yes — allowed, and the rule carries on;
@@ -315,7 +346,7 @@ class DirectExecutor(
         if (a.text.isBlank()) {
             return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no question")
         }
-        return when (ConfirmPrompt.ask(context, a.text)) {
+        return when (ConfirmPrompt.ask(context, a.text, ConfirmPrompt.timeoutMsFor(a.number))) {
             ConfirmPrompt.Answer.YES ->
                 ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "confirmed")
             ConfirmPrompt.Answer.NO ->

@@ -114,9 +114,13 @@ Diagnostic tab's *Vehicle services* row is what widens it.
 - **In-app console**: `AppLogger` ring buffer + Console screen, so the car is diagnosable
   without ADB.
 - **Atomic file writes**: temp file → rename over target. Never delete-then-write.
-- **Channel isolation**: stable has no network permission and no updater implementation.
-  The unstable updater implementation remains isolated and tested, but its `UpdateHook` is
-  intentionally inert while the suite safety and legal audit is open.
+- **Channel isolation**: stable has no updater implementation — the updater class is not in
+  the APK. The unstable updater implementation remains isolated and tested, but its
+  `UpdateHook` is intentionally inert while the suite safety and legal audit is open.
+  `INTERNET` is no longer part of that isolation: the webhook action is written on the
+  channel people drive, so the permission is declared in the main manifest. Nothing opens a
+  connection on its own — a webhook fires when its rule fires, and the Console share uploads
+  only after the user confirms the dialog.
 - **Language**: English by default (code, comments, commits, docs). User strings in
   `values/` (English) + `values-fr/` (French).
 

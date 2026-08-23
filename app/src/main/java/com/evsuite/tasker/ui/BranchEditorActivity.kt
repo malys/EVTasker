@@ -312,7 +312,7 @@ class BranchEditorActivity : AppCompatActivity() {
         type: com.evsuite.hardware.catalog.ActionType,
         next: () -> Unit
     ) {
-        if (type.spec.kind != ValueKind.CONTACT) return next()
+        if (type.spec.kind != ValueKind.CONTACT && type.spec.kind != ValueKind.SMS) return next()
         pendingAfterContacts = next
         if (!com.evsuite.tasker.util.ContactDirectory.hasPermission(this)) {
             contactsPermission.launch(android.Manifest.permission.READ_CONTACTS)

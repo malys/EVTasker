@@ -316,7 +316,11 @@ class DiagnosticsTest {
             Diagnostics.Reason.NOTIFICATIONS_OFF,
             Diagnostics.Reason.NO_LOCATION,
             Diagnostics.Reason.NOT_DRIVEN_YET,
-            Diagnostics.Reason.NO_HANDSFREE_INFO
+            Diagnostics.Reason.NO_HANDSFREE_INFO,
+            // A phone leaves the car with its owner. "No phone on the message profile" is
+            // where the car is right now, not what it is: hiding the SMS action from the
+            // editor over it would make the action unwritable at the desk.
+            Diagnostics.Reason.NO_MESSAGING_PHONE
         )
 
         structural.forEach { assertTrue("$it must hide", it.describesTheCar) }

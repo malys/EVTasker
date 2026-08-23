@@ -76,6 +76,8 @@ object Diagnostics {
         NOTIFICATIONS_OFF,
         /** The SAIC vendor service behind this entry is not bound on this car. */
         NO_VENDOR_SERVICE,
+        /** No phone is connected on the Bluetooth message profile, so nothing can carry an SMS. */
+        NO_MESSAGING_PHONE,
         /** Nothing on the head unit answers a `geo:` intent. */
         NO_NAVIGATION_APP,
         /** No location permission, or no fix recent enough to place the car. */
@@ -155,6 +157,8 @@ object Diagnostics {
         val chargingService: Boolean = false,
         val radioService: Boolean = false,
         val phoneService: Boolean = false,
+        /** A phone connected on the Bluetooth message profile — what carries a text message. */
+        val messagingPhone: Boolean = false,
         /** Something on the head unit answers a `geo:` intent. */
         val navigationApp: Boolean = false,
     )
@@ -268,6 +272,11 @@ object Diagnostics {
         // These run entirely inside EVTasker. Their configured value can still be invalid,
         // but availability of the vehicle layer is irrelevant to whether the action exists.
         ActionType.WEBHOOK, ActionType.DELAY, ActionType.ASK_CONFIRM -> Reason.NONE
+
+        // Not a vendor service: the message leaves through the paired phone over the
+        // Bluetooth message profile, so what decides is whether a phone is connected on it.
+        ActionType.SEND_SMS ->
+            if (caps.messagingPhone) Reason.NONE else Reason.NO_MESSAGING_PHONE
 
         // Everything else is a direct EVHardware write.
         else -> if (!caps.vehicleLayerReady) Reason.LAYER_NOT_READY else gateReason(type, caps)

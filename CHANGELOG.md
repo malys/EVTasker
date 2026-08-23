@@ -4,6 +4,33 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-08-23
+
+### Changed
+
+- **The confirmation prompt now waits as long as its action says** — 5 to 60 seconds, set on
+  a slider beside the question. A question asked before the doors unlock is answered at once;
+  one asked at the end of a drive has to survive the driver looking away. Rules saved before
+  the field existed carry no value and take the default, 10 s, down from 30 s. An unanswered
+  question still counts as "no", so a rule that asks before it acts stops when nobody
+  answers.
+- **`INTERNET` is declared on the stable channel too**, so the "call a webhook" action works
+  on the channel people actually drive — until now it silently failed outside unstable
+  builds. The app opens no connection of its own: a webhook fires when its rule fires, over
+  HTTPS only, and the Console share still uploads nothing without the confirmation dialog.
+
+### Added
+
+- **Send a text message**, a new action. The recipient is picked the way a call's is — a
+  contact from the phone book shared over Bluetooth PBAP, or a typed number — and the message
+  is written in the action. The head unit has no SIM, so the message is handed to the
+  Bluetooth Message Access Profile and the *paired phone* sends it: it needs a phone that
+  shares its messages over MAP and allows sending. The Diagnostic tab has a *Text messages*
+  row naming the phone that would carry it. A failed send is never retried, because a message
+  that went out twice is worse than one that did not go out.
+- An example rule wiring a long press on the right steering-wheel star button to a GET
+  webhook, behind a confirmation. Disabled on import, with a placeholder URL to replace.
+
 ## [2.1.4] - 2026-08-22
 
 ### Fixed

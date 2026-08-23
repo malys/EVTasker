@@ -190,6 +190,7 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.TTS -> R.string.diag_env_tts
             DiagnosticProbe.Env.BLUETOOTH -> R.string.diag_env_bluetooth
             DiagnosticProbe.Env.VENDOR_SERVICES -> R.string.diag_env_vendor
+            DiagnosticProbe.Env.MESSAGING -> R.string.diag_env_messaging
             DiagnosticProbe.Env.LOCATION -> R.string.diag_env_location
             DiagnosticProbe.Env.WRITE_THRESHOLD -> R.string.diag_env_threshold
             DiagnosticProbe.Env.GLASS_AND_LOCKS -> R.string.diag_env_glass
@@ -228,6 +229,7 @@ class DiagnosticFragment : Fragment() {
             // Rendered by envValue() from the detail — never reached.
             DiagnosticProbe.Env.BLUETOOTH,
             DiagnosticProbe.Env.VENDOR_SERVICES,
+            DiagnosticProbe.Env.MESSAGING,
             DiagnosticProbe.Env.LOCATION,
             DiagnosticProbe.Env.WRITE_THRESHOLD,
             DiagnosticProbe.Env.GLASS_AND_LOCKS -> R.string.diag_bt_off
@@ -294,6 +296,7 @@ class DiagnosticFragment : Fragment() {
             Diagnostics.Reason.NOT_READABLE -> R.string.diag_reason_not_readable
             Diagnostics.Reason.BLUETOOTH_OFF -> R.string.diag_reason_bluetooth_off
             Diagnostics.Reason.NO_VENDOR_SERVICE -> R.string.diag_reason_vendor
+            Diagnostics.Reason.NO_MESSAGING_PHONE -> R.string.diag_reason_no_messaging
             Diagnostics.Reason.NO_NAVIGATION_APP -> R.string.diag_reason_no_navigation
             Diagnostics.Reason.NO_LOCATION -> R.string.diag_reason_no_location
             Diagnostics.Reason.NOT_DRIVEN_YET -> R.string.diag_reason_not_driven_yet
@@ -368,6 +371,9 @@ class DiagnosticFragment : Fragment() {
         /** Environment rows whose value is the detail string itself. */
         val DETAIL_ROWS = setOf(
             DiagnosticProbe.Env.VENDOR_SERVICES,
+            // The phone's name, or why there is none: a yes/no would not say which phone
+            // would carry the message.
+            DiagnosticProbe.Env.MESSAGING,
             DiagnosticProbe.Env.LOCATION,
             DiagnosticProbe.Env.WRITE_THRESHOLD,
             DiagnosticProbe.Env.GLASS_AND_LOCKS,

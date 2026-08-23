@@ -52,6 +52,12 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <!-- The "call a webhook" action, on every channel. The app opens no connection of its
+         own: it calls the HTTPS URL a rule carries, when that rule fires, and reports the
+         status code. Held here rather than in the unstable channel alone because a rule that
+         rings a doorbell or opens a gate is written on the channel people actually drive. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- Optional EVProfile bridge (the "apply profile" action only). Signature-level,
          obtained solely because both APKs are signed with the same platform key. -->
     <uses-permission android:name="com.evsuite.profile.permission.CONTROL_PROFILES" />

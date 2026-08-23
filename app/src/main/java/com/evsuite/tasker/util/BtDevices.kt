@@ -179,6 +179,21 @@ object BtDevices {
         }
     }
 
+    /**
+     * The proxy for one profile, requesting it when this is the first time it is asked for.
+     *
+     * Null means "not ready yet", never "this car does not have it": `getProfileProxy`
+     * answers on a callback, so the first caller always gets null and a later one gets the
+     * proxy. Shared with [BtMessaging] so both live off one cache — two caches would mean two
+     * requests for the same profile and a proxy leaked on every radio cycle.
+     */
+    fun proxy(context: Context, profile: Int): BluetoothProfile? {
+        proxies[profile]?.let { return it }
+        val adapter = adapter(context) ?: return null
+        requestProxy(context, adapter, profile)
+        return proxies[profile]
+    }
+
     private fun requestProxy(context: Context, adapter: BluetoothAdapter, profile: Int) {
         if (proxyRequested.putIfAbsent(profile, true) != null) return
         val listener = object : BluetoothProfile.ServiceListener {

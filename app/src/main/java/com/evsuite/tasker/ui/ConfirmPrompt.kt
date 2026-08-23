@@ -2,6 +2,7 @@ package com.evsuite.tasker.ui
 
 import android.content.Context
 import com.evsuite.hardware.AppLogger
+import com.evsuite.hardware.catalog.ActionType
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.TimeUnit
 
@@ -22,8 +23,24 @@ object ConfirmPrompt {
 
     private const val TAG = "EVTasker.Confirm"
 
-    /** How long the question stays on screen before the rule gives up on an answer. */
-    const val TIMEOUT_MS = 30_000L
+    /**
+     * How long the question stays on screen when the caller names no wait of its own — the
+     * catalogue default, so the editor's slider and a rule saved before it existed agree.
+     */
+    val TIMEOUT_MS = ActionType.ASK_CONFIRM_DEFAULT_SECONDS * 1_000L
+
+    /**
+     * The wait an [ActionType.ASK_CONFIRM] action asks for, in milliseconds.
+     *
+     * `0` is what every rule saved before the wait was configurable carries. It means "no
+     * value", not "no time" — clamping it into the range would shorten those rules to the
+     * floor without anyone asking.
+     */
+    fun timeoutMsFor(seconds: Int): Long {
+        val spec = ActionType.ASK_CONFIRM.spec
+        val resolved = seconds.takeIf { it > 0 } ?: ActionType.ASK_CONFIRM_DEFAULT_SECONDS
+        return resolved.coerceIn(spec.min, spec.max) * 1_000L
+    }
 
     enum class Answer { YES, NO, NO_ANSWER }
 

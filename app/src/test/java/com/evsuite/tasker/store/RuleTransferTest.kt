@@ -71,6 +71,27 @@ class RuleTransferTest {
     }
 
     @Test
+    fun `a text message keeps its recipient, its contact label and its body`() {
+        // The message rides in the field a webhook body uses, and the contact label in the
+        // one the call action fills. An export that dropped either would import as an action
+        // addressed to a number with nothing to say.
+        val rules = listOf(
+            rule().copy(
+                actions = listOf(
+                    Action(
+                        type = ActionType.SEND_SMS,
+                        text = "+33600000000",
+                        displayName = "Alex — Mobile — +33600000000",
+                        payload = "On my way"
+                    )
+                )
+            )
+        )
+
+        assertEquals(RuleTransfer.Result.Ok(rules), decodeOf(RuleTransfer.encode(rules)))
+    }
+
+    @Test
     fun `an MG4Tasker export remains importable after the rename`() {
         val legacy = RuleTransfer.encode(listOf(rule()))
             .replace("\"format\":\"evtasker-rules\"", "\"format\":\"mg4tasker-rules\"")

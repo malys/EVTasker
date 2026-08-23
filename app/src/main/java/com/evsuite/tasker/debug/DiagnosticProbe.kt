@@ -8,6 +8,7 @@ import com.evsuite.hardware.VehicleWriteGate
 import com.evsuite.hardware.saic.SaicCharging
 import com.evsuite.hardware.saic.SaicClimate
 import com.evsuite.hardware.saic.SaicPhone
+import com.evsuite.tasker.util.BtMessaging
 import com.evsuite.hardware.saic.SaicRadio
 import com.evsuite.hardware.saic.SaicVehicleControl
 import com.evsuite.tasker.bridge.BridgeContract
@@ -79,6 +80,12 @@ object DiagnosticProbe {
          * firmware this build has never seen supports them.
          */
         VENDOR_SERVICES,
+        /**
+         * The Bluetooth message profile and the phone on it — what the "send a text message"
+         * action leaves through. It is the row that answers whether that action can work at
+         * all on this car and this phone, which no other row says.
+         */
+        MESSAGING,
         /** Position: the permission, and whether there is a fix recent enough to use. */
         LOCATION,
         /** Fixed standstill policy and current deferred-write count. */
@@ -145,6 +152,7 @@ object DiagnosticProbe {
             chargingService = SaicCharging.isAvailable,
             radioService = SaicRadio.isAvailable,
             phoneService = SaicPhone.isAvailable,
+            messagingPhone = BtMessaging.isAvailable(appContext),
             navigationApp = hasNavigationApp(appContext),
         )
 
@@ -228,6 +236,12 @@ object DiagnosticProbe {
                     "radio" to caps.radioService,
                     "btcall" to caps.phoneService,
                 ).joinToString(" ") { (name, bound) -> if (bound) name else "$name:no" }
+            ),
+            EnvCheck(
+                Env.MESSAGING,
+                ok = caps.messagingPhone,
+                detail = BtMessaging.connectedPhoneName(context)
+                    ?: "no phone on the message profile (MAP)"
             ),
             EnvCheck(
                 Env.LOCATION,

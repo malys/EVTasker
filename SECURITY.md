@@ -59,11 +59,14 @@ moving. A proof of concept helps; a working exploit is not required.
   (no live request), compares it with a point stored in the rule, and yields a yes/no. The
   coordinates are not sent anywhere, including in a shared paste's rule dump, which stores
   the point the user chose — the same one they wrote.
-- **Network capability is unstable-only and user-triggered during the audit.** `INTERNET`
-  exists only in the unstable manifest. *Share* on the
+- **Network capability is user-triggered.** `INTERNET` is declared on both channels, for
+  the "call a webhook" action: a rule carries an HTTPS URL and the call happens when that
+  rule fires, never on its own. The client refuses anything but HTTPS, does not follow more
+  than four redirects, and times out at 5 s. *Share* on the
   Console tab uploads the diagnostic report to a PrivateBin paste
   (`https://paste.chapril.org`). PrivateBin is zero-knowledge — the report is encrypted and
   the key never leaves the device, travelling only in the URL fragment — the paste is
   password-protected and expires after one hour, and nothing is sent unless the user
-  confirms the dialog. The unstable OTA hook is suspended during the suite safety and
-  legal audit; stable contains no updater implementation or network permission.
+  confirms the dialog — on stable the Console tab itself is reached only through three taps
+  on the Diagnostic tab. The unstable OTA hook is suspended during the suite safety and
+  legal audit; stable contains no updater implementation.

@@ -108,7 +108,9 @@
     <string name="value_no_bt_devices">Nessun dispositivo Bluetooth associato</string>
     <string name="value_no_contacts">Nessun contatto sincronizzato. Consenti la condivisione dei contatti sul telefono associato.</string>
     <string name="value_contact_hint">Cerca contatto o numero</string>
+    <string name="value_sms_message">Messaggio</string>
     <string name="value_call_required">Inserisci un numero di telefono o seleziona un contatto</string>
+    <string name="value_sms_required">Scrivi il messaggio da inviare</string>
     <string name="value_no_profiles">Nessun profilo EVProfile raggiungibile</string>
     <string name="value_notification_hint">Messaggio da mostrare</string>
 
@@ -251,9 +253,11 @@
     <string name="rules_result_title">Esito del test</string>
     <string name="rules_result_none">Nessuna regola è stata valutata.</string>
     <string name="diag_env_vendor">Servizi del veicolo (SAIC)</string>
+    <string name="diag_env_messaging">SMS (Bluetooth MAP)</string>
     <string name="diag_env_location">Posizione</string>
     <string name="diag_env_threshold">Blocco di sicurezza scrittura</string>
     <string name="diag_reason_vendor">servizio del veicolo non disponibile su quest’auto</string>
+    <string name="diag_reason_no_messaging">nessun telefono sul profilo messaggi</string>
     <string name="diag_reason_no_navigation">nessuna app di navigazione</string>
     <string name="diag_reason_no_location">nessuna posizione disponibile</string>
     <string name="diag_reason_not_driven_yet">l’auto non ha ancora viaggiato</string>

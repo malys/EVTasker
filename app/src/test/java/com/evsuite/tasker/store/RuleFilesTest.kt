@@ -119,7 +119,7 @@ class RuleFilesTest {
 
         assertTrue(example.absolutePath, example.isFile)
         val imported = RuleFiles.read(example) as RuleTransfer.Result.Ok
-        assertEquals(3, imported.rules.size)
+        assertEquals(4, imported.rules.size)
         assertTrue(imported.rules.all { !it.enabled })
     }
 }

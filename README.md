@@ -332,6 +332,14 @@ That buys four things the property ids could not:
   A rule can store a typed number or select a name/number from the phone book explicitly
   shared over Bluetooth PBAP. Contact access is requested only while configuring that action;
   execution uses the stored number and does not need the phone book to remain available.
+- **Text messages** — same recipient field as a call, one Bluetooth profile further out. The
+  vendor hands-free service has no message transaction, so the message is handed to the
+  **Message Access Profile** in its client role — the profile the car's own Bluetooth settings
+  manage as "MAP Client" — and the *paired phone* sends it. That needs the phone to share its
+  messages over MAP and to allow sending; a phone that only shares calls and contacts, and an
+  iPhone, answer nothing here. The Diagnostic tab's *Text messages* row names the phone that
+  would carry it, or says there is none. Nothing is ever retried: a send that failed may still
+  have left the phone, and the same message going out twice is worse than not going out.
 
 Climate **conditions** now read from the same service where it answers, falling back to the
 AOSP ids elsewhere — so what a rule tests and what an action writes are the same signal.
@@ -353,10 +361,13 @@ one place a rule never navigates to.
 
 **Ask for confirmation** is the one action whose answer decides the rest of the rule. It
 shows its question full-screen and runs the actions after it only on "yes". Anything else —
-"no", leaving the screen, or 30 s of silence — stops the branch where it stands, and the
-history shows the rule as *skipped* rather than failed. Actions that never ran get no
-history line, since there is no verdict to report for them. One prompt at a time: a second
-rule asking while one is open is refused its answer rather than given someone else's.
+"no", leaving the screen, or silence until the countdown runs out — stops the branch where it
+stands, and the history shows the rule as *skipped* rather than failed. The wait is part of
+the action: 5 to 60 seconds, 10 by default, because a question asked before the doors unlock
+is answered at once while one asked at the end of a drive has to survive the driver looking
+away. Actions that never ran get no history line, since there is no verdict to report for
+them. One prompt at a time: a second rule asking while one is open is refused its answer
+rather than given someone else's.
 
 ---
 
@@ -563,7 +574,7 @@ refuses it whole rather than applying its first case alone.
 Renaming a `ConditionType` / `ActionType` constant therefore invalidates older files — the
 import reports the unknown entry rather than guessing.
 
-An import-ready [example rule set](examples/useful-rules.json) contains three broadly useful
+An import-ready [example rule set](examples/useful-rules.json) contains four broadly useful
 starting points. They are disabled on import so each driver can review the values before
 enabling them. Exports from the former MG4Tasker name (`mg4tasker-rules`) remain accepted;
 new exports always use `evtasker-rules`.
@@ -638,14 +649,15 @@ regenerates on the next test run.
 
 Two build flavors, like the sibling apps:
 
-- **stable** — tagged releases, **no self-update** and no network permission. The updater
-  class is not in the APK.
+- **stable** — tagged releases, **no self-update**. The updater class is not in the APK.
+  It does carry `INTERNET`, because the webhook action is written on the channel people
+  drive; nothing uses it unless a rule fires or the user confirms a Console share.
 - **unstable** — pre-releases published on every push to `master`. Its OTA trigger is
   **suspended during the suite safety and legal audit**; updates are manual. The isolated
   updater policy remains covered by tests for a possible reviewed reactivation. Installs
   beside stable as `com.evsuite.tasker.unstable`.
 
-The Console tab is always visible on unstable builds. On the stable/offline channel it is
+The Console tab is always visible on unstable builds. On the stable channel it is
 hidden from the normal navigation and appears after three taps on the Diagnostic tab.
 
 ```bash

@@ -143,7 +143,7 @@ object ValueEditorDialog {
         val choices = when (spec.kind) {
             ValueKind.PROFILE -> profiles.map { Choice(it.first, it.second) }
             ValueKind.APP     -> launchableApps(context)
-            ValueKind.CONTACT -> contacts.map { Choice(it.number, it.label) }
+            ValueKind.CONTACT, ValueKind.SMS -> contacts.map { Choice(it.number, it.label) }
             else              -> emptyList()
         }
 
@@ -164,7 +164,7 @@ object ValueEditorDialog {
             choices = choices,
             emptyChoiceMessage = context.getString(when (spec.kind) {
                 ValueKind.PROFILE -> R.string.value_no_profiles
-                ValueKind.CONTACT -> R.string.value_no_contacts
+                ValueKind.CONTACT, ValueKind.SMS -> R.string.value_no_contacts
                 else -> R.string.value_no_bt_devices
             }),
             initialMinutesFrom = action.minutesFrom,
@@ -182,9 +182,17 @@ object ValueEditorDialog {
         }
 
         showEditor(context, action.type.labelRes, binding) {
-                if (spec.kind == ValueKind.CONTACT && state.text().isBlank()) {
-                    binding.contactBlock.error = context.getString(R.string.value_call_required)
-                    return@showEditor false
+                if (spec.kind == ValueKind.CONTACT || spec.kind == ValueKind.SMS) {
+                    if (state.text().isBlank()) {
+                        binding.contactBlock.error = context.getString(R.string.value_call_required)
+                        return@showEditor false
+                    }
+                    // An empty message would be saved as an action that reaches the phone and
+                    // sends nothing; the rule would read as applied in the history.
+                    if (spec.kind == ValueKind.SMS && state.payload().isBlank()) {
+                        binding.payloadBlock.error = context.getString(R.string.value_sms_required)
+                        return@showEditor false
+                    }
                 }
                 onDone(
                     action.copy(
@@ -192,7 +200,7 @@ object ValueEditorDialog {
                         flag = if (radioPlay) binding.radioPlaySwitch.isChecked else state.flag(),
                         text = state.text(),
                         payload = state.payload(),
-                        displayName = if (spec.kind == ValueKind.CONTACT)
+                        displayName = if (spec.kind == ValueKind.CONTACT || spec.kind == ValueKind.SMS)
                             state.choiceLabel().ifBlank { null }
                         else action.displayName,
                         minutesFrom = state.minutesFrom,
@@ -365,47 +373,27 @@ object ValueEditorDialog {
                 }
             }
 
-            ValueKind.CONTACT -> {
-                binding.contactBlock.visibility = View.VISIBLE
-                if (choices.isEmpty()) {
-                    binding.choiceEmpty.visibility = View.VISIBLE
-                    binding.choiceEmpty.text = emptyChoiceMessage
-                    binding.contactInput.setText(initialText, false)
-                    text = initialText
-                } else {
-                    val labels = choices.map { it.label }
-                    binding.contactInput.setAdapter(
-                        ArrayAdapter(context, android.R.layout.simple_dropdown_item_1line, labels)
-                    )
-                    binding.contactInput.threshold = 0
-                    val initial = choices.indexOfFirst { it.value == initialText }
-                    if (initial >= 0) {
-                        text = choices[initial].value
-                        choiceLabel = choices[initial].label
-                        binding.contactInput.setText(choiceLabel, false)
-                    } else {
-                        text = initialText
-                        binding.contactInput.setText(initialText, false)
-                    }
-                    binding.contactInput.setOnClickListener { binding.contactInput.showDropDown() }
-                    binding.contactInput.setOnItemClickListener { parent, _, index, _ ->
-                        val selectedLabel = parent.getItemAtPosition(index).toString()
-                        choices.firstOrNull { it.label == selectedLabel }?.let { selected ->
-                            text = selected.value
-                            choiceLabel = selected.label
-                        }
-                    }
+            ValueKind.CONTACT -> bindContact(
+                context, binding, choices, initialText, emptyChoiceMessage,
+                selected = { number, label -> text = number; choiceLabel = label },
+                labelNow = { choiceLabel }
+            )
+
+            // A message has an addressee and a body: the same phone-book field the call
+            // action offers, and the free-text field a webhook body uses.
+            ValueKind.SMS -> {
+                bindContact(
+                    context, binding, choices, initialText, emptyChoiceMessage,
+                    selected = { number, label -> text = number; choiceLabel = label },
+                    labelNow = { choiceLabel }
+                )
+                binding.payloadBlock.visibility = View.VISIBLE
+                binding.payloadBlock.hint = context.getString(R.string.value_sms_message)
+                spec.hintRes.takeIf { it != 0 }?.let {
+                    binding.payloadInput.hint = context.getString(it)
                 }
-                // The same field is deliberately both a contact search and a phone-number
-                // entry. A selected contact stores its number; typing replaces that selection
-                // and clears the contact label so the rule summary shows the entered number.
-                binding.contactInput.doAfterTextChanged { editable ->
-                    val entered = editable?.toString().orEmpty().trim()
-                    if (entered != choiceLabel) {
-                        text = entered
-                        choiceLabel = ""
-                    }
-                }
+                binding.payloadInput.setText(initialPayload)
+                binding.payloadInput.doAfterTextChanged { payload = it?.toString().orEmpty() }
             }
 
             ValueKind.TIME_RANGE -> {
@@ -474,6 +462,33 @@ object ValueEditorDialog {
                 spec.hintRes.takeIf { it != 0 }?.let { binding.textInput.hint = context.getString(it) }
                 binding.textInput.setText(initialText)
                 binding.textInput.addTextChangedListener { text = it }
+            }
+
+            // The question and the wait belong to the same control: how long a prompt stays
+            // on screen is part of what is being asked, and splitting them would put the two
+            // halves of one decision on two screens.
+            ValueKind.CONFIRM -> {
+                binding.textBlock.visibility = View.VISIBLE
+                spec.hintRes.takeIf { it != 0 }?.let { binding.textInput.hint = context.getString(it) }
+                binding.textInput.setText(initialText)
+                binding.textInput.addTextChangedListener { text = it }
+
+                binding.numberBlock.visibility = View.VISIBLE
+                binding.numberSlider.valueFrom = spec.min.toFloat()
+                binding.numberSlider.valueTo = spec.max.toFloat()
+                // 0 is what a rule saved before the wait was configurable carries, and
+                // clamping it would silently shorten that rule to the floor.
+                val seconds = (if (initialNumber <= 0f) ActionType.ASK_CONFIRM_DEFAULT_SECONDS.toFloat()
+                    else initialNumber).coerceIn(spec.min.toFloat(), spec.max.toFloat())
+                binding.numberSlider.value = seconds
+                number = seconds
+
+                val unit = spec.unitRes.takeIf { it != 0 }?.let { " " + context.getString(it) } ?: ""
+                binding.numberValue.text = "${seconds.toInt()}$unit"
+                binding.numberSlider.addOnChangeListener { _, value, _ ->
+                    number = value
+                    binding.numberValue.text = "${value.toInt()}$unit"
+                }
             }
 
             ValueKind.WEBHOOK -> {
@@ -557,6 +572,63 @@ object ValueEditorDialog {
         }
 
         return state
+    }
+
+    /**
+     * The phone-book field: a contact search that is also a number entry.
+     *
+     * Shared by the call action and the message action because it is the same question —
+     * "who" — and answering it twice in two ways would let the two screens disagree about
+     * what a typed number means.
+     *
+     * @param selected receives the number to store and the label to show for it.
+     * @param labelNow reads back the label currently shown, so typing over a selected contact
+     * is recognised as replacing it rather than as re-selecting it.
+     */
+    private fun bindContact(
+        context: Context,
+        binding: DialogValueEditorBinding,
+        choices: List<Choice>,
+        initialText: String,
+        emptyChoiceMessage: String,
+        selected: (number: String, label: String) -> Unit,
+        labelNow: () -> String
+    ) {
+        binding.contactBlock.visibility = View.VISIBLE
+        if (choices.isEmpty()) {
+            binding.choiceEmpty.visibility = View.VISIBLE
+            binding.choiceEmpty.text = emptyChoiceMessage
+            binding.contactInput.setText(initialText, false)
+            selected(initialText, "")
+        } else {
+            val labels = choices.map { it.label }
+            binding.contactInput.setAdapter(
+                ArrayAdapter(context, android.R.layout.simple_dropdown_item_1line, labels)
+            )
+            binding.contactInput.threshold = 0
+            val initial = choices.indexOfFirst { it.value == initialText }
+            if (initial >= 0) {
+                selected(choices[initial].value, choices[initial].label)
+                binding.contactInput.setText(choices[initial].label, false)
+            } else {
+                selected(initialText, "")
+                binding.contactInput.setText(initialText, false)
+            }
+            binding.contactInput.setOnClickListener { binding.contactInput.showDropDown() }
+            binding.contactInput.setOnItemClickListener { parent, _, index, _ ->
+                val selectedLabel = parent.getItemAtPosition(index).toString()
+                choices.firstOrNull { it.label == selectedLabel }?.let {
+                    selected(it.value, it.label)
+                }
+            }
+        }
+        // The same field is deliberately both a contact search and a phone-number entry. A
+        // selected contact stores its number; typing replaces that selection and clears the
+        // contact label so the rule summary shows the entered number.
+        binding.contactInput.doAfterTextChanged { editable ->
+            val entered = editable?.toString().orEmpty().trim()
+            if (entered != labelNow()) selected(entered, "")
+        }
     }
 
     /**

@@ -7,6 +7,7 @@ import com.evsuite.tasker.model.Action
 import com.evsuite.tasker.model.ActionResult
 import com.evsuite.tasker.model.CompareOp
 import com.evsuite.tasker.model.Condition
+import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.ValueKind
 import java.util.Calendar
 import java.util.Locale
@@ -105,11 +106,21 @@ class Labels(
             ValueKind.TEXT ->
                 "$name : ${action.text}"
 
+            ValueKind.CONFIRM -> {
+                val unit = action.type.spec.unitRes.takeIf { it != 0 }
+                    ?.let { " " + context.getString(it) } ?: ""
+                val seconds = action.number.takeIf { it > 0 } ?: ActionType.ASK_CONFIRM_DEFAULT_SECONDS
+                "$name : ${action.text} ($seconds$unit)"
+            }
+
             ValueKind.WEBHOOK ->
                 "$name (${if (action.flag) "POST" else "GET"}) : ${action.text}"
 
             ValueKind.CONTACT ->
                 "$name : ${action.displayName ?: action.text}"
+
+            ValueKind.SMS ->
+                "$name : ${action.displayName ?: action.text} — ${action.payload.orEmpty()}"
 
             else -> name
         }

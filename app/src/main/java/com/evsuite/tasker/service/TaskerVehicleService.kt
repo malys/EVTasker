@@ -17,6 +17,7 @@ import com.evsuite.hardware.VehicleWriteGate
 import com.evsuite.tasker.model.RuleTrigger
 import com.evsuite.tasker.store.AppState
 import com.evsuite.tasker.util.BtDevices
+import com.evsuite.tasker.util.BtMessaging
 import com.evsuite.tasker.util.Notifier
 import com.evsuite.tasker.vehicle.BtOnboard
 import com.evsuite.tasker.vehicle.BtTracker
@@ -124,6 +125,9 @@ class TaskerVehicleService : Service() {
         // them cannot be answered. Asked for here, they are ready long before the first rule
         // cycle — which is the cycle that decides whose phone is on board.
         BtDevices.warmUp(applicationContext)
+        // The message profile answers on the same kind of callback, and the rule that sends a
+        // message is as unwilling to wait for it as the one that reads which phone is aboard.
+        BtMessaging.warmUp(applicationContext)
         registerBtReceiver()
         registerHardkeyReceiver()
         registerIgnitionListener()
