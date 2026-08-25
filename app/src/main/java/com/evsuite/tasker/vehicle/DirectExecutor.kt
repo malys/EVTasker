@@ -138,7 +138,9 @@ class DirectExecutor(
             // Climate — vendor service, not gated (see the catalogue).
             ActionType.SET_CLIMATE_POWER    -> SaicClimate.setPower(b)
             ActionType.SET_CABIN_TEMP       -> SaicClimate.setDriverTemp(i)
+            ActionType.SET_PASSENGER_TEMP   -> SaicClimate.setPassengerTemp(i)
             ActionType.SET_AC               -> SaicClimate.setAc(b)
+            ActionType.SET_ECON             -> SaicClimate.setEcon(b)
             ActionType.SET_CLIMATE_AUTO     -> SaicClimate.setAuto(b)
             ActionType.SET_RECIRCULATION    -> SaicClimate.setRecirculation(b)
             ActionType.SET_FAN_LEVEL        -> SaicClimate.setFanLevel(i)

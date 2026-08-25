@@ -55,6 +55,9 @@ class Labels(
             ValueKind.TIME_RANGE ->
                 "$name ${formatTime(condition.minutesFrom)} – ${formatTime(condition.minutesTo)}"
 
+            ValueKind.TIME ->
+                "$name ${operator(condition.op)} ${formatTime(condition.number.toInt())}"
+
             ValueKind.DAYS ->
                 "$name : ${condition.days.sortedBy { weekOrder(it) }.joinToString(", ") { dayLabel(it) }}"
 

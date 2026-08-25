@@ -165,6 +165,14 @@
                 android:layout_marginStart="@dimen/spacing_sm" />
         </LinearLayout>
 
+        <!-- TIME -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/timeSingle"
+            style="@style/Widget.EV.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
         <!-- DAYS -->
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/daysGroup"

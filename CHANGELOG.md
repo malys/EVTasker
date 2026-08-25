@@ -4,6 +4,26 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- The climate and charging readings the vendor services already answered and nothing could
+  reach: ECON, the passenger target temperature, both defrosters, scheduled charging, the two
+  ends of the charging window and battery pre-heating. Two matching writes, **ECON mode** and
+  **passenger temperature**.
+- **Charging state** as its own condition. *Charging* stays a flag and keeps its meaning; the
+  state is what can say "plugged in and not charging", which the flag cannot.
+- **Front door open** on SWI133, reading the door status the volume-drop watcher already polls.
+- A clock-time control, used by the two ends of the charging window. Minutes behind a 0–1439
+  slider was not something a driver could answer.
+
+### Fixed
+
+- *Charging* was true whenever the vendor status was non-zero, so a completed charge, a
+  stopped one and a charging fault all read as charging. Only the states in which current is
+  actually flowing count now.
+
 ## [2.3.2] - 2026-08-25
 
 ### Fixed

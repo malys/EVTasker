@@ -74,7 +74,7 @@ object ValueEditorDialog {
         // Operator: offered only where ordering means something. On a drive mode,
         // "below Sport" is meaningless — so it is not offered.
         val ops = if (condition.type.comparable) CompareOp.entries else listOf(CompareOp.EQ, CompareOp.NE)
-        if (spec.kind == ValueKind.NUMBER || spec.kind == ValueKind.ENUM) {
+        if (spec.kind == ValueKind.NUMBER || spec.kind == ValueKind.ENUM || spec.kind == ValueKind.TIME) {
             binding.opSpinner.visibility = View.VISIBLE
             binding.opSpinner.adapter = simpleAdapter(context, ops.map { labels.operator(it) })
             binding.opSpinner.setSelection(ops.indexOf(condition.op).coerceAtLeast(0))
@@ -394,6 +394,25 @@ object ValueEditorDialog {
                 }
                 binding.payloadInput.setText(initialPayload)
                 binding.payloadInput.doAfterTextChanged { payload = it?.toString().orEmpty() }
+            }
+
+            /**
+             * One clock time, carried in the same field a number would use — the flat union in
+             * `Condition` already has it, and a time of day is a number of minutes. The picker
+             * is [ValueKind.TIME_RANGE]'s, minus the second half.
+             */
+            ValueKind.TIME -> {
+                binding.timeSingle.visibility = View.VISIBLE
+                val labels = Labels(context)
+                val start = initialNumber.toInt().coerceIn(0, 24 * 60 - 1)
+                number = start.toFloat()
+                binding.timeSingle.text = labels.formatTime(start)
+                binding.timeSingle.setOnClickListener {
+                    pickTime(context, number.toInt()) {
+                        number = it.toFloat()
+                        binding.timeSingle.text = labels.formatTime(it)
+                    }
+                }
             }
 
             ValueKind.TIME_RANGE -> {

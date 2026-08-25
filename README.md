@@ -183,10 +183,17 @@ history names the missing signal. Unreadable is never treated as false.
 
 Conditions span **context** (Bluetooth, time of day, day of week, firmware, near a place),
 **environment** (outside temperature), **driving** (ignition, park, speed, drive mode,
-regeneration, energy saving), **energy** (battery level, charging, charge limit), **climate**
-(climate on, A/C, AUTO, recirculation, fan speed, set temperature, window open), **comfort**
-(seat/steering heating, media volume, brightness), and **driver assistance** (AEB, ELK,
-ACC/TJA, limiter, TSR, overspeed, speed-limit tone, ADAS sound).
+regeneration, energy saving), **energy** (battery level, charging, charging state, charge
+limit, scheduled charging and the two ends of its window, battery pre-heating), **climate**
+(climate on, A/C, AUTO, ECON, recirculation, fan speed, driver and passenger target
+temperatures, both defrosters, window open), **comfort** (seat/steering heating, media volume,
+brightness), and **driver assistance** (AEB, ELK, ACC/TJA, limiter, TSR, overspeed,
+speed-limit tone, ADAS sound).
+
+**Charging** and **charging state** are not the same question. The first is a flag — current
+is flowing — and it is what a rule pre-heating the cabin on a charger wants. The second is
+the state itself, and it is the only one that can say *plugged in and not charging*, which is
+what a rule warning a driver about to walk away is about.
 
 Three Bluetooth conditions, and the difference between them is the whole point. **Phone
 connected** is a radio fact: it is true of a phone left indoors while the car is parked in
@@ -198,8 +205,9 @@ unit chose to route calls through: available from the first second, and the way 
 phones apart when both are in range. A rule that must act at ignition should use *phone
 connected* together with a vehicle signal (ignition, speed, not in park) instead.
 
-Actions cover **profile** application, **driving**, **comfort**, **climate** (on/off, target
-temperature, A/C, AUTO, recirculation, fan level, front and rear defrosters), **energy**
+Actions cover **profile** application, **driving**, **comfort**, **climate** (on/off, driver
+and passenger target temperatures, A/C, ECON, AUTO, recirculation, fan level, front and rear
+defrosters), **energy**
 (charge limit, allow charging, scheduled charging and its window, battery pre-heating),
 **audio** (volume, the fine controls, play the radio), **driver assistance**, and **system**
 (launch an app, show a message, speak through the head unit's text-to-speech engine,

@@ -37,6 +37,9 @@ object ConditionEvaluator {
             ValueKind.PHYSICAL_BUTTON -> evaluatePhysicalButton(condition, snapshot)
             ValueKind.BOOL       -> evaluateBool(condition, snapshot)
             ValueKind.NUMBER     -> evaluateNumber(condition, snapshot)
+            // A clock time is a count of minutes since midnight, compared like any other
+            // number — the kind exists for the control, not for a different comparison.
+            ValueKind.TIME       -> evaluateNumber(condition, snapshot)
             ValueKind.ENUM       -> evaluateEnum(condition, snapshot)
             else                 -> ConditionOutcome.UNAVAILABLE
         }

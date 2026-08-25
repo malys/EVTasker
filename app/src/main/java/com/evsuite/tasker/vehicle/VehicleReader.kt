@@ -3,6 +3,7 @@ package com.evsuite.tasker.vehicle
 import com.evsuite.hardware.FirmwareInfo
 import com.evsuite.hardware.EVHardware
 import com.evsuite.hardware.catalog.SnapshotKeys
+import com.evsuite.hardware.catalog.VehicleEnums
 import com.evsuite.hardware.saic.SaicCharging
 import com.evsuite.hardware.saic.SaicClimate
 import com.evsuite.hardware.saic.SaicVehicleControl
@@ -108,6 +109,7 @@ object VehicleReader {
             EVHardware.getFanSpeed()?.let { put(SnapshotKeys.KEY_FAN_SPEED, it) }
             EVHardware.getTemperatureSetCelsius()?.let { put(SnapshotKeys.KEY_TEMPERATURE_SET, it) }
             EVHardware.isAnyWindowOpen()?.let { put(SnapshotKeys.KEY_WINDOW_OPEN, it) }
+            EVHardware.frontDoorOpenOrNull()?.let { put(SnapshotKeys.KEY_FRONT_DOOR_OPEN, it) }
 
             put(SnapshotKeys.KEY_FIRMWARE_GEN, FirmwareInfo.getGeneration().name)
             putAll(vendorReadings())
@@ -142,6 +144,10 @@ object VehicleReader {
         SaicClimate.recirculationOn()?.let { put(SnapshotKeys.KEY_RECIRC, it) }
         SaicClimate.fanLevel()?.let { put(SnapshotKeys.KEY_FAN_SPEED, it) }
         SaicClimate.driverTemp()?.let { put(SnapshotKeys.KEY_TEMPERATURE_SET, it) }
+        SaicClimate.passengerTemp()?.let { put(SnapshotKeys.KEY_PASSENGER_TEMP, it) }
+        SaicClimate.econOn()?.let { put(SnapshotKeys.KEY_ECON, it) }
+        SaicClimate.frontDefrostOn()?.let { put(SnapshotKeys.KEY_FRONT_DEFROST, it) }
+        SaicClimate.rearDefrostOn()?.let { put(SnapshotKeys.KEY_REAR_DEFROST, it) }
         // The AAOS ENV_OUTSIDE_TEMPERATURE property answers 0.0 on SWI68 rather than
         // failing, so the key is present and wrong. The vendor read is the only honest one.
         SaicClimate.outsideTempCelsius()?.let { put(SnapshotKeys.KEY_OUTSIDE_TEMP, it) }
@@ -156,8 +162,18 @@ object VehicleReader {
 
         SaicCharging.stateOfChargePercent()?.let { put(SnapshotKeys.KEY_BATTERY_PERCENT, it) }
         SaicCharging.chargeLimitPercent()?.let { put(SnapshotKeys.KEY_CHARGE_LIMIT, it) }
-        // 0 means "not charging" in the vendor status; anything else is a charging state.
-        SaicCharging.chargingStatus()?.let { put(SnapshotKeys.KEY_CHARGING, it != 0) }
+        // The flag is "current is flowing", not "the status is non-zero": a finished charge, a
+        // stopped one and a fault are all non-zero, and all three would make a "when charging"
+        // rule fire on a car that is not charging. The state itself is kept alongside it —
+        // "plugged in and idle" is a state a rule wants and the flag cannot express.
+        SaicCharging.chargingStatus()?.let {
+            put(SnapshotKeys.KEY_CHARGING_STATUS, it)
+            put(SnapshotKeys.KEY_CHARGING, it in VehicleEnums.CHARGING_ACTIVE_STATES)
+        }
+        SaicCharging.scheduleEnabled()?.let { put(SnapshotKeys.KEY_CHARGE_SCHEDULE, it) }
+        SaicCharging.scheduleStartMinutes()?.let { put(SnapshotKeys.KEY_CHARGE_WINDOW_START, it) }
+        SaicCharging.scheduleStopMinutes()?.let { put(SnapshotKeys.KEY_CHARGE_WINDOW_STOP, it) }
+        SaicCharging.batteryPreheatOn()?.let { put(SnapshotKeys.KEY_BATTERY_PREHEAT, it) }
     }
 
     /** EVHardware getters return -1 when the layer is not ready: omit rather than store it. */
