@@ -1,11 +1,14 @@
 package com.evsuite.tasker.util
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
@@ -82,14 +85,32 @@ object Notifier {
         )
     }
 
-    /** The subset of the declared service types this app currently holds the permissions for. */
+    /**
+     * The subset of the declared service types this app currently holds the permissions for.
+     *
+     * Both declared types are permission-backed and both permissions are runtime ones:
+     * `connectedDevice` rests on BLUETOOTH_CONNECT, `location` on either position grade. A
+     * type claimed without its permission fails the whole start, so each is claimed only when
+     * it is held — and a service that holds neither still runs, still applies profiles and
+     * still writes the car, because the vehicle permissions are signature-level and are not
+     * part of this question.
+     */
     fun foregroundServiceTypes(context: Context): Int {
-        var types = ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+        var types = ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE
+        if (hasBluetoothConnect(context)) {
+            types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+        }
         if (CarLocation.hasPermission(context)) {
             types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
         }
         return types
     }
+
+    /** Below API 31 the permission does not exist and the type needs nothing to be claimed. */
+    private fun hasBluetoothConnect(context: Context): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) ==
+                PackageManager.PERMISSION_GRANTED
 
     /**
      * Puts a rule's message in front of the driver.

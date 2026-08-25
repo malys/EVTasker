@@ -4,6 +4,18 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.2] - 2026-08-25
+
+### Fixed
+
+- **The `connectedDevice` foreground type is claimed only while Bluetooth access is held.**
+  2.3.1 made the `location` type conditional and left this one unconditional, but it rests on
+  BLUETOOTH_CONNECT the same way — a runtime permission, and one the boot start reaches before
+  anybody has answered it. On a car that has not granted it, the service still died before its
+  first rule cycle. Both types are now claimed only when their permission is held; a service
+  that holds neither still runs, and still writes the car, because the vehicle permissions
+  come from the platform signature and are not part of this question.
+
 ## [2.3.1] - 2026-08-25
 
 ### Fixed
