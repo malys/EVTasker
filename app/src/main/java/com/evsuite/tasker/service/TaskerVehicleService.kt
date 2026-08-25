@@ -18,6 +18,7 @@ import com.evsuite.tasker.model.RuleTrigger
 import com.evsuite.tasker.store.AppState
 import com.evsuite.tasker.util.BtDevices
 import com.evsuite.tasker.util.BtMessaging
+import com.evsuite.tasker.util.CarLocation
 import com.evsuite.tasker.util.Notifier
 import com.evsuite.tasker.vehicle.BtOnboard
 import com.evsuite.tasker.vehicle.BtTracker
@@ -86,6 +87,10 @@ class TaskerVehicleService : Service() {
     private val onboardSampler = object : Runnable {
         override fun run() {
             BtOnboard.sample(this@TaskerVehicleService)
+            // Same watchdog the Bluetooth sampling gets: a GPS subscription placed once at
+            // boot dies with a provider that was off at the time, and nothing else would ever
+            // ask again — the fix would stay null for the rest of the drive.
+            CarLocation.ensureTracking(applicationContext)
             onboardHandler.postDelayed(this, ONBOARD_SAMPLE_MS)
         }
     }
@@ -94,7 +99,7 @@ class TaskerVehicleService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        startForeground(Notifier.FOREGROUND_NOTIFICATION_ID, Notifier.buildForegroundNotification(this))
+        Notifier.startInForeground(this)
         AppLogger.i(TAG, "onCreate — initialising vehicle layer")
 
         // The application context, captured deliberately. `getString` here would resolve on
@@ -128,6 +133,9 @@ class TaskerVehicleService : Service() {
         // The message profile answers on the same kind of callback, and the rule that sends a
         // message is as unwilling to wait for it as the one that reads which phone is aboard.
         BtMessaging.warmUp(applicationContext)
+        // Position, on the same footing as the Bluetooth proxies: a rule cycle reads a cached
+        // fix and cannot wait for a lock, so the cache has to already be full when it runs.
+        CarLocation.startTracking(applicationContext)
         registerBtReceiver()
         registerHardkeyReceiver()
         registerIgnitionListener()
@@ -150,7 +158,17 @@ class TaskerVehicleService : Service() {
         isRunning = true
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
+    /**
+     * Re-asserted on every start, because a permission granted after boot changes what this
+     * service may hold. MainActivity starts it again once position is granted: the foreground
+     * types are re-declared with `location` in them, and the subscription that fills the fix
+     * cache is armed without waiting for the next ignition.
+     */
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Notifier.startInForeground(this)
+        CarLocation.startTracking(applicationContext)
+        return START_STICKY
+    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -158,6 +176,7 @@ class TaskerVehicleService : Service() {
         ignitionListener?.let { EVHardware.unregisterVehicleConditionListener(it) }
         btReceiver?.let { runCatching { unregisterReceiver(it) } }
         hardkeyReceiver?.let { runCatching { unregisterReceiver(it) } }
+        CarLocation.stopTracking(applicationContext)
         onboardHandler.removeCallbacks(onboardSampler)
         onboardThread.quitSafely()
     }

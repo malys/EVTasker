@@ -20,6 +20,9 @@ android.permission.WRITE_SETTINGS
 # boot to catch the first ignition without the app being opened.
 android.permission.FOREGROUND_SERVICE
 android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE
+# The same service holds a position subscription while it lives, and since API 34 a
+# foreground service only reaches a "while in use" permission through a matching type.
+android.permission.FOREGROUND_SERVICE_LOCATION
 android.permission.WAKE_LOCK
 android.permission.RECEIVE_BOOT_COMPLETED
 android.permission.POST_NOTIFICATIONS
@@ -36,6 +39,14 @@ android.permission.BLUETOOTH_PRIVILEGED
 # Read-only access, requested only while configuring "Call a contact". The OEM PBAP client
 # publishes the paired phone's explicitly shared phone book through ContactsContract.
 android.permission.READ_CONTACTS
+
+# --- Messages ---
+# The "send a message" action. The car has no SIM: the message is handed to the paired
+# phone over the Bluetooth message profile and the phone sends it, but the platform counts
+# that as an SMS send and the Bluetooth stack enforces this permission on the call.
+# Requested only while writing that action; nothing is read, and no message is ever sent
+# without a rule the user wrote.
+android.permission.SEND_SMS
 
 # Signature permission defined by EVTasker to reject forged OEM hard-key broadcasts.
 com.evsuite.tasker.permission.RECEIVE_HARDKEY

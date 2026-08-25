@@ -1,10 +1,14 @@
 package com.evsuite.tasker.util
 
+import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothProfile
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import androidx.core.content.ContextCompat
 import com.evsuite.hardware.AppLogger
+import java.lang.reflect.InvocationTargetException
 
 /**
  * Sending a text message through the phone the car is paired with.
@@ -69,6 +73,13 @@ object BtMessaging {
      * connected on it, the platform has no `sendMessage`, or the stack refused the message.
      */
     fun send(context: Context, number: String, message: String): Result {
+        // The message profile is the phone's SMS stack seen from the car, and the Bluetooth
+        // stack enforces SEND_SMS on the call accordingly. Without it the send used to fail
+        // inside reflection and land in the history as "InvocationTargetException", which
+        // named neither the cause nor the remedy.
+        if (!hasSendPermission(context)) {
+            return Result(false, "sending messages is not allowed (SEND_SMS denied)")
+        }
         val proxy = BtDevices.proxy(context, PROFILE_MAP_CLIENT)
             ?: return Result(false, "message profile not bound on this car")
         val device = connectedDevices(proxy).firstOrNull()
@@ -93,10 +104,18 @@ object BtMessaging {
                 Result(false, "the phone refused the message")
             }
         } catch (e: Exception) {
-            AppLogger.w(TAG, "sendMessage(): ${e.message}")
-            Result(false, e.javaClass.simpleName + (e.message?.let { ": $it" } ?: ""))
+            // Reflection wraps whatever the stack threw; the wrapper says nothing, the cause
+            // says everything — a refused permission, a profile that went down mid-call.
+            val cause = (e as? InvocationTargetException)?.targetException ?: e
+            AppLogger.w(TAG, "sendMessage(): ${cause.message}")
+            Result(false, cause.javaClass.simpleName + (cause.message?.let { ": $it" } ?: ""))
         }
     }
+
+    /** Whether the platform would let this app hand a message to the paired phone at all. */
+    fun hasSendPermission(context: Context): Boolean =
+        ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) ==
+            PackageManager.PERMISSION_GRANTED
 
     /**
      * The recipient list in the shape this platform's `sendMessage` wants.

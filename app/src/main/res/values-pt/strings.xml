@@ -287,6 +287,8 @@
     <string name="editor_summary_all">todas: %1$s</string>
     <string name="editor_summary_any">alguma: %1$s</string>
     <string name="editor_case_incomplete">Cada caso precisa de uma condição e uma ação; o «senão» precisa de uma ação</string>
+    <string name="editor_contacts_denied">Contactos recusados — a lista telefónica fica vazia; escreva o número à mão</string>
+    <string name="editor_sms_denied">Envio de mensagens recusado — uma regra que envie uma mensagem será recusada</string>
     <string name="editor_max_else_if">Uma regra aceita no máximo %1$d casos «senão se»</string>
     <plurals name="rule_summary_cases">
         <item quantity="one">%d caso</item>

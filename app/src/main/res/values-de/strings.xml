@@ -287,6 +287,8 @@
     <string name="editor_summary_all">alle: %1$s</string>
     <string name="editor_summary_any">mindestens eine: %1$s</string>
     <string name="editor_case_incomplete">Jeder Fall braucht eine Bedingung und eine Aktion; das „sonst“ braucht eine Aktion</string>
+    <string name="editor_contacts_denied">Kontakte abgelehnt — das Telefonbuch bleibt leer; Nummer manuell eingeben</string>
+    <string name="editor_sms_denied">Nachrichtenversand abgelehnt — eine Regel, die eine Nachricht sendet, wird abgewiesen</string>
     <string name="editor_max_else_if">Eine Regel nimmt höchstens %1$d „sonst wenn“-Fälle</string>
     <plurals name="rule_summary_cases">
         <item quantity="one">%d Fall</item>

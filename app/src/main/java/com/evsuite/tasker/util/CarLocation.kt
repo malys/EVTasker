@@ -14,10 +14,12 @@ import com.evsuite.hardware.AppLogger
 /**
  * Where the car is, for the "near a place" condition.
  *
- * Last known fix only — never a live request. A rule cycle runs once at ignition and has to
- * finish; waiting on a satellite lock would hold it open for as long as the sky decides. A
- * stale fix is also the right answer for this question: the car has not moved since the
- * engine was last off, which is exactly when the fix was taken.
+ * A rule cycle cannot wait on a satellite lock — it runs at ignition and has to finish — so
+ * it reads a cached fix ([lastKnown]). What fills that cache is [startTracking]: a live GPS
+ * subscription held by the vehicle service, the same provider path EVABRPUploader uses.
+ * Without it `getLastKnownLocation` is whatever some other app happened to leave behind,
+ * which on a head unit with no other GPS client is nothing at all — the fix came back null
+ * and every "near a place" condition evaluated as unavailable.
  */
 object CarLocation {
 
@@ -26,9 +28,24 @@ object CarLocation {
     /** How old a fix may be and still describe where the car is now. */
     private const val MAX_AGE_MS = 30 * 60 * 1000L
 
+    /**
+     * Cadence of the service's subscription. Far below [MAX_AGE_MS], so the cache is never
+     * the reason a condition is unanswerable, and far above a navigation app's, because
+     * nothing here needs to know which lane the car is in.
+     */
+    private const val TRACK_INTERVAL_MS = 60_000L
+
+    /** How long an inactive subscription may stay inactive before the watchdog re-arms it. */
+    const val TRACK_RETRY_INTERVAL_MS = 60_000L
+
     data class Fix(val latitude: Double, val longitude: Double)
 
     @Volatile private var liveFix: android.location.Location? = null
+
+    /** False while no subscription is delivering — drives the watchdog re-arm. */
+    @Volatile private var trackingActive = false
+
+    @Volatile private var lastTrackRequestMs = 0L
 
     /**
      * Either grade counts. Since API 31 the user can grant "approximate" when fine was
@@ -59,6 +76,80 @@ object CarLocation {
             null
         }
     }
+
+    // ---------- Live tracking (vehicle service) ----------
+
+    private val trackListener = object : LocationListener {
+        override fun onLocationChanged(location: android.location.Location) {
+            liveFix = location
+        }
+
+        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
+
+        override fun onProviderEnabled(provider: String) {
+            AppLogger.i(TAG, "$provider enabled — re-arming")
+            trackingActive = false
+        }
+
+        override fun onProviderDisabled(provider: String) {
+            AppLogger.w(TAG, "$provider disabled — conditions on position go unanswerable")
+            trackingActive = false
+        }
+    }
+
+    /**
+     * Subscribes to GPS updates for as long as the vehicle service lives. Safe to call
+     * repeatedly: the previous subscription is removed first, so the watchdog can re-arm
+     * without stacking listeners.
+     */
+    fun startTracking(context: Context) {
+        if (!hasPermission(context)) {
+            AppLogger.w(TAG, "no location permission — position tracking not started")
+            lastTrackRequestMs = System.currentTimeMillis()
+            return
+        }
+        val manager = ContextCompat.getSystemService(context, LocationManager::class.java) ?: return
+        try {
+            runCatching { manager.removeUpdates(trackListener) }
+            trackingActive = false
+            lastTrackRequestMs = System.currentTimeMillis()
+            if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                AppLogger.w(TAG, "GPS provider disabled — will retry")
+                return
+            }
+            manager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER, TRACK_INTERVAL_MS, 0f,
+                trackListener, Looper.getMainLooper()
+            )
+            trackingActive = true
+            manager.getLastKnownLocation(LocationManager.GPS_PROVIDER)?.let { liveFix = it }
+            AppLogger.i(TAG, "position tracking armed (${TRACK_INTERVAL_MS / 1000} s)")
+        } catch (e: SecurityException) {
+            AppLogger.w(TAG, "location denied: ${e.message}")
+        } catch (e: Exception) {
+            AppLogger.w(TAG, "location unavailable: ${e.message}")
+        }
+    }
+
+    /**
+     * Re-arms the subscription when it is not delivering. Called from the service's own
+     * sampler: a subscription placed once at boot is lost with the provider that was off at
+     * the time, and nothing else would ever ask again.
+     */
+    fun ensureTracking(context: Context) {
+        if (trackingActive) return
+        if (System.currentTimeMillis() - lastTrackRequestMs < TRACK_RETRY_INTERVAL_MS) return
+        startTracking(context)
+    }
+
+    fun stopTracking(context: Context) {
+        val manager = ContextCompat.getSystemService(context, LocationManager::class.java) ?: return
+        runCatching { manager.removeUpdates(trackListener) }
+        trackingActive = false
+    }
+
+    /** Whether the service's subscription is live, for the diagnostic screen. */
+    fun isTracking(): Boolean = trackingActive
 
     /**
      * Requests a real GPS fix, using the same provider path as EVABRPUploader. The callback

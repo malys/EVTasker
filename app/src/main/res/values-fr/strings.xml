@@ -304,6 +304,8 @@
     <string name="editor_summary_all">toutes : %1$s</string>
     <string name="editor_summary_any">au moins une : %1$s</string>
     <string name="editor_case_incomplete">Chaque cas exige une condition et une action ; le « sinon » exige une action</string>
+    <string name="editor_contacts_denied">Contacts refusés — le répertoire reste vide ; saisissez le numéro à la main</string>
+    <string name="editor_sms_denied">Envoi de messages refusé — une règle qui envoie un message sera refusée</string>
     <string name="editor_max_else_if">Une règle accepte au plus %1$d cas « sinon si »</string>
     <plurals name="rule_summary_cases">
         <item quantity="one">%d cas</item>

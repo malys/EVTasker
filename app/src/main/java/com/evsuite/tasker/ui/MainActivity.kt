@@ -1,8 +1,13 @@
 package com.evsuite.tasker.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
@@ -30,6 +35,27 @@ class MainActivity : AppCompatActivity() {
 
     /** Rebuilt by [rebuildScreens]; Console is absent until it is unlocked. */
     private var screens: List<Screen> = emptyList()
+
+    /**
+     * Position, notifications and Bluetooth, asked for once when the app is opened.
+     *
+     * The rule editor already asks when a "near a place" condition is being written, but a
+     * rule that arrives any other way — imported, restored, or written on another head unit —
+     * never passes through that screen. The permission was then missing on the car and the
+     * condition reported "no fix" forever, with nothing anywhere offering to grant it. A
+     * denial costs that one condition and nothing else, so nothing is blocked on the answer.
+     */
+    private val startupPermissions =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+            // A position grant changes what the vehicle service is allowed to be: it may now
+            // hold the `location` foreground type and subscribe to GPS. Starting it again is
+            // what re-declares both — otherwise the grant only took effect at the next boot.
+            if (granted[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                granted[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+            ) {
+                com.evsuite.tasker.service.TaskerVehicleService.start(this)
+            }
+        }
 
     /**
      * Reads [screens] on every call rather than capturing it, so unlocking the console
@@ -100,9 +126,38 @@ class MainActivity : AppCompatActivity() {
         }
         markCurrentPage(binding.content.currentItem)
 
+        requestStartupPermissions()
+
         // Unstable builds check for a newer pre-release; the stable flavor's UpdateHook is
         // a no-op and the stable APK contains no updater code at all.
         com.evsuite.tasker.update.UpdateHook.checkInBackground(this)
+    }
+
+    /**
+     * Asks, once per launch, for everything the app declares but the platform only ever grants
+     * on request.
+     *
+     * All three were declared in the manifest and never asked for anywhere, which on Android
+     * is the same as not having them: the foreground-service notification was dropped
+     * silently, the paired-device list came back empty, and position answered nothing. None of
+     * the three blocks anything — a denial costs exactly the feature behind it — so they go
+     * out together and the app carries on regardless of the answer.
+     */
+    private fun requestStartupPermissions() {
+        val wanted = mutableListOf<String>()
+        if (!com.evsuite.tasker.util.CarLocation.hasPermission(this)) {
+            wanted += Manifest.permission.ACCESS_FINE_LOCATION
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            wanted += Manifest.permission.POST_NOTIFICATIONS
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            wanted += Manifest.permission.BLUETOOTH_CONNECT
+        }
+        val missing = wanted.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+        if (missing.isNotEmpty()) startupPermissions.launch(missing.toTypedArray())
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

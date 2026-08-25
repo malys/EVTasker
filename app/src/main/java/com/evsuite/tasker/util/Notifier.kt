@@ -3,10 +3,13 @@ package com.evsuite.tasker.util
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.Service
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
+import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.evsuite.tasker.R
 
@@ -54,6 +57,38 @@ object Notifier {
             .setSmallIcon(android.R.drawable.ic_menu_manage)
             .setOngoing(true)
             .build()
+    }
+
+    /**
+     * Puts [service] in the foreground with the service types it is actually allowed to hold.
+     *
+     * The plain two-argument `startForeground` means "every type this service declares in the
+     * manifest", and since API 34 each of those types is checked against the permissions the
+     * app holds *at that moment*. Both services declare `location` as well as
+     * `connectedDevice`, so on a car where position was never granted — a fresh install, or a
+     * driver who said no — the service died in `onCreate` with a SecurityException, taking
+     * every rule with it, position-based or not.
+     *
+     * The location type is therefore claimed only while the permission backing it is held.
+     * Called again from `onStartCommand`, so a grant that arrives later upgrades the running
+     * service instead of waiting for the next boot.
+     */
+    fun startInForeground(service: Service) {
+        ServiceCompat.startForeground(
+            service,
+            FOREGROUND_NOTIFICATION_ID,
+            buildForegroundNotification(service),
+            foregroundServiceTypes(service)
+        )
+    }
+
+    /** The subset of the declared service types this app currently holds the permissions for. */
+    fun foregroundServiceTypes(context: Context): Int {
+        var types = ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+        if (CarLocation.hasPermission(context)) {
+            types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+        }
+        return types
     }
 
     /**

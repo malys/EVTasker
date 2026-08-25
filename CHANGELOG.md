@@ -4,6 +4,33 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2026-08-25
+
+### Fixed
+
+- **Every rule now survives a car where position was never granted.** Both services declare
+  `location` among their foreground types, and since Android 14 the platform checks each
+  declared type against the permissions held at that instant — so on a fresh install, or a
+  head unit where the driver said no, the vehicle service died in `onCreate` and took all
+  rule evaluation with it, position-based or not. The location type is now claimed only while
+  the permission behind it is held, and re-claimed the moment it is granted instead of at the
+  next boot.
+- **"Near a place" conditions answer again.** The service holds a live position subscription
+  while it runs: on a head unit with no other GPS client nothing ever fills the system's
+  last-known cache, so every position condition read null and reported itself unavailable.
+- **A "send a message" action reaches the phone.** Handing a message to the paired phone over
+  the Bluetooth message profile counts as sending an SMS, and the Bluetooth stack enforces
+  `SEND_SMS` on the call — a permission the app had never declared, so the send was refused on
+  every car. It is now declared, asked for while the action is being written, and a refusal
+  from the stack is reported with its actual cause rather than as "InvocationTargetException".
+- **Notifications and the paired-device list work without a trip through Settings.** Both
+  permissions were declared and never asked for, which on Android means not having them: the
+  service notification was dropped silently and the editor's Bluetooth list was always empty.
+  They are now requested when the app is opened, alongside position.
+- **A denied permission says what it cost.** Refusing contacts or message sending in the
+  editor used to look exactly like an empty phone book; each refusal now names the feature it
+  disables, and the rule can still be written by hand.
+
 ## [2.3.0] - 2026-08-23
 
 ### Changed

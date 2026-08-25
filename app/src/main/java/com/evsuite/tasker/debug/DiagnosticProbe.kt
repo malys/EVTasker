@@ -248,7 +248,10 @@ object DiagnosticProbe {
                 ok = fix != null,
                 detail = when {
                     !CarLocation.hasPermission(context) -> "permission denied"
-                    fix == null -> "no recent fix"
+                    // Distinguish "the app is not even subscribed" from "subscribed, no lock
+                    // yet". The first is a bug on our side, the second is the sky.
+                    fix == null && !CarLocation.isTracking() -> "no fix, not tracking"
+                    fix == null -> "tracking, no fix yet"
                     else -> "${fix.latitude},${fix.longitude}"
                 }
             ),

@@ -21,6 +21,11 @@
     <!-- Own vehicle service: foreground + wake + start at boot to catch the ignition. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <!-- Since API 34 a foreground service only reaches a "while in use" permission through a
+         matching service type. The vehicle service ran as connectedDevice alone, so its
+         position reads returned nothing and every "near a place" condition was unanswerable
+         on the car while evaluating perfectly in a test. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -43,12 +48,24 @@
     <!-- Requested only when the user chooses "Call a contact". The OEM PBAP client
          publishes the paired phone's downloaded phone book through ContactsContract. -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- The head unit has no SIM and sends nothing itself: a message is handed to the paired
+         phone over the Bluetooth message profile, and the phone sends it. The platform still
+         counts that as sending an SMS and the Bluetooth stack enforces this permission on the
+         call, so the action was refused on every car until it was asked for. Requested only
+         when the user writes a "send a message" action. -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <!-- Declared false, and meant: the head unit has no modem and never will. The permission
+         above is about the paired phone's radio, not the car's. -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <!-- Position, for the "near a place" condition only. Last known fix, never a live
          request, never sent anywhere: it is compared to a point stored in the rule and the
          result is a yes/no. Denying it disables that one condition and nothing else.
          COARSE is declared alongside FINE because the platform requires the pair; a radius
-         in metres is what FINE is for, and COARSE alone still answers a wide-enough one. -->
+         in metres is what FINE is for, and COARSE alone still answers a wide-enough one.
+         The vehicle service holds a one-minute subscription while it lives: on a head unit
+         with no other GPS client there is no "last known" fix for anyone to read, so the
+         only way the cache is ever warm is that this app filled it. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
@@ -156,13 +173,13 @@
             android:name=".service.TaskerVehicleService"
             android:exported="false"
             android:directBootAware="true"
-            android:foregroundServiceType="connectedDevice" />
+            android:foregroundServiceType="connectedDevice|location" />
 
         <!-- Runs one evaluation cycle for a manual test (from the Rules screen). -->
         <service
             android:name=".service.TaskerRunService"
             android:exported="false"
-            android:foregroundServiceType="connectedDevice" />
+            android:foregroundServiceType="connectedDevice|location" />
 
         <receiver
             android:name=".receiver.BootReceiver"

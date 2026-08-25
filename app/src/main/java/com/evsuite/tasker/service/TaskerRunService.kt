@@ -33,7 +33,7 @@ class TaskerRunService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground(Notifier.FOREGROUND_NOTIFICATION_ID, Notifier.buildForegroundNotification(this))
+        Notifier.startInForeground(this)
         thread(name = "mg4-tasker-manual") {
             EVHardware.init(applicationContext)      // idempotent
             EVHardware.initAudio(applicationContext) // idempotent; binds the vendor audio helper

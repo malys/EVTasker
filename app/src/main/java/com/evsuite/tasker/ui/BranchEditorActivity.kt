@@ -312,17 +312,40 @@ class BranchEditorActivity : AppCompatActivity() {
         type: com.evsuite.hardware.catalog.ActionType,
         next: () -> Unit
     ) {
-        if (type.spec.kind != ValueKind.CONTACT && type.spec.kind != ValueKind.SMS) return next()
+        val kind = type.spec.kind
+        if (kind != ValueKind.CONTACT && kind != ValueKind.SMS) return next()
         pendingAfterContacts = next
+        val wanted = mutableListOf<String>()
         if (!com.evsuite.tasker.util.ContactDirectory.hasPermission(this)) {
-            contactsPermission.launch(android.Manifest.permission.READ_CONTACTS)
-        } else {
-            loadContactsAndContinue()
+            wanted += android.Manifest.permission.READ_CONTACTS
         }
+        // Handing a message to the paired phone is an SMS send as far as the platform is
+        // concerned: the Bluetooth message profile enforces SEND_SMS on the call that carries
+        // it. Asked for here, while the action is being written, rather than discovered as an
+        // opaque refusal the first time the rule fires on the road.
+        if (kind == ValueKind.SMS && !granted(android.Manifest.permission.SEND_SMS)) {
+            wanted += android.Manifest.permission.SEND_SMS
+        }
+        if (wanted.isEmpty()) loadContactsAndContinue() else editorPermissions.launch(wanted.toTypedArray())
     }
 
-    private val contactsPermission =
-        registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) {
+    private fun granted(permission: String): Boolean =
+        androidx.core.content.ContextCompat.checkSelfPermission(this, permission) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+
+    /**
+     * A denial used to be indistinguishable from an empty phone book: the picker opened with
+     * nothing in it and said nothing about why. Each refusal now names what it costs, and the
+     * editor carries on — a number can still be typed by hand, and a rule can still be saved.
+     */
+    private val editorPermissions =
+        registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            if (result[android.Manifest.permission.READ_CONTACTS] == false) {
+                Toast.makeText(this, R.string.editor_contacts_denied, Toast.LENGTH_LONG).show()
+            }
+            if (result[android.Manifest.permission.SEND_SMS] == false) {
+                Toast.makeText(this, R.string.editor_sms_denied, Toast.LENGTH_LONG).show()
+            }
             loadContactsAndContinue()
         }
 

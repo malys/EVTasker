@@ -287,6 +287,8 @@
     <string name="editor_summary_all">tutte: %1$s</string>
     <string name="editor_summary_any">almeno una: %1$s</string>
     <string name="editor_case_incomplete">Ogni caso richiede una condizione e un’azione; l’«altrimenti» richiede un’azione</string>
+    <string name="editor_contacts_denied">Contatti negati — la rubrica resta vuota; digita il numero a mano</string>
+    <string name="editor_sms_denied">Invio di messaggi negato — una regola che invia un messaggio verrà rifiutata</string>
     <string name="editor_max_else_if">Una regola accetta al massimo %1$d casi «altrimenti se»</string>
     <plurals name="rule_summary_cases">
         <item quantity="one">%d caso</item>

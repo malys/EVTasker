@@ -308,6 +308,8 @@
     <string name="editor_summary_all">all: %1$s</string>
     <string name="editor_summary_any">any: %1$s</string>
     <string name="editor_case_incomplete">Every case needs a condition and an action; the “else” needs an action</string>
+    <string name="editor_contacts_denied">Contacts denied — the phone book stays empty; type the number instead</string>
+    <string name="editor_sms_denied">Message sending denied — a rule that sends a message will be refused</string>
     <string name="editor_max_else_if">A rule takes at most %1$d “else if” cases</string>
     <plurals name="rule_summary_cases">
         <item quantity="one">%d case</item>
