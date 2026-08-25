@@ -1,12 +1,16 @@
 package com.evsuite.tasker.vehicle
 
 import android.content.Context
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.net.wifi.WifiManager
+import android.os.Build
 import android.util.Log
 import android.view.KeyEvent
+import androidx.core.content.ContextCompat
 import com.evsuite.hardware.FirmwareInfo
 import com.evsuite.hardware.FirmwareSupport
 import com.evsuite.hardware.EVHardware
@@ -368,15 +372,46 @@ class DirectExecutor(
     private fun setBluetooth(a: Action): ActionResult {
         val adapter = BluetoothAdapter.getDefaultAdapter()
             ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no Bluetooth adapter")
+        // The catch in radioResult would cover a refusal, but the check is made here as well:
+        // the app is granted these by the platform signature, so a missing one means the APK
+        // is not installed as a system app — worth saying in the history rather than
+        // surfacing as an opaque SecurityException.
+        val missing = bluetoothSwitchPermission()
+        if (missing != null) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "not granted: $missing")
+        }
         return radioResult(a, adapter.isEnabled) {
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION", "MissingPermission")
             if (a.flag) adapter.enable() else adapter.disable()
         }
+    }
+
+    /**
+     * The permission the switch needs on this platform, or null when it is held.
+     *
+     * Two names, because the platform moved: up to API 30 turning the adapter on or off is
+     * `BLUETOOTH_ADMIN`, from API 31 it is `BLUETOOTH_CONNECT`. Both are declared, and which
+     * one is enforced is the system's business, not the rule's.
+     */
+    private fun bluetoothSwitchPermission(): String? {
+        val needed =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_CONNECT
+            else Manifest.permission.BLUETOOTH_ADMIN
+        val granted = ContextCompat.checkSelfPermission(context, needed) ==
+            PackageManager.PERMISSION_GRANTED
+        return if (granted) null else needed
     }
 
     private fun setWifi(a: Action): ActionResult {
         val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
             ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no Wi-Fi service")
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CHANGE_WIFI_STATE) !=
+            PackageManager.PERMISSION_GRANTED) {
+            return ActionResult(
+                a.type, false, BridgeContract.VERDICT_UNSUPPORTED,
+                "not granted: ${Manifest.permission.CHANGE_WIFI_STATE}"
+            )
+        }
         return radioResult(a, wifi.isWifiEnabled) {
             @Suppress("DEPRECATION")
             wifi.setWifiEnabled(a.flag)
