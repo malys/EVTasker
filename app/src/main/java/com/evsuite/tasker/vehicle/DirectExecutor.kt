@@ -95,7 +95,9 @@ class DirectExecutor(
     // -------------------------------------------------------------------------
 
     private fun applyVehicle(a: Action): ActionResult {
-        val gated = a.type.gated
+        // Two ways to be gated: the action always is, or it is in the direction this
+        // particular write happens to go — see ActionType.gatedWhenOpening.
+        val gated = a.type.gated || (a.type.gatedWhenOpening && opensGlass(a))
         if (gated) {
             val verdict = gateVerdict()
             if (verdict != BridgeContract.VERDICT_ALLOWED) return ActionResult(a.type, false, verdict)
@@ -164,6 +166,14 @@ class DirectExecutor(
             // Glass and locks: the vehicle applies its own speed limit, so these are not
             // standstill-gated here — a refusal it makes is reported, not pre-empted.
             ActionType.SET_WINDOWS          -> SaicVehicleControl.setAllWindows(i)
+            ActionType.SET_WINDOW_DRIVER    ->
+                SaicVehicleControl.setWindow(SaicVehicleControl.Window.DRIVER, i)
+            ActionType.SET_WINDOW_PASSENGER ->
+                SaicVehicleControl.setWindow(SaicVehicleControl.Window.PASSENGER, i)
+            ActionType.SET_WINDOW_REAR_LEFT ->
+                SaicVehicleControl.setWindow(SaicVehicleControl.Window.REAR_LEFT, i)
+            ActionType.SET_WINDOW_REAR_RIGHT ->
+                SaicVehicleControl.setWindow(SaicVehicleControl.Window.REAR_RIGHT, i)
             ActionType.SET_DOOR_LOCK        -> SaicVehicleControl.setDoorsLocked(b)
             // Energy — vendor charging service.
             ActionType.SET_CHARGE_LIMIT      -> SaicCharging.setChargeLimitPercent(i)
@@ -231,6 +241,31 @@ class DirectExecutor(
         val number = a.text.filter { it.isDigit() || it in "+*#" }
         if (number.isBlank()) return false
         return SaicPhone.placeCall(number)
+    }
+
+    /**
+     * Whether this write would open glass rather than close it.
+     *
+     * True when the current position cannot be read: an unknown direction is not a safe one,
+     * and the gate this feeds is built on failing closed. Equal positions are not an opening —
+     * a write that changes nothing needs no gate.
+     */
+    private fun opensGlass(a: Action): Boolean {
+        val current = when (a.type) {
+            // Moving all four to a position opens whichever sits below it, so the write is
+            // measured against the least-open window, not the widest.
+            ActionType.SET_WINDOWS -> SaicVehicleControl.narrowestWindowPercent()
+            ActionType.SET_WINDOW_DRIVER ->
+                SaicVehicleControl.windowPercent(SaicVehicleControl.Window.DRIVER)
+            ActionType.SET_WINDOW_PASSENGER ->
+                SaicVehicleControl.windowPercent(SaicVehicleControl.Window.PASSENGER)
+            ActionType.SET_WINDOW_REAR_LEFT ->
+                SaicVehicleControl.windowPercent(SaicVehicleControl.Window.REAR_LEFT)
+            ActionType.SET_WINDOW_REAR_RIGHT ->
+                SaicVehicleControl.windowPercent(SaicVehicleControl.Window.REAR_RIGHT)
+            else -> null
+        } ?: return true
+        return a.number > current
     }
 
     private fun gateVerdict(): String = when (VehicleWriteGate.decideNow()) {

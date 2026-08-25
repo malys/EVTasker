@@ -76,6 +76,26 @@ negative or moving speed refuses the action; park state does not rescue an unrea
 Do not expose a user-configurable moving threshold. Any existing `allowUpToKmh` or park-rescue
 path is safety debt to remove, not a pattern to extend.
 
+### The one carve-out: closing glass
+
+The window actions (`SET_WINDOWS` and the four per-window writes) are gated **in the opening
+direction only**. Closing a window while moving is allowed.
+
+This is deliberate and is the sole exception. Closing the windows when it starts raining on
+the motorway is the case those actions exist for, and a standstill gate would refuse exactly
+that — the driver would be left with the rain coming in until the next red light. Opening
+glass at speed is a vehicle-behaviour change and takes the gate like any other write.
+
+The exception is carried by `ActionType.gatedWhenOpening`, not by `gated`, because it is a
+property of the *value* rather than of the action: `DirectExecutor.opensGlass` compares the
+target against the position the car reports. **A position the car will not report gates the
+write** — an unknown direction is not a safe one, so the fail-closed rule still holds.
+
+Do not widen this to another family, and do not remove the gate from the opening half. Before
+this was written down the whole window family was ungated in both directions; the direction
+check is what brought it back under the gate, and it is the narrowest exception that keeps the
+rain case working.
+
 ## A gate refusal is final
 
 MOVING and UNKNOWN_SPEED refusals are reported and are not queued or retried at a later

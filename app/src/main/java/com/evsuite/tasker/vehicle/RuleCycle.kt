@@ -138,8 +138,15 @@ object RuleCycle {
         val profileBridge = ProfileBridge(context).takeIf { it.connect() }
         try {
             val snapshotStartedAt = System.currentTimeMillis()
+            // Only what these rules read. A pass with no weather condition must not pay for
+            // a weather query before running the ignition actions it was started for.
+            val wanted = rules.flatMap { rule -> rule.branches }
+                .flatMap { branch -> branch.conditions }
+                .mapNotNull { it.type.snapshotKey }
+                .toSet()
             val baseSnapshot = VehicleReader.read(
                 context = context,
+                wanted = wanted,
                 btMacs = BtTracker.snapshot(context),
                 btAvailable = BtDevices.isAvailable(context),
                 btOnboardMacs = BtOnboard.onboard(context),

@@ -293,7 +293,9 @@ object Diagnostics {
         ActionType.SET_FRONT_DEFROST, ActionType.SET_REAR_DEFROST,
         ActionType.SET_ECON, ActionType.SET_PASSENGER_TEMP,
         // Different sub-service, same hub and same bind, so the same capability answers.
-        ActionType.SET_WINDOWS, ActionType.SET_DOOR_LOCK
+        ActionType.SET_WINDOWS, ActionType.SET_DOOR_LOCK,
+        ActionType.SET_WINDOW_DRIVER, ActionType.SET_WINDOW_PASSENGER,
+        ActionType.SET_WINDOW_REAR_LEFT, ActionType.SET_WINDOW_REAR_RIGHT
     )
 
     private val CHARGING_ACTIONS = setOf(

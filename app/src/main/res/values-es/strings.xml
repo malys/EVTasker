@@ -307,4 +307,6 @@
     <string name="about_version_unknown">desconocida</string>
     <string name="about_close">Cerrar</string>
     <string name="value_no_rules">No hay ninguna regla guardada a la que apuntar</string>
+    <string name="editor_gated_opening_hint">Apertura solo detenido</string>
+    <string name="editor_gated_opening_explain">Cerrar siempre está permitido; abrir modifica el comportamiento del vehículo y EVProfile lo rechaza en marcha.</string>
 </resources>

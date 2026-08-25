@@ -275,8 +275,11 @@ class BranchEditorActivity : AppCompatActivity() {
             val loadedRules = com.evsuite.tasker.store.RuleStore(applicationContext)
                 .getAll().map { it.id to it.name }
 
+            // The editor opens controls on what the car reports now; no action's current
+            // value is an expensive reading, so it pays for none of them and stays instant.
             val fresh = com.evsuite.tasker.vehicle.VehicleReader.read(
                 context = applicationContext,
+                wanted = emptySet(),
                 btMacs = emptySet(),
                 btAvailable = false,
                 fix = com.evsuite.tasker.util.CarLocation.lastKnown(applicationContext)
@@ -442,6 +445,7 @@ class BranchEditorActivity : AppCompatActivity() {
                 container = binding.actionContainer,
                 label = labels.describe(action),
                 gated = action.type.gated,
+                gatedWhenOpening = action.type.gatedWhenOpening,
                 onEdit = {
                     withContactsIfNeeded(action.type) {
                         ValueEditorDialog.editAction(
@@ -481,6 +485,7 @@ class BranchEditorActivity : AppCompatActivity() {
         container: android.view.ViewGroup,
         label: String,
         gated: Boolean,
+        gatedWhenOpening: Boolean = false,
         onEdit: () -> Unit,
         onRemove: () -> Unit,
         reorderable: Boolean = false,
@@ -491,7 +496,10 @@ class BranchEditorActivity : AppCompatActivity() {
     ) {
         val row = ItemEditorRowBinding.inflate(LayoutInflater.from(this), container, false)
         row.rowLabel.text = label
-        row.rowGated.visibility = if (gated) View.VISIBLE else View.GONE
+        row.rowGated.visibility = if (gated || gatedWhenOpening) View.VISIBLE else View.GONE
+        row.rowGated.setText(
+            if (gated) R.string.editor_gated_hint else R.string.editor_gated_opening_hint
+        )
         row.rowClickArea.setOnClickListener { onEdit() }
         row.rowRemove.setOnClickListener { onRemove() }
         // Kept in place and disabled at the ends rather than hidden: buttons that disappear

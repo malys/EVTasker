@@ -8,6 +8,23 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- Each of the four windows on its own, to read and to set, alongside the existing
+  all-windows action — which stays, because closing the glass is one gesture that must not be
+  able to leave three shut and one open.
+
+### Changed
+
+- **The window actions are now gated in the opening direction.** Closing stays allowed while
+  moving — a rule that shuts the windows when it starts raining on the motorway is the reason
+  those actions exist — but opening glass at speed goes through the standstill gate like any
+  other vehicle write. A position the car will not report gates the write, since an unknown
+  direction is not a safe one. The editor says which half is refused instead of claiming the
+  whole action needs a standstill.
+- **Remaining range** and **odometer** conditions, and **weather** — the head unit's own
+  weather service, asked for where the car is, with no account and no traffic of ours. The
+  phrase is matched as a fragment ("rain" catches "Light rain") and comes back in the head
+  unit's language.
+
 - The climate and charging readings the vendor services already answered and nothing could
   reach: ECON, the passenger target temperature, both defrosters, scheduled charging, the two
   ends of the charging window and battery pre-heating. Two matching writes, **ECON mode** and

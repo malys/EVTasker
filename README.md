@@ -183,12 +183,14 @@ history names the missing signal. Unreadable is never treated as false.
 
 Conditions span **context** (Bluetooth, time of day, day of week, firmware, near a place,
 the Wi-Fi network, media playing, a call in progress, how long the drive has lasted, a plain
-chance in a hundred),
-**environment** (outside temperature), **driving** (ignition, park, speed, drive mode,
+chance in a hundred), **environment** (outside temperature, the weather where the car is),
+**driving** (ignition, park, speed, odometer, drive mode,
 regeneration, energy saving), **energy** (battery level, charging, charging state, charge
-limit, scheduled charging and the two ends of its window, battery pre-heating), **climate**
+limit, remaining range, scheduled charging and the two ends of its window, battery
+pre-heating), **climate**
 (climate on, A/C, AUTO, ECON, recirculation, fan speed, driver and passenger target
-temperatures, both defrosters, window open), **comfort** (seat/steering heating, media volume,
+temperatures, both defrosters, window open, and each of the four windows on its own),
+**comfort** (seat/steering heating, media volume,
 brightness), and **driver assistance** (AEB, ELK, ACC/TJA, limiter, TSR, overspeed,
 speed-limit tone, ADAS sound).
 
@@ -209,13 +211,31 @@ connected* together with a vehicle signal (ignition, speed, not in park) instead
 
 Actions cover **profile** application, **driving**, **comfort**, **climate** (on/off, driver
 and passenger target temperatures, A/C, ECON, AUTO, recirculation, fan level, front and rear
-defrosters), **energy**
+defrosters, all four windows together or one at a time), **energy**
 (charge limit, allow charging, scheduled charging and its window, battery pre-heating),
 **audio** (volume, the fine controls, play the radio), **driver assistance**, and **system**
 (launch an app, show a message, speak through the head unit's text-to-speech engine,
 navigate to a destination, call a number, media play/pause and track skip, Bluetooth and
 Wi-Fi on or off, enable or disable another rule, wait). ADAS state — AEB, ELK, ACC/TJA, TSR, overspeed and
 so on — is fully covered as gated actions.
+
+**Windows are gated by direction, not by action.** Closing them is always allowed: a rule
+that shuts the windows when it starts raining on the motorway is exactly what the action is
+for, and refusing it for moving would refuse the case it was written for. Opening them at
+speed is a vehicle-behaviour change and takes the standstill gate like any other write. If the
+car will not say where a window currently is, the write is gated — an unknown direction is not
+a safe one.
+
+**The weather** is the head unit's own, asked for where the car is — no account, no API key,
+no traffic of ours. It is matched as a fragment, so "rain" catches "Light rain" and "Rain
+showers", and the phrase comes back in the head unit's language: on a French car the rule
+asks about "pluie". A car whose head unit has no weather service leaves the condition
+unreadable, which stops the rule rather than guessing at the sky.
+
+**Trip distance is deliberately absent.** The head unit's navigation adapter only receives
+the remaining distance as a stream of callbacks from whichever navigation app is running, so
+reading it would mean holding a subscription for the life of the app. The **odometer** is a
+plain reading and is what a "service due" rule actually wants.
 
 **Enabling and disabling rules** is what lets rules become chains. A rule that should only
 apply during a trip is one rule switching a second on at departure and off on arrival — no

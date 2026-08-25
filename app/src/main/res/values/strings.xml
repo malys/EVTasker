@@ -328,4 +328,6 @@
     <string name="about_version_unknown">unknown</string>
     <string name="about_close">Close</string>
     <string name="value_no_rules">No saved rule to point at</string>
+    <string name="editor_gated_opening_hint">Opening only when stopped</string>
+    <string name="editor_gated_opening_explain">Closing this is always allowed; opening it is a vehicle-behaviour change and EVProfile refuses that while the car is moving.</string>
 </resources>

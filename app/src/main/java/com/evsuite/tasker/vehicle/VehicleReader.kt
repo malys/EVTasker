@@ -7,6 +7,8 @@ import com.evsuite.hardware.catalog.SnapshotKeys
 import com.evsuite.hardware.catalog.VehicleEnums
 import com.evsuite.hardware.saic.SaicCharging
 import com.evsuite.hardware.saic.SaicClimate
+import com.evsuite.hardware.saic.SaicNav
+import com.evsuite.hardware.saic.SaicWeather
 import com.evsuite.hardware.saic.SaicVehicleControl
 import com.evsuite.tasker.model.Snapshot
 import com.evsuite.tasker.util.CarLocation
@@ -29,6 +31,19 @@ object VehicleReader {
     fun read(
         /** For the platform-context readings: what is playing, which network, a live call. */
         context: Context,
+        /**
+         * Snapshot keys worth paying for on this pass.
+         *
+         * Almost every reading here is a binder call that answers at once, and those are taken
+         * unconditionally. One is not: the weather query reaches the head unit's provider and
+         * may take up to its timeout. Charging every rule cycle for a reading no rule asked
+         * about would delay the ignition actions that *were* asked for, so the caller says what
+         * it needs and the expensive readings are skipped when nothing does.
+         *
+         * Null means "everything" — for the diagnostic, whose whole job is to report on
+         * readings no rule may be using.
+         */
+        wanted: Set<String>?,
         btMacs: Set<String>,
         btAvailable: Boolean,
         btOnboardMacs: Set<String>? = null,
@@ -53,7 +68,7 @@ object VehicleReader {
             // is not up. The vendor services are bound separately too, so their readings are
             // taken here as well rather than being lost with the AOSP layer.
             return Snapshot(
-                readings = vendorReadings() + platformReadings(context),
+                readings = vendorReadings() + headUnitReadings(fix, wanted) + platformReadings(context),
                 btMacs = btMacs,
                 btAvailable = btAvailable,
                 btOnboardMacs = btOnboardMacs,
@@ -118,6 +133,7 @@ object VehicleReader {
 
             put(SnapshotKeys.KEY_FIRMWARE_GEN, FirmwareInfo.getGeneration().name)
             putAll(vendorReadings())
+            putAll(headUnitReadings(fix, wanted))
             putAll(platformReadings(context))
         }
 
@@ -164,6 +180,11 @@ object VehicleReader {
             put(SnapshotKeys.KEY_WINDOW_PERCENT, it)
             put(SnapshotKeys.KEY_WINDOW_OPEN, it > 0)
         }
+        // Each window as well as the widest: "close the windows" wants the worst case, a rule
+        // about the driver's own glass wants that one.
+        WINDOW_KEYS.forEach { (window, key) ->
+            SaicVehicleControl.windowPercent(window)?.let { put(key, it) }
+        }
         SaicVehicleControl.doorsLocked()?.let { put(SnapshotKeys.KEY_DOORS_LOCKED, it) }
 
         SaicCharging.stateOfChargePercent()?.let { put(SnapshotKeys.KEY_BATTERY_PERCENT, it) }
@@ -180,6 +201,51 @@ object VehicleReader {
         SaicCharging.scheduleStartMinutes()?.let { put(SnapshotKeys.KEY_CHARGE_WINDOW_START, it) }
         SaicCharging.scheduleStopMinutes()?.let { put(SnapshotKeys.KEY_CHARGE_WINDOW_STOP, it) }
         SaicCharging.batteryPreheatOn()?.let { put(SnapshotKeys.KEY_BATTERY_PREHEAT, it) }
+        SaicCharging.rangeKm()?.let { put(SnapshotKeys.KEY_RANGE_KM, it) }
+    }
+
+    private val WINDOW_KEYS = listOf(
+        SaicVehicleControl.Window.DRIVER to SnapshotKeys.KEY_WINDOW_DRIVER,
+        SaicVehicleControl.Window.PASSENGER to SnapshotKeys.KEY_WINDOW_PASSENGER,
+        SaicVehicleControl.Window.REAR_LEFT to SnapshotKeys.KEY_WINDOW_REAR_LEFT,
+        SaicVehicleControl.Window.REAR_RIGHT to SnapshotKeys.KEY_WINDOW_REAR_RIGHT
+    )
+
+    /**
+     * The head unit's own applications: the odometer, and the sky where the car is.
+     *
+     * Not part of [vendorReadings] because they are a different bind and a different failure:
+     * a car whose vehicle hub answers perfectly may have no navigation adapter at all, and
+     * the two must not take each other down.
+     *
+     * The weather needs a position, so it is only asked when there is a fix. No fix means the
+     * reading is absent, which is the honest answer — the last known weather somewhere else is
+     * not weather here.
+     */
+    private fun headUnitReadings(fix: CarLocation.Fix?, wanted: Set<String>?): Map<String, Any> = buildMap {
+        SaicNav.totalMileageKm()?.let { put(SnapshotKeys.KEY_ODOMETER_KM, it) }
+        // The one reading that costs real time — see `wanted`.
+        if (wanted != null && SnapshotKeys.KEY_WEATHER_TEXT !in wanted) return@buildMap
+        if (fix == null) return@buildMap
+        SaicWeather.currentAt(fix.latitude, fix.longitude, weatherLanguage())
+            ?.text
+            ?.takeIf { it.isNotBlank() }
+            ?.let { put(SnapshotKeys.KEY_WEATHER_TEXT, it) }
+    }
+
+    /**
+     * The language the weather phrase comes back in.
+     *
+     * The rule was written on this head unit, in its language, so the phrase the user typed is
+     * in that language too. Asking in anything else would make every weather rule stop matching
+     * the day someone changed the display language — which is a real thing to do, but the rule
+     * should then be edited, not silently broken.
+     */
+    private fun weatherLanguage(): String {
+        val locale = java.util.Locale.getDefault()
+        val country = locale.country.lowercase()
+        return if (country.isBlank()) locale.language.lowercase()
+        else "${locale.language.lowercase()}-$country"
     }
 
     /**

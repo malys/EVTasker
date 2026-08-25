@@ -127,8 +127,11 @@ object DiagnosticProbe {
         // snapshot: left out, they arrived null and the diagnostic reported the "on board"
         // and "hands-free" conditions as blocked on every car, including the ones where a
         // rule using them evaluates perfectly well.
+        // null: the diagnostic exists to report on readings no rule may be using, so it pays
+        // for the slow ones deliberately.
         val snapshot = VehicleReader.read(
             context = appContext,
+            wanted = null,
             btMacs = BtTracker.snapshot(appContext),
             btAvailable = BtDevices.isAvailable(appContext),
             btOnboardMacs = BtOnboard.onboard(appContext),
