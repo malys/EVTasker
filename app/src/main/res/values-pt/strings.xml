@@ -306,4 +306,5 @@
     <string name="about_qr_description">Código QR do repositório do projeto</string>
     <string name="about_version_unknown">desconhecida</string>
     <string name="about_close">Fechar</string>
+    <string name="value_no_rules">Nenhuma regra guardada para indicar</string>
 </resources>

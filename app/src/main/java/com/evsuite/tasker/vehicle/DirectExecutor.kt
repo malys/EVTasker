@@ -1,8 +1,12 @@
 package com.evsuite.tasker.vehicle
 
 import android.content.Context
+import android.bluetooth.BluetoothAdapter
 import android.content.Intent
+import android.media.AudioManager
+import android.net.wifi.WifiManager
 import android.util.Log
+import android.view.KeyEvent
 import com.evsuite.hardware.FirmwareInfo
 import com.evsuite.hardware.FirmwareSupport
 import com.evsuite.hardware.EVHardware
@@ -21,6 +25,8 @@ import com.evsuite.tasker.engine.ActionExecutor
 import com.evsuite.tasker.model.Action
 import com.evsuite.tasker.model.ActionResult
 import com.evsuite.hardware.catalog.ActionType
+import com.evsuite.hardware.catalog.MediaCommand
+import com.evsuite.tasker.store.RuleStore
 import com.evsuite.tasker.ui.ConfirmPrompt
 import com.evsuite.tasker.util.EmulatorDetector
 import com.evsuite.tasker.util.BtMessaging
@@ -70,6 +76,11 @@ class DirectExecutor(
         ActionType.ASK_CONFIRM       -> askConfirm(action)
         ActionType.WEBHOOK           -> webhook(action, if (action.flag) "POST" else "GET")
         ActionType.SEND_SMS          -> sendSms(action)
+        ActionType.ENABLE_RULE       -> setRuleEnabled(action, true)
+        ActionType.DISABLE_RULE      -> setRuleEnabled(action, false)
+        ActionType.MEDIA_CONTROL     -> mediaControl(action)
+        ActionType.SET_BLUETOOTH     -> setBluetooth(action)
+        ActionType.SET_WIFI          -> setWifi(action)
         ActionType.TUNE_RADIO        -> tuneRadio(action)
         else                         -> applyVehicle(action)
         }
@@ -173,6 +184,11 @@ class DirectExecutor(
             ActionType.WEBHOOK,
             ActionType.ASK_CONFIRM,
             ActionType.SEND_SMS,
+            ActionType.ENABLE_RULE,
+            ActionType.DISABLE_RULE,
+            ActionType.MEDIA_CONTROL,
+            ActionType.SET_BLUETOOTH,
+            ActionType.SET_WIFI,
             // TUNE_RADIO is a vehicle write, but it carries a frequency the driver typed, and
             // "103,5 FM" that parsed to nothing must be reported as that rather than as a radio
             // that refused.
@@ -290,6 +306,94 @@ class DirectExecutor(
             ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, opened)
         } else {
             ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no navigation app")
+        }
+    }
+
+    /**
+     * Switches another rule on or off.
+     *
+     * The change lands in the store, and the store is read at the start of a cycle — so a
+     * rule enabled here runs from the *next* trigger, not from this one. That is the point
+     * rather than a limitation: a rule that could enable another and have it fire in the same
+     * pass would make the order of a cycle part of what the user has to reason about.
+     *
+     * A target that no longer exists is unsupported, with its id in the detail. Silence would
+     * leave a chain whose middle link was deleted looking like it still worked.
+     */
+    private fun setRuleEnabled(a: Action, enabled: Boolean): ActionResult {
+        if (a.text.isBlank()) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no rule selected")
+        }
+        val store = RuleStore(context)
+        val target = store.getById(a.text)
+            ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no such rule: ${a.text}")
+        if (target.enabled == enabled) {
+            return ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "${target.name} unchanged")
+        }
+        store.setEnabled(a.text, enabled)
+        return ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, target.name)
+    }
+
+    /**
+     * Sends the media key, down then up, exactly as the steering control does.
+     *
+     * Both halves or nothing: an app that receives a key-down and never the matching key-up
+     * can sit on a held key. `dispatchMediaKeyEvent` answers nothing, so what is reported is
+     * that the key was sent — not that anything was playing to receive it.
+     */
+    private fun mediaControl(a: Action): ActionResult {
+        val code = a.number.toInt()
+        if (code !in MediaCommand.OPTIONS.map { it.value }) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "unknown media key: $code")
+        }
+        val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+            ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no audio service")
+        return try {
+            audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
+            audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
+            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
+        } catch (e: Exception) {
+            Log.w("EVTasker.Exec", "mediaControl($code): ${e.message}")
+            ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, e.message)
+        }
+    }
+
+    /**
+     * The head unit's own radios.
+     *
+     * Reported as already-in-that-state rather than as a write when nothing had to change: a
+     * rule that switches Wi-Fi off at every ignition should not fill the history with writes
+     * it never made.
+     */
+    private fun setBluetooth(a: Action): ActionResult {
+        val adapter = BluetoothAdapter.getDefaultAdapter()
+            ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no Bluetooth adapter")
+        return radioResult(a, adapter.isEnabled) {
+            @Suppress("DEPRECATION")
+            if (a.flag) adapter.enable() else adapter.disable()
+        }
+    }
+
+    private fun setWifi(a: Action): ActionResult {
+        val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+            ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no Wi-Fi service")
+        return radioResult(a, wifi.isWifiEnabled) {
+            @Suppress("DEPRECATION")
+            wifi.setWifiEnabled(a.flag)
+        }
+    }
+
+    private fun radioResult(a: Action, current: Boolean, write: () -> Boolean): ActionResult {
+        if (current == a.flag) {
+            return ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "already")
+        }
+        return try {
+            val ok = write()
+            ActionResult(a.type, ok, if (ok) BridgeContract.VERDICT_ALLOWED else BridgeContract.VERDICT_ERROR)
+        } catch (e: SecurityException) {
+            // A platform that refuses the switch will refuse it on the third attempt too, so
+            // this is not the transient failure ERROR would have retried.
+            ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, e.message)
         }
     }
 

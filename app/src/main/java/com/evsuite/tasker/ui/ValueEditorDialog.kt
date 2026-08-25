@@ -131,6 +131,8 @@ object ValueEditorDialog {
         dynamicMax: Int?,
         profiles: List<Pair<String, String>>,
         contacts: List<com.evsuite.tasker.util.ContactDirectory.Entry> = emptyList(),
+        /** The user's saved rules as (id, name), for the rule-chaining actions. */
+        rules: List<Pair<String, String>> = emptyList(),
         /** What the car reports for this setting now — see [ActionType.currentKey]. */
         currentValue: Number? = null,
         /** Where the car is, for the destination controls. Never prefilled — see [bindPoint]. */
@@ -142,6 +144,7 @@ object ValueEditorDialog {
 
         val choices = when (spec.kind) {
             ValueKind.PROFILE -> profiles.map { Choice(it.first, it.second) }
+            ValueKind.RULE    -> rules.map { Choice(it.first, it.second) }
             ValueKind.APP     -> launchableApps(context)
             ValueKind.CONTACT, ValueKind.SMS -> contacts.map { Choice(it.number, it.label) }
             else              -> emptyList()
@@ -164,6 +167,7 @@ object ValueEditorDialog {
             choices = choices,
             emptyChoiceMessage = context.getString(when (spec.kind) {
                 ValueKind.PROFILE -> R.string.value_no_profiles
+                ValueKind.RULE -> R.string.value_no_rules
                 ValueKind.CONTACT, ValueKind.SMS -> R.string.value_no_contacts
                 else -> R.string.value_no_bt_devices
             }),
@@ -355,7 +359,7 @@ object ValueEditorDialog {
                 }
             }
 
-            ValueKind.BT_DEVICE, ValueKind.PROFILE, ValueKind.APP -> {
+            ValueKind.BT_DEVICE, ValueKind.PROFILE, ValueKind.APP, ValueKind.RULE -> {
                 if (choices.isEmpty()) {
                     binding.choiceEmpty.visibility = View.VISIBLE
                     binding.choiceEmpty.text = emptyChoiceMessage

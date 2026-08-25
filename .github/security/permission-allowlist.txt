@@ -34,6 +34,18 @@ android.permission.BLUETOOTH_CONNECT
 # Reads which phone the head unit made hands-free, for the "hands-free phone"
 # condition. Granted by the platform signature only.
 android.permission.BLUETOOTH_PRIVILEGED
+# Switching the radio itself on or off — the "Bluetooth" action, and nothing else. It
+# scans for nothing and pairs with nothing; without it that one action reports unsupported.
+android.permission.BLUETOOTH_ADMIN
+
+# --- Wi-Fi ---
+# The "Wi-Fi network" condition reads the name of the network the head unit is joined to and
+# compares it, on the device, against a name stored in the rule — a home network answers "the
+# car is home" the instant it is on the drive, where a GPS fix does not. The name never
+# leaves the car. CHANGE_WIFI_STATE is the "Wi-Fi" action's switch; neither permission scans
+# for networks or reads their credentials.
+android.permission.ACCESS_WIFI_STATE
+android.permission.CHANGE_WIFI_STATE
 
 # --- Contacts ---
 # Read-only access, requested only while configuring "Call a contact". The OEM PBAP client

@@ -41,6 +41,7 @@ object ConditionEvaluator {
             // number — the kind exists for the control, not for a different comparison.
             ValueKind.TIME       -> evaluateNumber(condition, snapshot)
             ValueKind.ENUM       -> evaluateEnum(condition, snapshot)
+            ValueKind.TEXT       -> evaluateText(condition, snapshot)
             else                 -> ConditionOutcome.UNAVAILABLE
         }
 
@@ -156,7 +157,29 @@ object ConditionEvaluator {
         return match(actual == c.flag)
     }
 
+    /**
+     * A named string the platform reports — today, the Wi-Fi network.
+     *
+     * Compared case-insensitively and trimmed: network names are typed by hand into a rule,
+     * and "Home " failing to match "Home" would look like the condition is broken. Only
+     * equality and its negation; ordering strings means nothing here.
+     */
+    private fun evaluateText(c: Condition, s: Snapshot): ConditionOutcome {
+        if (c.text.isBlank()) return ConditionOutcome.UNAVAILABLE
+        val key = c.type.snapshotKey ?: return ConditionOutcome.UNAVAILABLE
+        val actual = s.string(key) ?: return ConditionOutcome.UNAVAILABLE
+        val equal = actual.trim().equals(c.text.trim(), ignoreCase = true)
+        return match(if (c.op == CompareOp.NE) !equal else equal)
+    }
+
     private fun evaluateNumber(c: Condition, s: Snapshot): ConditionOutcome {
+        // Drawn, not read: there is no snapshot key and nothing to be unavailable about. The
+        // stored number is the probability in percent, and the comparison operator plays no
+        // part — "a 20% chance, but less than" is not a question.
+        if (c.type == ConditionType.RANDOM_CHANCE) {
+            return match(random(100) < c.number.toInt().coerceIn(1, 100))
+        }
+
         val key = c.type.snapshotKey ?: return ConditionOutcome.UNAVAILABLE
 
         // Speed is a special case: the bridge distinguishes "0 km/h" from "unreadable"
@@ -195,6 +218,12 @@ object ConditionEvaluator {
         CompareOp.GT -> actual > expected
         CompareOp.GE -> actual >= expected
     }
+
+    /**
+     * 0 until [bound]. Injectable so the chance condition is testable: a test that has to run
+     * the rule a thousand times and hope proves nothing about the boundaries.
+     */
+    var random: (Int) -> Int = { kotlin.random.Random.nextInt(it) }
 
     private fun match(value: Boolean) =
         if (value) ConditionOutcome.MATCH else ConditionOutcome.NO_MATCH

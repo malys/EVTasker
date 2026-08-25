@@ -271,7 +271,12 @@ object Diagnostics {
 
         // These run entirely inside EVTasker. Their configured value can still be invalid,
         // but availability of the vehicle layer is irrelevant to whether the action exists.
-        ActionType.WEBHOOK, ActionType.DELAY, ActionType.ASK_CONFIRM -> Reason.NONE
+        ActionType.WEBHOOK, ActionType.DELAY, ActionType.ASK_CONFIRM,
+        // Rule chaining, the media key and the head unit's own radios: all platform calls.
+        // Whether the target rule still exists, or whether anything is playing to receive
+        // the key, is a per-rule matter this screen does not know.
+        ActionType.ENABLE_RULE, ActionType.DISABLE_RULE, ActionType.MEDIA_CONTROL,
+        ActionType.SET_BLUETOOTH, ActionType.SET_WIFI -> Reason.NONE
 
         // Not a vendor service: the message leaves through the paired phone over the
         // Bluetooth message profile, so what decides is whether a phone is connected on it.

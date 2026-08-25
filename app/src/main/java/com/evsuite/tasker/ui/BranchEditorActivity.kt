@@ -94,6 +94,13 @@ class BranchEditorActivity : AppCompatActivity() {
     private var profiles: List<Pair<String, String>> = emptyList()
     private var evprofileDetected = false
     private var contacts: List<com.evsuite.tasker.util.ContactDirectory.Entry> = emptyList()
+    /**
+     * The saved rules, (id, name), for the rule-chaining actions.
+     *
+     * The rule being edited is not filtered out: a rule that disables itself is a legitimate
+     * "run once", and the same switch the rule list shows always puts it back.
+     */
+    private var rules: List<Pair<String, String>> = emptyList()
 
     /** Real maximum media volume of the vehicle, if EVProfile could read it. */
     private var mediaVolumeMax: Int? = null
@@ -207,6 +214,7 @@ class BranchEditorActivity : AppCompatActivity() {
                     dynamicMax = mediaVolumeMax,
                     profiles = profiles,
                     contacts = contacts,
+                    rules = rules,
                     currentValue = currentValue(type),
                     currentPoint = currentPoint()
                 ) { configured ->
@@ -264,8 +272,11 @@ class BranchEditorActivity : AppCompatActivity() {
                 bridge.disconnect()
             }
             val loadedContacts = com.evsuite.tasker.util.ContactDirectory.entries(applicationContext)
+            val loadedRules = com.evsuite.tasker.store.RuleStore(applicationContext)
+                .getAll().map { it.id to it.name }
 
             val fresh = com.evsuite.tasker.vehicle.VehicleReader.read(
+                context = applicationContext,
                 btMacs = emptySet(),
                 btAvailable = false,
                 fix = com.evsuite.tasker.util.CarLocation.lastKnown(applicationContext)
@@ -275,6 +286,7 @@ class BranchEditorActivity : AppCompatActivity() {
                 profiles = loadedProfiles
                 evprofileDetected = bridgeConnected
                 contacts = loadedContacts
+                rules = loadedRules
                 mediaVolumeMax = if (maxVolume >= 0) maxVolume else null
                 firmware = gen
                 snapshot = fresh
@@ -423,7 +435,7 @@ class BranchEditorActivity : AppCompatActivity() {
     }
 
     private fun renderActions() {
-        val labels = Labels(this, profileNames = profiles.toMap())
+        val labels = Labels(this, profileNames = profiles.toMap(), ruleNames = rules.toMap())
         binding.actionContainer.removeAllViews()
         actions.forEachIndexed { index, action ->
             addRow(
@@ -438,6 +450,7 @@ class BranchEditorActivity : AppCompatActivity() {
                             dynamicMax = mediaVolumeMax,
                             profiles = profiles,
                             contacts = contacts,
+                            rules = rules,
                             currentValue = currentValue(action.type),
                             currentPoint = currentPoint()
                         ) { updated ->

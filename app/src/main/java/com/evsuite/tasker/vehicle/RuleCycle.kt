@@ -139,6 +139,7 @@ object RuleCycle {
         try {
             val snapshotStartedAt = System.currentTimeMillis()
             val baseSnapshot = VehicleReader.read(
+                context = context,
                 btMacs = BtTracker.snapshot(context),
                 btAvailable = BtDevices.isAvailable(context),
                 btOnboardMacs = BtOnboard.onboard(context),

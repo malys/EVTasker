@@ -39,6 +39,13 @@
     <!-- Bluetooth: paired list for the editor, and live connection tracking for rules. -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Switching the radio itself on or off, for the "Bluetooth" action. Only that action
+         uses it; without it the action reports unsupported and nothing else changes. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <!-- Wi-Fi: the network name for the "Wi-Fi network" condition, and the switch for the
+         "Wi-Fi" action. The name is read, never sent anywhere. -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <!-- Reads which phone the head unit made hands-free, for the "hands-free phone"
          condition. Granted by the platform signature; without it that one condition
          reports as unreadable and nothing else changes. -->

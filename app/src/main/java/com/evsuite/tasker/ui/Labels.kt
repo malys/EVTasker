@@ -19,14 +19,18 @@ import java.util.Locale
  * below 5 °C" reads at a glance, where "OUTSIDE_TEMP | LT | 5.0" needs mental
  * translation.
  *
- * [btNames] and [profileNames] turn stored identifiers (MAC address, profile id) into
- * names the user knows; failing that, the raw identifier is shown rather than nothing —
- * so a rule pointing at an unpaired device stays identifiable.
+ * [btNames], [profileNames] and [ruleNames] turn stored identifiers (MAC address, profile
+ * id, rule id) into names the user knows; failing that, the raw identifier is shown rather
+ * than nothing — so a rule pointing at an unpaired device stays identifiable.
+ *
+ * Rule names are looked up, not stored on the action: a rule renamed after another was told
+ * to enable it would otherwise show its old name for ever.
  */
 class Labels(
     private val context: Context,
     private val btNames: Map<String, String> = emptyMap(),
-    private val profileNames: Map<String, String> = emptyMap()
+    private val profileNames: Map<String, String> = emptyMap(),
+    private val ruleNames: Map<String, String> = emptyMap()
 ) {
 
     fun describe(condition: Condition): String {
@@ -62,6 +66,8 @@ class Labels(
                 "$name : ${condition.days.sortedBy { weekOrder(it) }.joinToString(", ") { dayLabel(it) }}"
 
             ValueKind.DATE -> "$name : ${formatDate(condition.text)}"
+
+            ValueKind.TEXT -> "$name ${operator(condition.op)} ${condition.text}"
 
             ValueKind.PHYSICAL_BUTTON -> {
                 val button = com.evsuite.hardware.PhysicalButtonEventDecoder.Button.entries
@@ -99,6 +105,9 @@ class Labels(
 
             ValueKind.ENUM ->
                 "$name : ${optionLabel(action.type.spec.options, action.number)}"
+
+            ValueKind.RULE ->
+                "$name : ${ruleNames[action.text] ?: action.text}"
 
             ValueKind.PROFILE ->
                 "$name : ${profileNames[action.text] ?: action.text}"

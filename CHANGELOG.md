@@ -17,6 +17,14 @@ All notable changes to this project are documented here. Format follows
 - **Front door open** on SWI133, reading the door status the volume-drop watcher already polls.
 - A clock-time control, used by the two ends of the charging window. Minutes behind a 0–1439
   slider was not something a driver could answer.
+- **Enable a rule** / **Disable a rule**: a rule can now switch another on or off, which is
+  what turns single rules into chains. The change applies from the next trigger, not the
+  current pass.
+- Context conditions that read Android rather than the car: **Wi-Fi network**, **media
+  playing**, **call in progress**, **drive duration**, **random chance**. A call in progress
+  is read from the audio route, so it cannot tell a ringing phone from a call under way.
+- **Media control** (play/pause, next, previous) sent as the media key the steering control
+  sends, and **Bluetooth** / **Wi-Fi** on-off actions.
 
 ### Fixed
 

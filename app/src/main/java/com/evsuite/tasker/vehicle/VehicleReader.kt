@@ -1,5 +1,6 @@
 package com.evsuite.tasker.vehicle
 
+import android.content.Context
 import com.evsuite.hardware.FirmwareInfo
 import com.evsuite.hardware.EVHardware
 import com.evsuite.hardware.catalog.SnapshotKeys
@@ -9,6 +10,8 @@ import com.evsuite.hardware.saic.SaicClimate
 import com.evsuite.hardware.saic.SaicVehicleControl
 import com.evsuite.tasker.model.Snapshot
 import com.evsuite.tasker.util.CarLocation
+import com.evsuite.tasker.util.DriveClock
+import com.evsuite.tasker.util.PlatformContext
 import java.util.Calendar
 
 /**
@@ -24,6 +27,8 @@ import java.util.Calendar
 object VehicleReader {
 
     fun read(
+        /** For the platform-context readings: what is playing, which network, a live call. */
+        context: Context,
         btMacs: Set<String>,
         btAvailable: Boolean,
         btOnboardMacs: Set<String>? = null,
@@ -48,7 +53,7 @@ object VehicleReader {
             // is not up. The vendor services are bound separately too, so their readings are
             // taken here as well rather than being lost with the AOSP layer.
             return Snapshot(
-                readings = vendorReadings(),
+                readings = vendorReadings() + platformReadings(context),
                 btMacs = btMacs,
                 btAvailable = btAvailable,
                 btOnboardMacs = btOnboardMacs,
@@ -113,6 +118,7 @@ object VehicleReader {
 
             put(SnapshotKeys.KEY_FIRMWARE_GEN, FirmwareInfo.getGeneration().name)
             putAll(vendorReadings())
+            putAll(platformReadings(context))
         }
 
         return Snapshot(
@@ -174,6 +180,21 @@ object VehicleReader {
         SaicCharging.scheduleStartMinutes()?.let { put(SnapshotKeys.KEY_CHARGE_WINDOW_START, it) }
         SaicCharging.scheduleStopMinutes()?.let { put(SnapshotKeys.KEY_CHARGE_WINDOW_STOP, it) }
         SaicCharging.batteryPreheatOn()?.let { put(SnapshotKeys.KEY_BATTERY_PREHEAT, it) }
+    }
+
+    /**
+     * Android's own context: what is playing, which network, whether a call is up, how long
+     * the drive has lasted.
+     *
+     * Read here rather than in the engine so they obey the one rule the whole snapshot obeys —
+     * a reading the platform will not give is left out, and the condition on it comes back
+     * unavailable instead of false.
+     */
+    private fun platformReadings(context: Context): Map<String, Any> = buildMap {
+        DriveClock.minutes()?.let { put(SnapshotKeys.KEY_DRIVE_MINUTES, it) }
+        PlatformContext.mediaPlaying(context)?.let { put(SnapshotKeys.KEY_MEDIA_PLAYING, it) }
+        PlatformContext.inCall(context)?.let { put(SnapshotKeys.KEY_IN_CALL, it) }
+        PlatformContext.wifiSsid(context)?.let { put(SnapshotKeys.KEY_WIFI_SSID, it) }
     }
 
     /** EVHardware getters return -1 when the layer is not ready: omit rather than store it. */

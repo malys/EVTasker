@@ -128,6 +128,7 @@ object DiagnosticProbe {
         // and "hands-free" conditions as blocked on every car, including the ones where a
         // rule using them evaluates perfectly well.
         val snapshot = VehicleReader.read(
+            context = appContext,
             btMacs = BtTracker.snapshot(appContext),
             btAvailable = BtDevices.isAvailable(appContext),
             btOnboardMacs = BtOnboard.onboard(appContext),

@@ -19,6 +19,7 @@ import com.evsuite.tasker.store.AppState
 import com.evsuite.tasker.util.BtDevices
 import com.evsuite.tasker.util.BtMessaging
 import com.evsuite.tasker.util.CarLocation
+import com.evsuite.tasker.util.DriveClock
 import com.evsuite.tasker.util.Notifier
 import com.evsuite.tasker.vehicle.BtOnboard
 import com.evsuite.tasker.vehicle.BtTracker
@@ -213,6 +214,9 @@ class TaskerVehicleService : Service() {
                 // ends: the IGNITION_OFF rules are precisely the ones that want to know
                 // whose phone made the trip, and they evaluate on a thread of their own.
                 if (trigger == RuleTrigger.IGNITION_ON) {
+                    // Same transition, no second listener: the drive's clock starts where the
+                    // onboard sampling does.
+                    DriveClock.start()
                     BtOnboard.reset()
                     startOnboardSampling()
                 } else {

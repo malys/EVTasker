@@ -181,7 +181,9 @@ that no catalogue entry can reach it. Cutting the vehicle stays an explicit huma
 An unreadable condition makes the rule **not evaluable** — it does not fire, and the
 history names the missing signal. Unreadable is never treated as false.
 
-Conditions span **context** (Bluetooth, time of day, day of week, firmware, near a place),
+Conditions span **context** (Bluetooth, time of day, day of week, firmware, near a place,
+the Wi-Fi network, media playing, a call in progress, how long the drive has lasted, a plain
+chance in a hundred),
 **environment** (outside temperature), **driving** (ignition, park, speed, drive mode,
 regeneration, energy saving), **energy** (battery level, charging, charging state, charge
 limit, scheduled charging and the two ends of its window, battery pre-heating), **climate**
@@ -211,8 +213,16 @@ defrosters), **energy**
 (charge limit, allow charging, scheduled charging and its window, battery pre-heating),
 **audio** (volume, the fine controls, play the radio), **driver assistance**, and **system**
 (launch an app, show a message, speak through the head unit's text-to-speech engine,
-navigate to a destination, call a number, wait). ADAS state — AEB, ELK, ACC/TJA, TSR, overspeed and
+navigate to a destination, call a number, media play/pause and track skip, Bluetooth and
+Wi-Fi on or off, enable or disable another rule, wait). ADAS state — AEB, ELK, ACC/TJA, TSR, overspeed and
 so on — is fully covered as gated actions.
+
+**Enabling and disabling rules** is what lets rules become chains. A rule that should only
+apply during a trip is one rule switching a second on at departure and off on arrival — no
+stored state, nothing new to evaluate. The change lands for the *next* trigger, not the
+current pass: a rule that could enable another and have it fire in the same cycle would make
+the order of that cycle part of what the user has to reason about. A rule may switch itself
+off, which is how "run once" is written; the switch in the rule list always puts it back.
 
 **Near a place** compares the car's last known fix with a point stored in the rule and a
 radius in metres. The point is prefilled with where the car is when the condition is created,

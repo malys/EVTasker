@@ -327,4 +327,5 @@
     <string name="about_qr_description">QR code for the project repository</string>
     <string name="about_version_unknown">unknown</string>
     <string name="about_close">Close</string>
+    <string name="value_no_rules">No saved rule to point at</string>
 </resources>

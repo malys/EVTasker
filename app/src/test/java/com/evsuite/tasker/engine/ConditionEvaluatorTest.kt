@@ -5,6 +5,7 @@ import com.evsuite.tasker.model.CompareOp
 import com.evsuite.tasker.model.Condition
 import com.evsuite.tasker.model.ConditionOutcome
 import com.evsuite.hardware.catalog.ConditionType
+import com.evsuite.hardware.catalog.SnapshotKeys
 import com.evsuite.tasker.model.Snapshot
 import com.evsuite.hardware.PhysicalButtonEventDecoder
 import org.junit.Assert.assertEquals
@@ -436,5 +437,86 @@ class ConditionEvaluatorTest {
             ConditionOutcome.NO_MATCH,
             ConditionEvaluator.evaluate(aebOff, snapshot(BridgeContract.KEY_AEB_ENABLED to true))
         )
+    }
+
+    // ── Platform context ─────────────────────────────────────────────────────
+
+    @Test
+    fun `a network name matches whatever its case and spacing`() {
+        // The name is typed by hand into the rule; "Home " failing to match "Home" would
+        // read as a broken condition rather than as a stray space.
+        val atHome = Condition(ConditionType.WIFI_SSID, text = " home ")
+
+        assertEquals(
+            ConditionOutcome.MATCH,
+            ConditionEvaluator.evaluate(atHome, snapshot(SnapshotKeys.KEY_WIFI_SSID to "Home"))
+        )
+        assertEquals(
+            ConditionOutcome.NO_MATCH,
+            ConditionEvaluator.evaluate(atHome, snapshot(SnapshotKeys.KEY_WIFI_SSID to "Office"))
+        )
+    }
+
+    @Test
+    fun `an unnamed network is unavailable, not a different network`() {
+        // The platform withholds the name when it will not say, and a rule that acts because
+        // "it is not the home network" would then act in the garage.
+        val atHome = Condition(ConditionType.WIFI_SSID, text = "Home")
+        assertEquals(ConditionOutcome.UNAVAILABLE, ConditionEvaluator.evaluate(atHome, snapshot()))
+    }
+
+    @Test
+    fun `an empty network name is unavailable rather than matching everything`() {
+        val unset = Condition(ConditionType.WIFI_SSID, text = "")
+        assertEquals(
+            ConditionOutcome.UNAVAILABLE,
+            ConditionEvaluator.evaluate(unset, snapshot(SnapshotKeys.KEY_WIFI_SSID to "Home"))
+        )
+    }
+
+    @Test
+    fun `the drive duration is unavailable before a drive is seen`() {
+        // A service that started on a car already running does not know when the drive began;
+        // answering 0 would make "driving for over 20 minutes" false for the whole trip.
+        val long = Condition(ConditionType.DRIVE_DURATION, op = CompareOp.GT, number = 20f)
+        assertEquals(ConditionOutcome.UNAVAILABLE, ConditionEvaluator.evaluate(long, snapshot()))
+        assertEquals(
+            ConditionOutcome.MATCH,
+            ConditionEvaluator.evaluate(long, snapshot(SnapshotKeys.KEY_DRIVE_MINUTES to 21))
+        )
+    }
+
+    @Test
+    fun `the chance condition is decided by the draw, at both ends`() {
+        // Injected rather than sampled: running the rule a thousand times and hoping proves
+        // nothing about the boundaries, which is where an off-by-one would live.
+        val oneInFive = Condition(ConditionType.RANDOM_CHANCE, number = 20f)
+        try {
+            ConditionEvaluator.random = { 19 }
+            assertEquals(ConditionOutcome.MATCH, ConditionEvaluator.evaluate(oneInFive, snapshot()))
+            ConditionEvaluator.random = { 20 }
+            assertEquals(ConditionOutcome.NO_MATCH, ConditionEvaluator.evaluate(oneInFive, snapshot()))
+
+            // 100% must never come out false, and 1% must not come out true on a zero draw
+            // by accident of the comparison.
+            ConditionEvaluator.random = { 99 }
+            assertEquals(
+                ConditionOutcome.MATCH,
+                ConditionEvaluator.evaluate(Condition(ConditionType.RANDOM_CHANCE, number = 100f), snapshot())
+            )
+            assertEquals(
+                ConditionOutcome.NO_MATCH,
+                ConditionEvaluator.evaluate(Condition(ConditionType.RANDOM_CHANCE, number = 1f), snapshot())
+            )
+        } finally {
+            ConditionEvaluator.random = { kotlin.random.Random.nextInt(it) }
+        }
+    }
+
+    @Test
+    fun `the chance condition never asks the snapshot for anything`() {
+        // It has no key. If it ever gained one it would start coming back UNAVAILABLE on a
+        // car that answers nothing, which is not what a coin toss does.
+        assertEquals(null, ConditionType.RANDOM_CHANCE.snapshotKey)
     }
 }
