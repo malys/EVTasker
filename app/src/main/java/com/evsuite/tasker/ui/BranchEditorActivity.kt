@@ -445,7 +445,6 @@ class BranchEditorActivity : AppCompatActivity() {
                 container = binding.actionContainer,
                 label = labels.describe(action),
                 gated = action.type.gated,
-                gatedWhenOpening = action.type.gatedWhenOpening,
                 onEdit = {
                     withContactsIfNeeded(action.type) {
                         ValueEditorDialog.editAction(
@@ -485,7 +484,6 @@ class BranchEditorActivity : AppCompatActivity() {
         container: android.view.ViewGroup,
         label: String,
         gated: Boolean,
-        gatedWhenOpening: Boolean = false,
         onEdit: () -> Unit,
         onRemove: () -> Unit,
         reorderable: Boolean = false,
@@ -496,10 +494,8 @@ class BranchEditorActivity : AppCompatActivity() {
     ) {
         val row = ItemEditorRowBinding.inflate(LayoutInflater.from(this), container, false)
         row.rowLabel.text = label
-        row.rowGated.visibility = if (gated || gatedWhenOpening) View.VISIBLE else View.GONE
-        row.rowGated.setText(
-            if (gated) R.string.editor_gated_hint else R.string.editor_gated_opening_hint
-        )
+        row.rowGated.visibility = if (gated) View.VISIBLE else View.GONE
+        row.rowGated.setText(R.string.editor_gated_hint)
         row.rowClickArea.setOnClickListener { onEdit() }
         row.rowRemove.setOnClickListener { onRemove() }
         // Kept in place and disabled at the ends rather than hidden: buttons that disappear

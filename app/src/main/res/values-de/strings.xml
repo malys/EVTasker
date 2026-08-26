@@ -307,6 +307,4 @@
     <string name="about_version_unknown">unbekannt</string>
     <string name="about_close">Schließen</string>
     <string name="value_no_rules">Keine gespeicherte Regel vorhanden</string>
-    <string name="editor_gated_opening_hint">Öffnen nur im Stand</string>
-    <string name="editor_gated_opening_explain">Schließen ist immer erlaubt; Öffnen verändert das Fahrzeugverhalten und wird von EVProfile während der Fahrt abgelehnt.</string>
 </resources>

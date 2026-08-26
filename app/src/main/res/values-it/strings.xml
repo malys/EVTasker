@@ -307,6 +307,4 @@
     <string name="about_version_unknown">sconosciuta</string>
     <string name="about_close">Chiudi</string>
     <string name="value_no_rules">Nessuna regola salvata da indicare</string>
-    <string name="editor_gated_opening_hint">Apertura solo da fermo</string>
-    <string name="editor_gated_opening_explain">Chiudere è sempre consentito; aprire modifica il comportamento del veicolo ed EVProfile lo rifiuta in marcia.</string>
 </resources>

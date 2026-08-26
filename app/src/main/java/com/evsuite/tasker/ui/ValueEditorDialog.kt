@@ -156,7 +156,6 @@ object ValueEditorDialog {
             spec = spec,
             dynamicMax = dynamicMax,
             gated = action.type.gated,
-            gatedWhenOpening = action.type.gatedWhenOpening,
             // A fresh action carries no value yet, so the control opens on what the car
             // reports right now rather than on the bottom of its range.
             initialNumber = seedNumber(action, currentValue),
@@ -282,7 +281,6 @@ object ValueEditorDialog {
         spec: com.evsuite.hardware.catalog.ValueSpec,
         dynamicMax: Int?,
         gated: Boolean,
-        gatedWhenOpening: Boolean = false,
         initialNumber: Float,
         initialFlag: Boolean,
         initialText: String,
@@ -295,14 +293,9 @@ object ValueEditorDialog {
         initialMinutesTo: Int,
         initialDays: List<Int>
     ): State {
-        // Two different warnings: an action that is always refused while moving, and one
-        // where only half the range is. Showing the first for a window would tell the user
-        // that closing it needs a standstill, which is the opposite of what happens.
-        if (gated || gatedWhenOpening) {
+        if (gated) {
             binding.gatedExplain.visibility = View.VISIBLE
-            binding.gatedExplain.setText(
-                if (gated) R.string.editor_gated_explain else R.string.editor_gated_opening_explain
-            )
+            binding.gatedExplain.setText(R.string.editor_gated_explain)
         }
 
         var number = initialNumber

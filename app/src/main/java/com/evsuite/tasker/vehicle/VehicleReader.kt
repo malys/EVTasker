@@ -235,26 +235,7 @@ object VehicleReader {
                 ?.takeIf { it.isNotBlank() }
                 ?.let { put(SnapshotKeys.KEY_WEATHER_TEXT, it) }
         }
-
-        // One query for all three forecast readings: a rule asking about tomorrow's low and
-        // tomorrow's sky must not pay twice for the same answer.
-        if (FORECAST_KEYS.none { wants(wanted, it) }) return@buildMap
-        val days = SaicWeather.forecastAt(fix.latitude, fix.longitude, language) ?: return@buildMap
-        // Today first, so tomorrow is the second entry. A one-day answer says nothing about
-        // tomorrow, and an absent key is the honest way to say so.
-        days.getOrNull(0)?.highCelsius?.let { put(SnapshotKeys.KEY_TEMP_MAX_TODAY, it.toFloat()) }
-        days.getOrNull(1)?.let { tomorrow ->
-            tomorrow.dayText.takeIf { it.isNotBlank() }
-                ?.let { put(SnapshotKeys.KEY_WEATHER_TOMORROW, it) }
-            tomorrow.lowCelsius?.let { put(SnapshotKeys.KEY_TEMP_MIN_TOMORROW, it.toFloat()) }
-        }
     }
-
-    private val FORECAST_KEYS = listOf(
-        SnapshotKeys.KEY_WEATHER_TOMORROW,
-        SnapshotKeys.KEY_TEMP_MAX_TODAY,
-        SnapshotKeys.KEY_TEMP_MIN_TOMORROW
-    )
 
     /** Null means "everything": the diagnostic asks for readings no rule may be using. */
     private fun wants(wanted: Set<String>?, key: String): Boolean = wanted == null || key in wanted

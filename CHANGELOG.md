@@ -4,6 +4,37 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-08-26
+
+### Fixed
+
+- **The window actions did nothing at all.** The value they carried was a position in
+  percent, and the vendor service takes a command in 0..7 there: anything above 7 is dropped
+  without an error, so the write reported ALLOWED and no glass moved. The actions now carry
+  the command, refuse anything outside the range, and the four window readings — which are
+  still positions in percent — are what shows whether a command did anything. What each
+  command means is not documented on the firmware and nothing on the head unit sends one;
+  finding out is now one rule and one diagnostic read apart. See EVHardware 1.6.0.
+- **The weather condition never matched.** The answer arrived and was discarded: the parcel
+  carries the result behind a presence flag and the decoder started one field too late. Fixed
+  in EVHardware 1.6.0.
+- The diagnostic reports the raw door-lock state when it is not one of the two named values,
+  instead of only `locked=?`, and names the glass write scale on the same line.
+
+### Changed
+
+- Every glass write takes the standstill gate. The gate used to compare the target with the
+  window's current position and allow the closing half at speed; the target is no longer a
+  position, and a command whose direction is unknown is not one to allow while moving.
+
+### Removed
+
+- **The daily forecast conditions** — weather tomorrow, today's high, tomorrow's low. The
+  map service exposes no forecast transaction on this firmware, which is what the repeated
+  `ISaicService#30: transact returned false` in the log was, and the weather application's
+  own outlook is not reachable from another app. They could never have been readable. Rules
+  that used them lose those conditions.
+
 ## [2.4.0] - 2026-08-26
 
 ### Added

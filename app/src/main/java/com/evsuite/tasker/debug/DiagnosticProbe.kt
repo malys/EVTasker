@@ -267,9 +267,17 @@ object DiagnosticProbe {
             EnvCheck(
                 Env.GLASS_AND_LOCKS,
                 ok = caps.climateService,
+                // The lock state is reported raw when it is not one of the two named values:
+                // "locked=?" alone leaves no way to tell an unnamed state from a read that
+                // never answered, and this line is where that question gets settled.
                 detail = SaicVehicleControl.windowPercents()
                     .joinToString(" ", prefix = "windows[FL FR RL RR]=") { it?.toString() ?: "?" } +
-                    " locked=" + (SaicVehicleControl.doorsLocked()?.toString() ?: "?")
+                    " locked=" + (
+                        SaicVehicleControl.doorsLocked()?.toString()
+                            ?: SaicVehicleControl.doorLockState()?.let { "? (state $it)" }
+                            ?: "?"
+                        ) +
+                    " glass-write=command 0..${SaicVehicleControl.WINDOW_COMMAND_MAX}"
             ),
         )
     }
