@@ -224,14 +224,40 @@ object VehicleReader {
      */
     private fun headUnitReadings(fix: CarLocation.Fix?, wanted: Set<String>?): Map<String, Any> = buildMap {
         SaicNav.totalMileageKm()?.let { put(SnapshotKeys.KEY_ODOMETER_KM, it) }
-        // The one reading that costs real time — see `wanted`.
-        if (wanted != null && SnapshotKeys.KEY_WEATHER_TEXT !in wanted) return@buildMap
+        // Everything below costs real time — see `wanted`. Without a fix there is nothing to
+        // ask about: the last known weather somewhere else is not weather here.
         if (fix == null) return@buildMap
-        SaicWeather.currentAt(fix.latitude, fix.longitude, weatherLanguage())
-            ?.text
-            ?.takeIf { it.isNotBlank() }
-            ?.let { put(SnapshotKeys.KEY_WEATHER_TEXT, it) }
+        val language = weatherLanguage()
+
+        if (wants(wanted, SnapshotKeys.KEY_WEATHER_TEXT)) {
+            SaicWeather.currentAt(fix.latitude, fix.longitude, language)
+                ?.text
+                ?.takeIf { it.isNotBlank() }
+                ?.let { put(SnapshotKeys.KEY_WEATHER_TEXT, it) }
+        }
+
+        // One query for all three forecast readings: a rule asking about tomorrow's low and
+        // tomorrow's sky must not pay twice for the same answer.
+        if (FORECAST_KEYS.none { wants(wanted, it) }) return@buildMap
+        val days = SaicWeather.forecastAt(fix.latitude, fix.longitude, language) ?: return@buildMap
+        // Today first, so tomorrow is the second entry. A one-day answer says nothing about
+        // tomorrow, and an absent key is the honest way to say so.
+        days.getOrNull(0)?.highCelsius?.let { put(SnapshotKeys.KEY_TEMP_MAX_TODAY, it.toFloat()) }
+        days.getOrNull(1)?.let { tomorrow ->
+            tomorrow.dayText.takeIf { it.isNotBlank() }
+                ?.let { put(SnapshotKeys.KEY_WEATHER_TOMORROW, it) }
+            tomorrow.lowCelsius?.let { put(SnapshotKeys.KEY_TEMP_MIN_TOMORROW, it.toFloat()) }
+        }
     }
+
+    private val FORECAST_KEYS = listOf(
+        SnapshotKeys.KEY_WEATHER_TOMORROW,
+        SnapshotKeys.KEY_TEMP_MAX_TODAY,
+        SnapshotKeys.KEY_TEMP_MIN_TOMORROW
+    )
+
+    /** Null means "everything": the diagnostic asks for readings no rule may be using. */
+    private fun wants(wanted: Set<String>?, key: String): Boolean = wanted == null || key in wanted
 
     /**
      * The language the weather phrase comes back in.

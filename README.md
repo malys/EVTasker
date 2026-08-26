@@ -183,7 +183,8 @@ history names the missing signal. Unreadable is never treated as false.
 
 Conditions span **context** (Bluetooth, time of day, day of week, firmware, near a place,
 the Wi-Fi network, media playing, a call in progress, how long the drive has lasted, a plain
-chance in a hundred), **environment** (outside temperature, the weather where the car is),
+chance in a hundred), **environment** (outside temperature, the weather where the car is,
+tomorrow's outlook and the day's high and low),
 **driving** (ignition, park, speed, odometer, drive mode,
 regeneration, energy saving), **energy** (battery level, charging, charging state, charge
 limit, remaining range, scheduled charging and the two ends of its window, battery
@@ -227,7 +228,9 @@ car will not say where a window currently is, the write is gated — an unknown 
 a safe one.
 
 **The weather** is the head unit's own, asked for where the car is — no account, no API key,
-no traffic of ours. It is matched as a fragment, so "rain" catches "Light rain" and "Rain
+no traffic of ours. Beside today's conditions there is a **daily outlook**: tomorrow's sky,
+today's high and tomorrow's low. By the day, not by the hour — deciding tonight whether to
+pre-heat in the morning is a question it answers, and "will it rain in three hours" is not. It is matched as a fragment, so "rain" catches "Light rain" and "Rain
 showers", and the phrase comes back in the head unit's language: on a French car the rule
 asks about "pluie". A car whose head unit has no weather service leaves the condition
 unreadable, which stops the rule rather than guessing at the sky.

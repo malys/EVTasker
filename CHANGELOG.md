@@ -4,7 +4,7 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.4.0] - 2026-08-26
 
 ### Added
 
@@ -24,6 +24,10 @@ All notable changes to this project are documented here. Format follows
   weather service, asked for where the car is, with no account and no traffic of ours. The
   phrase is matched as a fragment ("rain" catches "Light rain") and comes back in the head
   unit's language.
+- **Weather tomorrow**, **today's high** and **tomorrow's low**, from the same service. The
+  outlook is by the day, so tomorrow's low is what a rule deciding tonight whether to pre-heat
+  in the morning can ask; "rain in three hours" is not something the data can answer and no
+  condition offers it.
 
 - The climate and charging readings the vendor services already answered and nothing could
   reach: ECON, the passenger target temperature, both defrosters, scheduled charging, the two
