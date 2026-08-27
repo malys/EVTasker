@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-08-27
+
 ### Added
 
 - **The Diagnostic screen can now settle the window actions on your own car.** "Probe the
