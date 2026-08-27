@@ -5,15 +5,14 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.media.AudioManager
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Log
-import android.view.KeyEvent
 import androidx.core.content.ContextCompat
 import com.evsuite.hardware.FirmwareInfo
 import com.evsuite.hardware.FirmwareSupport
 import com.evsuite.hardware.EVHardware
+import com.evsuite.hardware.effectProven
 import com.evsuite.hardware.VehicleWriteGate
 import com.evsuite.hardware.model.DriveMode
 import com.evsuite.hardware.model.RegenLevel
@@ -21,6 +20,7 @@ import com.evsuite.hardware.saic.SaicCharging
 import com.evsuite.hardware.saic.SaicClimate
 import com.evsuite.hardware.saic.RadioFrequency
 import com.evsuite.hardware.saic.SaicPhone
+import com.evsuite.hardware.saic.SaicMediaPlayer
 import com.evsuite.hardware.saic.SaicRadio
 import com.evsuite.hardware.saic.SaicVehicleControl
 import com.evsuite.tasker.bridge.BridgeContract
@@ -68,6 +68,22 @@ class DirectExecutor(
                 false,
                 BridgeContract.VERDICT_UNSUPPORTED,
                 "firmware support not confirmed: $generationName"
+            )
+        }
+        // An action whose write was never shown to move anything cannot be run at all — see
+        // ActionType.writeProven, and GlassEvidence for the one case a probe can settle. It
+        // is refused rather than attempted because the service
+        // behind such a write accepts the call and drops the value, so attempting it would
+        // write "applied" in the history for a car that did not budge. UNSUPPORTED, not
+        // ERROR: the engine retries an error three times, and no amount of retrying proves
+        // an effect. Reaching here at all means an imported or pre-existing rule still names
+        // it; the editor stopped offering it (SupportChecker).
+        if (!action.type.effectProven) {
+            return ActionResult(
+                action.type,
+                false,
+                BridgeContract.VERDICT_UNSUPPORTED,
+                "write effect not established for ${action.type.name}"
             )
         }
         return when (action.type) {
@@ -124,6 +140,7 @@ class DirectExecutor(
             ActionType.SET_SEAT_HEAT_RIGHT       -> EVHardware.setSeatHeatRight(i)
             ActionType.SET_STEERING_HEAT         -> EVHardware.setSteeringHeat(b)
             ActionType.SET_MEDIA_VOLUME          -> EVHardware.setMediaVolume(i)
+            ActionType.ADJUST_MEDIA_VOLUME       -> EVHardware.adjustMediaVolume(i)
             ActionType.SET_SCREEN_BRIGHTNESS     -> EVHardware.setScreenBrightnessPercent(i)
             ActionType.SET_AUDIO_BALANCE         -> EVHardware.setAudioBalance(i)
             ActionType.SET_AUDIO_FADER           -> EVHardware.setAudioFader(i)
@@ -147,6 +164,11 @@ class DirectExecutor(
             ActionType.SET_ELK_MODE         -> EVHardware.setElkMode(i)
             ActionType.SET_ELK_SENSITIVITY  -> EVHardware.setElkSensitivity(i)
             ActionType.SET_TSR              -> EVHardware.setTsrMode(b)
+            // Blocking for about a second: EVHardware reads the state three times before it
+            // dares toggle it. The executor already runs off the main thread.
+            ActionType.SET_ESC              -> EVHardware.setEsc(b)
+            ActionType.SET_DROWSINESS       -> EVHardware.setDrowsiness(b)
+            ActionType.SET_DROWSINESS_SENSITIVITY -> EVHardware.setDrowsinessSensitivity(i)
             ActionType.SET_ACC_TJA_MODE     -> EVHardware.setAccTjaMode(i)
             ActionType.SET_LIMITER_MODE     -> EVHardware.setSpeedLimiterMode(i)
             // Climate — vendor service, not gated (see the catalogue).
@@ -181,6 +203,8 @@ class DirectExecutor(
             ActionType.SET_BATTERY_PREHEAT   -> SaicCharging.setBatteryPreheat(b)
             // Media and telephony — vendor services too.
             ActionType.PLAY_RADIO           -> SaicRadio.play()
+            ActionType.RADIO_NEXT_STATION   -> SaicRadio.nextStation()
+            ActionType.RADIO_PREV_STATION   -> SaicRadio.previousStation()
             ActionType.CALL_NUMBER,
             ActionType.CALL_CONTACT         -> callNumber(a)
             // Handled by execute() before it ever gets here: none of these is a vehicle write,
@@ -346,23 +370,31 @@ class DirectExecutor(
     }
 
     /**
-     * Sends the media key, down then up, exactly as the steering control does.
+     * Commands the source that owns the audio, through [SaicMediaPlayer].
      *
-     * Both halves or nothing: an app that receives a key-down and never the matching key-up
-     * can sit on a held key. `dispatchMediaKeyEvent` answers nothing, so what is reported is
-     * that the key was sent — not that anything was playing to receive it.
+     * Not a media key: on this head unit that reaches Bluetooth or nothing, and a rule that
+     * meant "next track" would change the audio source out from under the driver. The stored
+     * value stays the Android key code so existing rules keep their meaning.
      */
     private fun mediaControl(a: Action): ActionResult {
         val code = a.number.toInt()
-        if (code !in MediaCommand.OPTIONS.map { it.value }) {
-            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "unknown media key: $code")
+        val command = when (code) {
+            MediaCommand.PLAY_PAUSE -> SaicMediaPlayer.Command.PLAY_PAUSE
+            MediaCommand.NEXT -> SaicMediaPlayer.Command.NEXT
+            MediaCommand.PREVIOUS -> SaicMediaPlayer.Command.PREVIOUS
+            else -> return ActionResult(
+                a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "unknown media command: $code"
+            )
         }
-        val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-            ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no audio service")
         return try {
-            audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
-            audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
-            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
+            // False is a real answer here, not an error: it means nothing was playing that
+            // could take the command. Reported as unsupported so the engine does not retry
+            // three times with backoff — a silent car will still be silent on the third try.
+            if (SaicMediaPlayer.command(command)) {
+                ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
+            } else {
+                ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "nothing playing")
+            }
         } catch (e: Exception) {
             Log.w("EVTasker.Exec", "mediaControl($code): ${e.message}")
             ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, e.message)

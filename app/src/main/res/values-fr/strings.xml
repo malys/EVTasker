@@ -215,6 +215,7 @@
     <string name="diag_reason_not_readable">illisible sur cette voiture</string>
     <string name="diag_reason_layer">couche véhicule indisponible</string>
     <string name="diag_reason_firmware">non supportée par ce firmware</string>
+    <string name="diag_reason_write_unproven">effet jamais constaté sur cette voiture</string>
     <string name="diag_reason_no_evprofile">EVProfile non installé</string>
     <string name="diag_reason_no_tts">aucun moteur de synthèse vocale</string>
     <string name="diag_reason_notifications">notifications désactivées</string>
@@ -284,6 +285,7 @@
     <string name="editor_trigger">Se déclenche</string>
     <string name="physical_press_short">Appui court</string>
     <string name="physical_press_long">Appui long</string>
+    <string name="physical_press_double">Double appui</string>
     <string name="physical_button_label">BOUTON</string>
     <string name="physical_event_label">TYPE D’APPUI</string>
     <string name="value_editor_instruction">Choisissez la valeur à utiliser dans cette règle.</string>
@@ -324,4 +326,23 @@
     <string name="about_version_unknown">inconnue</string>
     <string name="about_close">Fermer</string>
     <string name="value_no_rules">Aucune règle enregistrée à désigner</string>
+    <string name="diag_glass_probe">Sonder les vitres</string>
+    <string name="diag_glass_unknown">Vitres : la commande qui bouge la vitre est inconnue sur cette voiture — les actions vitres sont refusées.</string>
+    <string name="diag_glass_proven">Vitres : commande %1$d ouvre, %2$d ferme (sondé le %3$s). Les actions vitres sont disponibles.</string>
+    <string name="diag_glass_warn_title">Sonder les vitres ?</string>
+    <string name="diag_glass_warn">La vitre conducteur va s\'ouvrir et se refermer toute seule, plusieurs fois, pendant environ une minute.\n\nVérifiez d\'abord : aucune main ni bras sur la vitre, pas d\'animal, pas d\'enfant, pas de pluie. La voiture doit rester à l\'arrêt, contact mis — la sonde s\'interrompt d\'elle-même si elle se remet à rouler.\n\nRien d\'autre ne peut établir quelle commande bouge la vitre : le service accepte toutes les valeurs et rend un succès dans tous les cas.</string>
+    <string name="diag_glass_warn_go">Sonder</string>
+    <string name="diag_glass_running">Sondage des vitres…</string>
+    <string name="diag_glass_result_title">Sonde vitres</string>
+    <string name="diag_glass_result_proven">La commande %1$d ouvre, %2$d ferme.\n\nLes actions vitres fonctionnent désormais sur cette voiture.</string>
+    <string name="diag_glass_result_not_stopped">Interrompu : la voiture roulait, ou sa vitesse était illisible.</string>
+    <string name="diag_glass_result_ignition">Interrompu : le contact n\'est pas mis, les vitres ne sont pas alimentées.</string>
+    <string name="diag_glass_result_unreadable">Interrompu : la position de vitre a cessé de répondre, rien n\'a pu être prouvé.</string>
+    <string name="diag_glass_result_nothing">Aucune commande n\'a bougé la vitre. Les actions vitres restent refusées — c\'est la réponse honnête, pas un échec de la sonde.</string>
+    <string name="diag_glass_result_one_way">Un seul sens trouvé (%1$s). Les deux sont nécessaires, les actions vitres restent refusées.</string>
+    <string name="diag_glass_result_open">ouvre avec la commande %1$d</string>
+    <string name="diag_glass_result_close">ferme avec la commande %1$d</string>
+    <string name="diag_glass_result_left_open">⚠️ La vitre est restée ouverte — refermez-la à la main.</string>
+    <string name="diag_glass_result_steps">Commandes essayées : %1$s</string>
+    <string name="diag_glass_forget">Oublier</string>
 </resources>

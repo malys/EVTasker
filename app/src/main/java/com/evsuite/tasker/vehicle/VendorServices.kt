@@ -2,6 +2,7 @@ package com.evsuite.tasker.vehicle
 
 import android.content.Context
 import com.evsuite.hardware.saic.SaicHub
+import com.evsuite.hardware.saic.SaicMediaPlayer
 import com.evsuite.hardware.saic.SaicNav
 import com.evsuite.hardware.saic.SaicPhone
 import com.evsuite.hardware.saic.SaicRadio
@@ -23,6 +24,10 @@ object VendorServices {
         // Climate and charging share the hub; radio and telephony are their own services.
         SaicHub.connect(appContext)
         SaicRadio.connect(appContext)
+        // Every media player interface, bound up front: a shortcut pressed on the wheel
+        // cannot wait for an asynchronous bind, and which of them exists depends on the
+        // firmware generation.
+        SaicMediaPlayer.connect(appContext)
         SaicPhone.connect(appContext)
         // The vehicle's own voice — what the "speak" action uses in preference to an Android
         // TTS engine, which this head unit does not have.

@@ -27,6 +27,19 @@ android.permission.WAKE_LOCK
 android.permission.RECEIVE_BOOT_COMPLETED
 android.permission.POST_NOTIFICATIONS
 
+# --- Connection ---
+# The two "data used" conditions read Android's own per-interface counters — the numbers the
+# Settings screen shows. Nothing is attributed to an application and nothing leaves the car.
+# Signature-level, granted by the platform key; without it the conditions report unavailable.
+android.permission.READ_NETWORK_USAGE_HISTORY
+
+# --- Media ---
+# Enumerating active media sessions so the "media control" action can command the source
+# that is actually playing. On A9 firmwares there is no SAIC media service and this is the
+# only path; without it the action falls back to a media key, which on this head unit can
+# change the audio source. Signature-level, granted by the platform key.
+android.permission.MEDIA_CONTENT_CONTROL
+
 # --- Bluetooth ---
 # Paired list for the editor + live connection tracking (ACL) for context conditions.
 android.permission.BLUETOOTH

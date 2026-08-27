@@ -78,6 +78,32 @@
             android:text="@string/diag_check_support" />
     </LinearLayout>
 
+    <!-- The glass: which of the eight commands moves a window is written down nowhere, so
+         the window actions ship refused. The only way to settle it is on a car — send a
+         command, read the position back, watch it move. What the probe sees unlocks those
+         actions on THIS car and nowhere else. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/glassStatus"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/Text.EV.Body" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/glassProbeButton"
+            style="@style/Widget.EV.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/diag_glass_probe" />
+    </LinearLayout>
+
     <!-- Always shown: outside temperature is the only catalogue signal whose
          availability has not been verified on a vehicle. The user must be able to link
          "unreadable here" to "my weather rule never fires". -->

@@ -97,7 +97,7 @@ Each ignition rule chooses one trigger; a rule written before triggers existed r
 as it always did. Switching off costs nothing extra —
 the service already received every ignition transition and simply stopped reading at RUN, so
 there is no second listener, no extra bind and no polling. At switch-off the car is powering
-down: settings that persist (charge limit, locks, windows) land, and anything the vehicle
+down: settings that persist (charge limit, locks) land, and anything the vehicle
 drops with the ignition is reported by the history rather than assumed.
 
 The "Test now" button replays the whole path on demand for the **selected rule only**, while
@@ -211,7 +211,7 @@ connected* together with a vehicle signal (ignition, speed, not in park) instead
 
 Actions cover **profile** application, **driving**, **comfort**, **climate** (on/off, driver
 and passenger target temperatures, A/C, ECON, AUTO, recirculation, fan level, front and rear
-defrosters, all four windows together or one at a time), **energy**
+defrosters), **energy**
 (charge limit, allow charging, scheduled charging and its window, battery pre-heating),
 **audio** (volume, the fine controls, play the radio), **driver assistance**, and **system**
 (launch an app, show a message, speak through the head unit's text-to-speech engine,
@@ -219,15 +219,26 @@ navigate to a destination, call a number, media play/pause and track skip, Bluet
 Wi-Fi on or off, enable or disable another rule, wait). ADAS state — AEB, ELK, ACC/TJA, TSR, overspeed and
 so on — is fully covered as gated actions.
 
-**A window write is a command, not a position.** The car reports where each window is as a
-percentage, but the service that moves them accepts a command in **0..7** on the way in and
-silently discards anything larger — which is why a percentage sent as a position did nothing
-at all while the history said it had been applied. What each of the eight commands does is
-not documented anywhere on the firmware, and no application on the head unit sends one, so
-nothing here claims to know: the action passes the number through, refuses anything outside
-the range, and the position readout is what tells you what a command actually did. Until the
-mapping is established, every glass write takes the standstill gate — a write whose direction
-is unknown is not one to allow at speed.
+**The glass can be read but not moved, so the window actions are not offered.** The car
+reports where each window is as a percentage — the four readings are conditions like any
+other and work — but the service that moves them accepts a command in **0..7** on the way in
+and silently discards anything larger, and what each of the eight commands does is documented
+nowhere on the firmware. No application on the head unit sends one, so there is no example to
+read the mapping off. A write is therefore accepted and dropped: success in the history, glass
+that has not moved. Rather than let the app promise that, the five window actions are marked
+as having no established effect: the Diagnostic screen blocks them ("effect never confirmed on
+this car"), the rule editor does not list them, and a rule imported from elsewhere that still
+names one is refused instead of retried.
+
+**Your car can settle it, and then they work.** The Diagnostic screen's *Probe the windows*
+sends each of the eight commands to the driver's window and reads the position back between
+each, which is the one thing that establishes what they do. It asks first and says what to
+check before the glass starts moving on its own — no hand on the window, no animal, no child,
+no rain — refuses to start unless the car is stopped with the ignition on, re-checks that
+before **every** command, and closes the window again afterwards or tells you it could not.
+What it observes unlocks the five window actions on that car alone, is forgotten when the
+firmware generation changes, and never leaves the head unit. A probe that finds nothing leaves
+the actions where they were, which is the honest answer rather than a failure.
 
 **The weather** is the head unit's own, asked for where the car is — no account, no API key,
 no traffic of ours. Current conditions only: the map service answers nothing about later
@@ -387,7 +398,8 @@ That buys four things the property ids could not:
 Climate **conditions** now read from the same service where it answers, falling back to the
 AOSP ids elsewhere — so what a rule tests and what an action writes are the same signal.
 
-Window **writes** stay absent: no vendor service exposes them.
+Window **writes** stay unavailable: the service takes them, but as a command whose meaning
+nothing on the firmware establishes — see the glass paragraph above.
 
 Navigation is the exception with no vendor API — `NAVIGATE_TO` uses the standard `geo:`
 intent, then `google.navigation:`, and reports honestly when the head unit has neither.

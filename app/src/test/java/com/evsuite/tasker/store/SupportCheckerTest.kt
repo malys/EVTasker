@@ -31,8 +31,23 @@ class SupportCheckerTest {
         assertTrue(independent in names)
     }
 
-    @Test fun `unknown firmware hides nothing`() {
+    @Test fun `unknown firmware hides nothing the matrix could answer for`() {
         val names = SupportChecker.supportedActionNames(null)
-        assertTrue(names.containsAll(ActionType.entries.map { it.name }))
+        assertTrue(names.containsAll(ActionType.entries.filter { it.writeProven }.map { it.name }))
+    }
+
+    /**
+     * An unproven write is not a firmware question, so the matrix cannot hide it — and an
+     * unknown generation makes the matrix hide nothing at all. Without this filter the glass
+     * actions would be offered on precisely the cars nothing is known about.
+     */
+    @Test fun `an unproven write is never offered, whatever the firmware`() {
+        val unproven = ActionType.entries.filter { !it.writeProven }.map { it.name }
+        assertTrue("the glass is the case this exists for", ActionType.SET_WINDOWS.name in unproven)
+
+        listOf(FirmwareGen.SWI68, FirmwareGen.SWI165, FirmwareGen.SWI69, null).forEach { gen ->
+            val names = SupportChecker.supportedActionNames(gen)
+            unproven.forEach { assertFalse("$it offered on $gen", it in names) }
+        }
     }
 }

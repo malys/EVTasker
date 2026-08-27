@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Looper
 import android.os.IBinder
 import androidx.core.content.ContextCompat
 import com.evsuite.hardware.AppLogger
@@ -26,6 +27,8 @@ import com.evsuite.tasker.vehicle.BtTracker
 import com.evsuite.tasker.vehicle.ProfileBridge
 import com.evsuite.tasker.vehicle.RuleCycle
 import com.evsuite.tasker.vehicle.VendorServices
+import com.evsuite.hardware.catalog.ValueKind
+import com.evsuite.tasker.store.RuleStore
 import kotlin.concurrent.thread
 
 /**
@@ -252,6 +255,66 @@ class TaskerVehicleService : Service() {
         ContextCompat.registerReceiver(this, btReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
+    /** A single press waiting to see whether a second one follows, per button. */
+    private val pendingShortPresses =
+        mutableMapOf<PhysicalButtonEventDecoder.Button, Runnable>()
+
+    private val buttonHandler = Handler(Looper.getMainLooper())
+
+    /**
+     * Runs the rules a press addresses — after a pause, when a double tap is still possible.
+     *
+     * The press is released before anyone can know whether a second one is coming, so a
+     * double tap necessarily produces a SHORT and then a DOUBLE. Firing both would run the
+     * single-press rule every time the driver taps twice, which is not what either rule says.
+     *
+     * So a SHORT waits out the double-tap window — but **only when a rule is actually armed on
+     * that button's double tap**. Delaying every press to serve a rule nobody wrote would make
+     * every button in the car feel slow, and the delay is only worth its cost where it prevents
+     * a wrong rule from running.
+     */
+    private fun dispatchButton(event: PhysicalButtonEventDecoder.Event) {
+        if (event.press == PhysicalButtonEventDecoder.Press.DOUBLE) {
+            pendingShortPresses.remove(event.button)?.let { buttonHandler.removeCallbacks(it) }
+            runButtonCycle(event)
+            return
+        }
+        if (event.press == PhysicalButtonEventDecoder.Press.SHORT && isDoubleTapArmed(event.button)) {
+            pendingShortPresses.remove(event.button)?.let { buttonHandler.removeCallbacks(it) }
+            val pending = Runnable {
+                pendingShortPresses.remove(event.button)
+                runButtonCycle(event)
+            }
+            pendingShortPresses[event.button] = pending
+            buttonHandler.postDelayed(pending, PhysicalButtonEventDecoder.DOUBLE_TAP_MS)
+            return
+        }
+        runButtonCycle(event)
+    }
+
+    /**
+     * Whether any enabled rule waits on a double tap of [button].
+     *
+     * Read per press rather than cached: rules change while the service lives, and a stale
+     * answer here either delays a press for nothing or defeats a rule the user just wrote.
+     */
+    private fun isDoubleTapArmed(button: PhysicalButtonEventDecoder.Button): Boolean =
+        RuleStore(this).getAll().any { rule ->
+            rule.enabled && rule.branches.any { branch ->
+                branch.conditions.any {
+                    it.type.spec.kind == ValueKind.PHYSICAL_BUTTON &&
+                        it.text == PhysicalButtonEventDecoder.Press.DOUBLE.name &&
+                        it.number.toInt() in button.codes
+                }
+            }
+        }
+
+    private fun runButtonCycle(event: PhysicalButtonEventDecoder.Event) {
+        thread(name = "mg4-tasker-button-cycle") {
+            RuleCycle.run(this, RuleCycle.PHYSICAL_BUTTON, event.readings())
+        }
+    }
+
     /**
      * The R69 OEM apps read these exact extras from this broadcast. The action itself is
      * unprotected, so the receiver requires a signature permission from its sender.
@@ -272,15 +335,7 @@ class TaskerVehicleService : Service() {
                     intent.getBooleanExtra("longpress", false)
                 val event = physicalButtons.accept(keyCode, down, longPress) ?: return
                 AppLogger.i(TAG, "Physical button ${event.button} ${event.press}")
-                if (AppState.isAutomationEnabled(this@TaskerVehicleService)) {
-                    thread(name = "mg4-tasker-button-cycle") {
-                        RuleCycle.run(
-                            this@TaskerVehicleService,
-                            RuleCycle.PHYSICAL_BUTTON,
-                            event.readings()
-                        )
-                    }
-                }
+                if (AppState.isAutomationEnabled(this@TaskerVehicleService)) dispatchButton(event)
             }
         }
         ContextCompat.registerReceiver(

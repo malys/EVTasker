@@ -215,6 +215,7 @@
     <string name="diag_reason_not_readable">not readable on this car</string>
     <string name="diag_reason_layer">vehicle layer not ready</string>
     <string name="diag_reason_firmware">not supported by this firmware</string>
+    <string name="diag_reason_write_unproven">effect never confirmed on this car</string>
     <string name="diag_reason_no_evprofile">EVProfile not installed</string>
     <string name="diag_reason_no_tts">no speech engine</string>
     <string name="diag_reason_notifications">notifications turned off</string>
@@ -284,6 +285,7 @@
     <string name="editor_trigger">Runs at</string>
     <string name="physical_press_short">Short press</string>
     <string name="physical_press_long">Long press</string>
+    <string name="physical_press_double">Double press</string>
     <string name="physical_button_label">BUTTON</string>
     <string name="physical_event_label">PRESS TYPE</string>
     <string name="value_editor_instruction">Choose the value to use in this rule.</string>
@@ -328,4 +330,23 @@
     <string name="about_version_unknown">unknown</string>
     <string name="about_close">Close</string>
     <string name="value_no_rules">No saved rule to point at</string>
+    <string name="diag_glass_probe">Probe the windows</string>
+    <string name="diag_glass_unknown">Windows: which command moves the glass is unknown on this car — the window actions are refused.</string>
+    <string name="diag_glass_proven">Windows: command %1$d opens, %2$d closes (probed %3$s). The window actions are available.</string>
+    <string name="diag_glass_warn_title">Probe the windows?</string>
+    <string name="diag_glass_warn">The driver window will open and close on its own, several times, over about a minute.\n\nCheck first: nobody has a hand or an arm on the glass, no animal, no child, and no rain. The car must stay stopped with the ignition on — the probe stops itself if it starts moving.\n\nNothing else can settle which command moves the glass: the service accepts every value and reports success either way.</string>
+    <string name="diag_glass_warn_go">Probe</string>
+    <string name="diag_glass_running">Probing the windows…</string>
+    <string name="diag_glass_result_title">Window probe</string>
+    <string name="diag_glass_result_proven">Command %1$d opens, %2$d closes.\n\nThe window actions now work on this car.</string>
+    <string name="diag_glass_result_not_stopped">Stopped: the car was moving, or its speed could not be read.</string>
+    <string name="diag_glass_result_ignition">Stopped: the ignition is not on, so the windows have no power.</string>
+    <string name="diag_glass_result_unreadable">Stopped: the window position stopped answering, so nothing could be proven.</string>
+    <string name="diag_glass_result_nothing">No command moved the glass. The window actions stay refused — which is the honest answer, not a failure of the probe.</string>
+    <string name="diag_glass_result_one_way">Only one direction was found (%1$s). Both are needed, so the window actions stay refused.</string>
+    <string name="diag_glass_result_open">opens with command %1$d</string>
+    <string name="diag_glass_result_close">closes with command %1$d</string>
+    <string name="diag_glass_result_left_open">⚠️ The window was left open — close it by hand.</string>
+    <string name="diag_glass_result_steps">Commands tried: %1$s</string>
+    <string name="diag_glass_forget">Forget</string>
 </resources>

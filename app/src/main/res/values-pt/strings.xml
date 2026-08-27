@@ -198,6 +198,7 @@
     <string name="diag_reason_not_readable">ilegível neste carro</string>
     <string name="diag_reason_layer">camada do veículo não pronta</string>
     <string name="diag_reason_firmware">não suportada por este firmware</string>
+    <string name="diag_reason_write_unproven">efeito nunca confirmado neste carro</string>
     <string name="diag_reason_no_evprofile">EVProfile não instalado</string>
     <string name="diag_reason_no_tts">sem motor de voz</string>
     <string name="diag_reason_notifications">notificações desativadas</string>
@@ -267,6 +268,7 @@
     <string name="editor_trigger">Executa</string>
     <string name="physical_press_short">Pressão curta</string>
     <string name="physical_press_long">Pressão longa</string>
+    <string name="physical_press_double">Duplo toque</string>
     <string name="physical_button_label">BOTÃO</string>
     <string name="physical_event_label">TIPO DE PRESSÃO</string>
     <string name="value_editor_instruction">Escolha o valor a usar nesta regra.</string>
@@ -307,4 +309,23 @@
     <string name="about_version_unknown">desconhecida</string>
     <string name="about_close">Fechar</string>
     <string name="value_no_rules">Nenhuma regra guardada para indicar</string>
+    <string name="diag_glass_probe">Sondar os vidros</string>
+    <string name="diag_glass_unknown">Vidros: qual comando move o vidro é desconhecido neste carro — as ações de vidro são recusadas.</string>
+    <string name="diag_glass_proven">Vidros: o comando %1$d abre, %2$d fecha (sondado em %3$s). As ações de vidro estão disponíveis.</string>
+    <string name="diag_glass_warn_title">Sondar os vidros?</string>
+    <string name="diag_glass_warn">O vidro do condutor vai abrir e fechar sozinho, várias vezes, durante cerca de um minuto.\n\nVerifique antes: nenhuma mão ou braço no vidro, nenhum animal, nenhuma criança, nada de chuva. O carro tem de ficar parado com a ignição ligada — a sondagem interrompe-se sozinha se começar a andar.\n\nNada mais consegue estabelecer que comando move o vidro: o serviço aceita qualquer valor e responde sucesso em todos os casos.</string>
+    <string name="diag_glass_warn_go">Sondar</string>
+    <string name="diag_glass_running">A sondar os vidros…</string>
+    <string name="diag_glass_result_title">Sondagem dos vidros</string>
+    <string name="diag_glass_result_proven">O comando %1$d abre, %2$d fecha.\n\nAs ações de vidro passam a funcionar neste carro.</string>
+    <string name="diag_glass_result_not_stopped">Interrompido: o carro estava em andamento, ou a velocidade não pôde ser lida.</string>
+    <string name="diag_glass_result_ignition">Interrompido: a ignição não está ligada, os vidros não têm corrente.</string>
+    <string name="diag_glass_result_unreadable">Interrompido: a posição do vidro deixou de responder, nada pôde ser provado.</string>
+    <string name="diag_glass_result_nothing">Nenhum comando moveu o vidro. As ações de vidro continuam recusadas — é a resposta honesta, não uma falha da sondagem.</string>
+    <string name="diag_glass_result_one_way">Só foi encontrado um sentido (%1$s). São precisos os dois, as ações de vidro continuam recusadas.</string>
+    <string name="diag_glass_result_open">abre com o comando %1$d</string>
+    <string name="diag_glass_result_close">fecha com o comando %1$d</string>
+    <string name="diag_glass_result_left_open">⚠️ O vidro ficou aberto — feche-o à mão.</string>
+    <string name="diag_glass_result_steps">Comandos tentados: %1$s</string>
+    <string name="diag_glass_forget">Esquecer</string>
 </resources>

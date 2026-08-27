@@ -11,9 +11,12 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.evsuite.hardware.GlassEvidence
+import com.evsuite.hardware.GlassProbe
 import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.ConditionType
 import com.evsuite.hardware.catalog.ValueKind
+import com.evsuite.hardware.saic.SaicVehicleControl
 import com.evsuite.tasker.R
 import com.evsuite.tasker.bridge.BridgeContract
 import com.evsuite.tasker.databinding.FragmentDiagnosticBinding
@@ -24,6 +27,9 @@ import com.evsuite.tasker.debug.DiagnosticProbe
 import com.evsuite.tasker.debug.Diagnostics
 import com.evsuite.tasker.store.SupportChecker
 import com.evsuite.tasker.store.SupportStore
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import java.text.DateFormat
+import java.util.Date
 import java.text.DateFormatSymbols
 import kotlin.concurrent.thread
 
@@ -58,8 +64,10 @@ class DiagnosticFragment : Fragment() {
         binding.refreshButton.setOnClickListener { load() }
         binding.exportButton.setOnClickListener { export() }
         binding.checkSupportButton.setOnClickListener { checkSupport() }
+        binding.glassProbeButton.setOnClickListener { confirmGlassProbe() }
         load()
         showSupport()
+        showGlass()
     }
 
     /** Shows the stored support summary; the check itself runs off the main thread. */
@@ -90,6 +98,116 @@ class DiagnosticFragment : Fragment() {
                 if (_binding != null) { showSupport(); render(fresh) }
             }
         }
+    }
+
+    // ── The glass ────────────────────────────────────────────────────────────
+    //
+    // Which of the eight commands raises a window is written down nowhere, no head-unit
+    // application sends one, and the vendor service reports success whatever it is given —
+    // so the window actions ship refused (ActionType.writeProven). That is a statement about
+    // what the project knows, and it can only ever be settled on a car. This is the car.
+
+    private fun showGlass() {
+        val proof = GlassEvidence.proof
+        binding.glassStatus.text = if (proof == null) {
+            getString(R.string.diag_glass_unknown)
+        } else {
+            getString(
+                R.string.diag_glass_proven,
+                proof.openCommand,
+                proof.closeCommand,
+                DateFormat.getDateInstance(DateFormat.MEDIUM)
+                    .format(Date(proof.observedAtMillis))
+            )
+        }
+        // Once proven there is nothing left to probe; what is left is the way back out, for a
+        // proof that turns out to be wrong on this car.
+        binding.glassProbeButton.setText(
+            if (proof == null) R.string.diag_glass_probe else R.string.diag_glass_forget
+        )
+    }
+
+    /**
+     * The window moves on its own for about a minute, so this asks first — and says what to
+     * check before it does, because the danger is a hand on the glass, not a wrong setting.
+     */
+    private fun confirmGlassProbe() {
+        if (GlassEvidence.proof != null) {
+            GlassEvidence.clear(requireContext())
+            showGlass()
+            load()
+            return
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.diag_glass_warn_title)
+            .setMessage(R.string.diag_glass_warn)
+            .setNegativeButton(R.string.editor_cancel, null)
+            .setPositiveButton(R.string.diag_glass_warn_go) { _, _ -> runGlassProbe() }
+            .show()
+    }
+
+    private fun runGlassProbe() {
+        binding.glassStatus.setText(R.string.diag_glass_running)
+        binding.glassProbeButton.isEnabled = false
+        val appCtx = requireContext().applicationContext
+        // Eight commands, three seconds of travel each, twice: a minute of blocking work that
+        // has no business anywhere near the main thread.
+        thread(name = "mg4-tasker-glass-probe") {
+            val result = GlassProbe.run(SaicVehicleControl.Window.DRIVER)
+            if (result.proven) {
+                GlassEvidence.record(appCtx, result.openCommand!!, result.closeCommand!!)
+            }
+            Handler(Looper.getMainLooper()).post {
+                if (_binding == null) return@post
+                binding.glassProbeButton.isEnabled = true
+                showGlass()
+                showGlassResult(result)
+                // The verdict for five actions just changed; the list under it must not keep
+                // saying otherwise.
+                if (result.proven) load()
+            }
+        }
+    }
+
+    private fun showGlassResult(result: GlassProbe.Result) {
+        val body = when {
+            result.proven -> getString(
+                R.string.diag_glass_result_proven, result.openCommand, result.closeCommand
+            )
+            result.refusal == GlassProbe.Refusal.NOT_STOPPED ->
+                getString(R.string.diag_glass_result_not_stopped)
+            result.refusal == GlassProbe.Refusal.IGNITION_NOT_RUN ->
+                getString(R.string.diag_glass_result_ignition)
+            result.refusal == GlassProbe.Refusal.UNREADABLE ->
+                getString(R.string.diag_glass_result_unreadable)
+            result.refusal == GlassProbe.Refusal.ONE_DIRECTION_ONLY -> getString(
+                R.string.diag_glass_result_one_way,
+                result.openCommand?.let { getString(R.string.diag_glass_result_open, it) }
+                    ?: getString(R.string.diag_glass_result_close, result.closeCommand ?: -1)
+            )
+            else -> getString(R.string.diag_glass_result_nothing)
+        }
+        // Every command with what the glass did, so a probe that found nothing still leaves
+        // something to read rather than a bare "no".
+        val steps = result.attempts.joinToString(", ") { "${it.command}: ${it.before}→${it.after}%" }
+        val message = buildString {
+            append(body)
+            if (steps.isNotEmpty()) {
+                append("\n\n")
+                append(getString(R.string.diag_glass_result_steps, steps))
+            }
+            // A window left open outranks the verdict: it is the one thing here the driver
+            // has to act on before walking away.
+            if (result.attempts.isNotEmpty() && !result.restored) {
+                append("\n\n")
+                append(getString(R.string.diag_glass_result_left_open))
+            }
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.diag_glass_result_title)
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun load() {
@@ -305,6 +423,7 @@ class DiagnosticFragment : Fragment() {
             Diagnostics.Reason.GATE_MOVING -> R.string.verdict_moving
             Diagnostics.Reason.GATE_UNKNOWN_SPEED -> R.string.verdict_unknown_speed
             Diagnostics.Reason.UNSUPPORTED_FIRMWARE -> R.string.diag_reason_firmware
+            Diagnostics.Reason.WRITE_UNPROVEN -> R.string.diag_reason_write_unproven
             Diagnostics.Reason.NO_EVPROFILE -> R.string.diag_reason_no_evprofile
             Diagnostics.Reason.EVPROFILE_UNREACHABLE -> R.string.verdict_no_bridge
             Diagnostics.Reason.NO_TTS_ENGINE -> R.string.diag_reason_no_tts

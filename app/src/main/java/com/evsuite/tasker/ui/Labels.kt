@@ -73,9 +73,11 @@ class Labels(
                 val button = com.evsuite.hardware.PhysicalButtonEventDecoder.Button.entries
                     .firstOrNull { condition.number.toInt() in it.codes }?.name?.lowercase()?.replace('_', ' ')
                     ?: "?"
-                val press = context.getString(
-                    if (condition.text == com.evsuite.hardware.PhysicalButtonEventDecoder.Press.LONG.name)
-                        R.string.physical_press_long else R.string.physical_press_short
+                val press = ValueEditorDialog.pressLabel(
+                    context,
+                    com.evsuite.hardware.PhysicalButtonEventDecoder.Press.entries
+                        .firstOrNull { it.name == condition.text }
+                        ?: com.evsuite.hardware.PhysicalButtonEventDecoder.Press.SHORT
                 )
                 "$name : $button — $press"
             }

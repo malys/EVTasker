@@ -7,6 +7,7 @@ import com.evsuite.hardware.FirmwareSupport
 import com.evsuite.hardware.EVHardware
 import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.ConditionType
+import com.evsuite.hardware.effectProven
 import com.evsuite.tasker.util.SpeechEngines
 
 /**
@@ -56,6 +57,14 @@ object SupportChecker {
     fun supportedConditionNames(gen: FirmwareGen?): Set<String> =
         ConditionType.entries.filter { FirmwareSupport.isSupported(it, gen) }.map { it.name }.toSet()
 
+    /**
+     * [ActionType.writeProven] filters here as well as in the matrix: an unknown generation
+     * hides nothing, deliberately, and an action nobody has seen do anything must not slip
+     * back into the picker through that door.
+     */
     fun supportedActionNames(gen: FirmwareGen?): Set<String> =
-        ActionType.entries.filter { FirmwareSupport.isSupported(it, gen) }.map { it.name }.toSet()
+        ActionType.entries
+            .filter { FirmwareSupport.isSupported(it, gen) && it.effectProven }
+            .map { it.name }
+            .toSet()
 }
