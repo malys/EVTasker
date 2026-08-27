@@ -22,13 +22,32 @@ fi
 
 section=$(awk -v ver="$version" -v want_latest="$want_latest" '
   /^## \[/ {
+    if (want_latest == "1") {
+      if (latest_started && latest_has_content) {
+        printf "%s", latest_section
+        latest_emitted = 1
+        exit
+      }
+      latest_started = 1
+      latest_section = ""
+      latest_has_content = 0
+      next
+    }
     if (found) exit
-    if (want_latest == "1") { found = 1; next }
     prefix = "## [" ver "]"
     if (substr($0, 1, length(prefix)) == prefix) found = 1
     next
   }
+  want_latest == "1" && latest_started {
+    latest_section = latest_section $0 ORS
+    if ($0 !~ /^[[:space:]]*$/) latest_has_content = 1
+    next
+  }
   found { print }
+  END {
+    if (want_latest == "1" && !latest_emitted && latest_started && latest_has_content)
+      printf "%s", latest_section
+  }
 ' "$changelog")
 
 # Trim leading/trailing blank lines.
