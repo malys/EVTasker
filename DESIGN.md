@@ -84,8 +84,8 @@ components:
 
 # Design System: EVSuite
 
-Applies to **EVProfile**, **EVTasker**, **EVABRPUploader**, **EVLauncher**,
-**EVSwipe** and the shared **EVHardware** library. This file is the normative
+Applies to **EVProfile**, **EVTasker**, **EVABRPUploader**, **EVChargePilot**,
+**EVLauncher**, **EVSwipe** and the shared **EVHardware** library. This file is the normative
 source; a copy lives at the root of every suite repository and they are kept identical.
 
 ## Overview
@@ -336,6 +336,7 @@ The launcher icon is the suite's signature and the one place it is allowed to ha
 | EVProfile | `MG⁴` lockup — white letters, red superscript 4 |
 | EVTasker | A branch: one input, a condition, two outcomes |
 | EVABRPUploader | An upward arrow leaving two broadcast arcs |
+| EVChargePilot | A battery crossed by a measured energy trace |
 | EVLauncher | A four-tile grid, one tile red |
 | EVSwipe | Two chevrons and a swipe trail |
 
@@ -351,7 +352,7 @@ legible at 48px in greyscale, it is the wrong glyph.
 `app_name` holds and what the driver sees under the icon.
 
 **Repositories, modules and directories** are `EV<Word>` — no space: `EVProfile`,
-`EVTasker`, `EVABRPUploader`, `EVLauncher`, `EVSwipe`, `EVHardware`.
+`EVTasker`, `EVABRPUploader`, `EVChargePilot`, `EVLauncher`, `EVSwipe`, `EVHardware`.
 
 **Package ids** are `com.evsuite.<lowercase>`; a family shares a segment
 (`com.evsuite.launcher`, `com.evsuite.swipe`).
