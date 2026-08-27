@@ -7,6 +7,14 @@ on:
     branches: [master]
   workflow_dispatch:
 
+# One rolling pre-release means one publisher. Two pushes in quick succession raced on
+# deleting and recreating the "unstable" tag, and the loser failed at the publish step
+# with its APK already built — a red run that said nothing about the code. The older run
+# is cancelled instead, so the newest commit is always the one that gets published.
+concurrency:
+  group: unstable-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
