@@ -1,6 +1,7 @@
 package com.evsuite.tasker.vehicle
 
 import android.content.Context
+import com.evsuite.hardware.DataUsage
 import com.evsuite.hardware.FirmwareInfo
 import com.evsuite.hardware.EVHardware
 import com.evsuite.hardware.catalog.SnapshotKeys
@@ -116,6 +117,9 @@ object VehicleReader {
             putIfReadable(SnapshotKeys.KEY_ELK_MODE, EVHardware.getElkMode())
             putIfReadable(SnapshotKeys.KEY_ELK_SENSITIVITY, EVHardware.getElkSensitivity())
             EVHardware.tsrOnOrNull()?.let { put(SnapshotKeys.KEY_TSR, it) }
+            EVHardware.isEscOn()?.let { put(SnapshotKeys.KEY_ESC, it) }
+            EVHardware.isDrowsinessOn()?.let { put(SnapshotKeys.KEY_DROWSINESS, it) }
+            putIfReadable(SnapshotKeys.KEY_DROWSINESS_SENSITIVITY, EVHardware.getDrowsinessSensitivity())
             EVHardware.energySavingOnOrNull()?.let { put(SnapshotKeys.KEY_ENERGY_SAVING, it) }
             putIfReadable(SnapshotKeys.KEY_ACC_TJA_MODE, EVHardware.getAccTjaMode())
             putIfReadable(SnapshotKeys.KEY_LIMITER_MODE, EVHardware.getSpeedLimiterMode())
@@ -268,6 +272,12 @@ object VehicleReader {
         PlatformContext.mediaPlaying(context)?.let { put(SnapshotKeys.KEY_MEDIA_PLAYING, it) }
         PlatformContext.inCall(context)?.let { put(SnapshotKeys.KEY_IN_CALL, it) }
         PlatformContext.wifiSsid(context)?.let { put(SnapshotKeys.KEY_WIFI_SSID, it) }
+        // Absent rather than zero when the permission is missing: a car that cannot report its
+        // traffic must not read as one that used none.
+        DataUsage.megabytesSince(context, DataUsage.startOfDay())
+            ?.let { put(SnapshotKeys.KEY_DATA_TODAY_MB, it) }
+        DataUsage.megabytesSince(context, DataUsage.startOfMonth())
+            ?.let { put(SnapshotKeys.KEY_DATA_MONTH_MB, it) }
     }
 
     /** EVHardware getters return -1 when the layer is not ready: omit rather than store it. */

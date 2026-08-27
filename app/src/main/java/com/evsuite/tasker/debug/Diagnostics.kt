@@ -4,6 +4,7 @@ import com.evsuite.hardware.FirmwareGen
 import com.evsuite.hardware.FirmwareSupport
 import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.ConditionType
+import com.evsuite.hardware.effectProven
 import com.evsuite.tasker.bridge.BridgeContract
 import com.evsuite.tasker.engine.ActionCompatibility
 import com.evsuite.tasker.engine.ConditionEvaluator
@@ -26,6 +27,12 @@ import com.evsuite.tasker.model.Snapshot
  * sticks would change the car under the driver. For vehicle writes, "OK" therefore means
  * "everything the app checks before writing passes"; the write itself is the only step left,
  * and it is the one the history reports afterwards.
+ *
+ * That last step is only a promise worth making where the write is known to do something.
+ * Where it is not — [ActionType.writeProven] `= false` — the entry is blocked here
+ * ([Reason.WRITE_UNPROVEN]) and dropped from the picker rather than shown OK, because a
+ * service that accepts a value and silently drops it passes every check this screen can
+ * make. OK must mean the action works, not that nothing stood in its way.
  *
  * Pure by design — no Android, no hardware. The context is collected once by
  * [DiagnosticProbe] and handed in as [Capabilities], which is what makes every verdict here
@@ -70,6 +77,11 @@ object Diagnostics {
         GATE_UNKNOWN_SPEED,
         /** This firmware generation is not in the entry's `@SupportedOn` set. */
         UNSUPPORTED_FIRMWARE,
+        /**
+         * The write exists and would be accepted, but nothing establishes that it does
+         * anything — [com.evsuite.hardware.catalog.ActionType.writeProven].
+         */
+        WRITE_UNPROVEN,
         NO_EVPROFILE,
         EVPROFILE_UNREACHABLE,
         NO_TTS_ENGINE,
@@ -111,6 +123,9 @@ object Diagnostics {
 
     private val STRUCTURAL = setOf(
         Reason.UNSUPPORTED_FIRMWARE,
+        // Not about the car but about what the project knows about it, which changes only
+        // with an app update — never within a drive, which is what this set is really for.
+        Reason.WRITE_UNPROVEN,
         Reason.NO_VENDOR_SERVICE,
         Reason.NO_NAVIGATION_APP,
         Reason.NO_TTS_ENGINE,
@@ -200,12 +215,18 @@ object Diagnostics {
      * A firmware the matrix excludes blocks the action outright — unlike a condition there is
      * no read to fall back on, and the only way to find out would be to write to the car.
      * Failing closed is the same choice the standstill gate makes.
+     *
+     * An action whose write was never shown to do anything
+     * ([ActionType.writeProven]) is blocked for the same reason, one step earlier: OK on this
+     * screen is a promise that the action works, and a write the service accepts and drops
+     * would break that promise while every check above it passed.
      */
     fun actions(caps: Capabilities, gen: FirmwareGen?): List<Entry> =
         ActionType.entries.map { type ->
-            val hidden = !ActionCompatibility.isConfirmed(type, gen)
+            val hidden = !ActionCompatibility.isConfirmed(type, gen) || !type.effectProven
             val reason = when {
-                hidden -> Reason.UNSUPPORTED_FIRMWARE
+                !ActionCompatibility.isConfirmed(type, gen) -> Reason.UNSUPPORTED_FIRMWARE
+                !type.effectProven -> Reason.WRITE_UNPROVEN
                 else -> blockingReason(type, caps)
             }
             Entry(

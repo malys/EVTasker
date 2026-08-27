@@ -198,6 +198,7 @@
     <string name="diag_reason_not_readable">illeggibile su questa auto</string>
     <string name="diag_reason_layer">livello veicolo non pronto</string>
     <string name="diag_reason_firmware">non supportata da questo firmware</string>
+    <string name="diag_reason_write_unproven">effetto mai riscontrato su quest’auto</string>
     <string name="diag_reason_no_evprofile">EVProfile non installato</string>
     <string name="diag_reason_no_tts">nessun motore vocale</string>
     <string name="diag_reason_notifications">notifiche disattivate</string>
@@ -267,6 +268,7 @@
     <string name="editor_trigger">Si attiva</string>
     <string name="physical_press_short">Pressione breve</string>
     <string name="physical_press_long">Pressione lunga</string>
+    <string name="physical_press_double">Doppio tocco</string>
     <string name="physical_button_label">PULSANTE</string>
     <string name="physical_event_label">TIPO DI PRESSIONE</string>
     <string name="value_editor_instruction">Scegli il valore da usare in questa regola.</string>
@@ -307,4 +309,23 @@
     <string name="about_version_unknown">sconosciuta</string>
     <string name="about_close">Chiudi</string>
     <string name="value_no_rules">Nessuna regola salvata da indicare</string>
+    <string name="diag_glass_probe">Sondare i finestrini</string>
+    <string name="diag_glass_unknown">Finestrini: quale comando muove il vetro è ignoto su quest\'auto — le azioni finestrino sono rifiutate.</string>
+    <string name="diag_glass_proven">Finestrini: il comando %1$d apre, %2$d chiude (sondato il %3$s). Le azioni finestrino sono disponibili.</string>
+    <string name="diag_glass_warn_title">Sondare i finestrini?</string>
+    <string name="diag_glass_warn">Il finestrino del conducente si aprirà e si richiuderà da solo, più volte, per circa un minuto.\n\nControllare prima: nessuna mano o braccio sul vetro, nessun animale, nessun bambino, niente pioggia. L\'auto deve restare ferma con il quadro acceso — il sondaggio si interrompe da solo se riparte.\n\nNient\'altro può stabilire quale comando muove il vetro: il servizio accetta qualsiasi valore e risponde successo in ogni caso.</string>
+    <string name="diag_glass_warn_go">Sonda</string>
+    <string name="diag_glass_running">Sondaggio dei finestrini…</string>
+    <string name="diag_glass_result_title">Sonda finestrini</string>
+    <string name="diag_glass_result_proven">Il comando %1$d apre, %2$d chiude.\n\nLe azioni finestrino ora funzionano su quest\'auto.</string>
+    <string name="diag_glass_result_not_stopped">Interrotto: l\'auto era in marcia, o la sua velocità era illeggibile.</string>
+    <string name="diag_glass_result_ignition">Interrotto: il quadro non è acceso, i finestrini non sono alimentati.</string>
+    <string name="diag_glass_result_unreadable">Interrotto: la posizione del finestrino ha smesso di rispondere, non si è potuto provare nulla.</string>
+    <string name="diag_glass_result_nothing">Nessun comando ha mosso il vetro. Le azioni finestrino restano rifiutate — è la risposta onesta, non un fallimento della sonda.</string>
+    <string name="diag_glass_result_one_way">Trovato un solo verso (%1$s). Servono entrambi, le azioni finestrino restano rifiutate.</string>
+    <string name="diag_glass_result_open">apre con il comando %1$d</string>
+    <string name="diag_glass_result_close">chiude con il comando %1$d</string>
+    <string name="diag_glass_result_left_open">⚠️ Il finestrino è rimasto aperto — chiuderlo a mano.</string>
+    <string name="diag_glass_result_steps">Comandi provati: %1$s</string>
+    <string name="diag_glass_forget">Dimentica</string>
 </resources>

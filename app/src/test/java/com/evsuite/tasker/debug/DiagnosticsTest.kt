@@ -304,7 +304,10 @@ class DiagnosticsTest {
             Diagnostics.Reason.NO_NAVIGATION_APP,
             Diagnostics.Reason.NO_TTS_ENGINE,
             Diagnostics.Reason.NO_EVPROFILE,
-            Diagnostics.Reason.NOT_READABLE
+            Diagnostics.Reason.NOT_READABLE,
+            // Not about the car, but it outlives every drive: only an app update carrying
+            // the evidence can change it, so the picker must not keep offering the entry.
+            Diagnostics.Reason.WRITE_UNPROVEN
         )
         val transient = listOf(
             Diagnostics.Reason.NONE,
@@ -342,8 +345,56 @@ class DiagnosticsTest {
             "every hidden action must be blocked",
             excluded.all {
                 it.status == Diagnostics.Status.BLOCKED &&
-                    it.reason == Diagnostics.Reason.UNSUPPORTED_FIRMWARE
+                    it.reason in setOf(
+                        Diagnostics.Reason.UNSUPPORTED_FIRMWARE,
+                        Diagnostics.Reason.WRITE_UNPROVEN
+                    )
             }
+        )
+    }
+
+    /**
+     * The point of the whole screen: OK is a promise that the action works.
+     *
+     * A write nobody has seen do anything passes every check made before writing — the
+     * firmware lists the property, the vendor service is bound, the car is stopped — and
+     * would therefore be reported OK on the strength of checks that say nothing about it.
+     */
+    @Test
+    fun `an unproven write is never reported OK`() {
+        val everything = allowed.copy(
+            climateService = true, chargingService = true,
+            radioService = true, phoneService = true,
+            messagingPhone = true, navigationApp = true
+        )
+
+        val entries = Diagnostics.actions(everything, FirmwareGen.SWI68)
+
+        val unproven = ActionType.entries.filter { !it.writeProven }.map { it.name }
+        assertTrue("the glass is the case this exists for", "SET_WINDOWS" in unproven)
+        unproven.forEach {
+            assertEquals(Diagnostics.Reason.WRITE_UNPROVEN, entry(entries, it).reason)
+            assertEquals(Diagnostics.Status.BLOCKED, entry(entries, it).status)
+            assertTrue("$it must not be offered in the editor", entry(entries, it).hidden)
+        }
+        assertTrue(
+            "no OK action may be unproven",
+            entries.filter { it.status == Diagnostics.Status.OK }.none { it.name in unproven }
+        )
+    }
+
+    /**
+     * Order matters between the two structural verdicts: a firmware that does not carry the
+     * property at all is the more specific answer, and the one that tells the reader that
+     * proving the write on *this* car would not help.
+     */
+    @Test
+    fun `an unproven write on an excluded firmware still blames the firmware`() {
+        val entries = Diagnostics.actions(allowed, FirmwareGen.SWI69)
+
+        assertEquals(
+            Diagnostics.Reason.UNSUPPORTED_FIRMWARE,
+            entry(entries, "SET_WINDOWS").reason
         )
     }
 }

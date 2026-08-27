@@ -198,6 +198,7 @@
     <string name="diag_reason_not_readable">ilegible en este coche</string>
     <string name="diag_reason_layer">capa del vehículo no lista</string>
     <string name="diag_reason_firmware">no compatible con este firmware</string>
+    <string name="diag_reason_write_unproven">efecto nunca comprobado en este coche</string>
     <string name="diag_reason_no_evprofile">EVProfile no instalado</string>
     <string name="diag_reason_no_tts">sin motor de voz</string>
     <string name="diag_reason_notifications">notificaciones desactivadas</string>
@@ -267,6 +268,7 @@
     <string name="editor_trigger">Se ejecuta</string>
     <string name="physical_press_short">Pulsación corta</string>
     <string name="physical_press_long">Pulsación larga</string>
+    <string name="physical_press_double">Doble pulsación</string>
     <string name="physical_button_label">BOTÓN</string>
     <string name="physical_event_label">TIPO DE PULSACIÓN</string>
     <string name="value_editor_instruction">Elija el valor que se usará en esta regla.</string>
@@ -307,4 +309,23 @@
     <string name="about_version_unknown">desconocida</string>
     <string name="about_close">Cerrar</string>
     <string name="value_no_rules">No hay ninguna regla guardada a la que apuntar</string>
+    <string name="diag_glass_probe">Sondear las ventanillas</string>
+    <string name="diag_glass_unknown">Ventanillas: qué orden mueve el cristal se desconoce en este coche — las acciones de ventanilla se rechazan.</string>
+    <string name="diag_glass_proven">Ventanillas: la orden %1$d abre, %2$d cierra (sondeado el %3$s). Las acciones de ventanilla están disponibles.</string>
+    <string name="diag_glass_warn_title">¿Sondear las ventanillas?</string>
+    <string name="diag_glass_warn">La ventanilla del conductor se abrirá y cerrará sola, varias veces, durante alrededor de un minuto.\n\nCompruebe antes: ninguna mano ni brazo en el cristal, ningún animal, ningún niño, nada de lluvia. El coche debe permanecer parado y con el contacto puesto — el sondeo se detiene solo si empieza a moverse.\n\nNada más puede establecer qué orden mueve el cristal: el servicio acepta cualquier valor y responde éxito en todos los casos.</string>
+    <string name="diag_glass_warn_go">Sondear</string>
+    <string name="diag_glass_running">Sondeando las ventanillas…</string>
+    <string name="diag_glass_result_title">Sondeo de ventanillas</string>
+    <string name="diag_glass_result_proven">La orden %1$d abre, %2$d cierra.\n\nLas acciones de ventanilla ya funcionan en este coche.</string>
+    <string name="diag_glass_result_not_stopped">Interrumpido: el coche estaba en marcha, o su velocidad no se pudo leer.</string>
+    <string name="diag_glass_result_ignition">Interrumpido: el contacto no está puesto, las ventanillas no tienen corriente.</string>
+    <string name="diag_glass_result_unreadable">Interrumpido: la posición de la ventanilla dejó de responder, no se pudo probar nada.</string>
+    <string name="diag_glass_result_nothing">Ninguna orden movió el cristal. Las acciones de ventanilla siguen rechazadas — es la respuesta honesta, no un fallo del sondeo.</string>
+    <string name="diag_glass_result_one_way">Solo se encontró un sentido (%1$s). Hacen falta los dos, las acciones de ventanilla siguen rechazadas.</string>
+    <string name="diag_glass_result_open">abre con la orden %1$d</string>
+    <string name="diag_glass_result_close">cierra con la orden %1$d</string>
+    <string name="diag_glass_result_left_open">⚠️ La ventanilla se quedó abierta — ciérrela a mano.</string>
+    <string name="diag_glass_result_steps">Órdenes probadas: %1$s</string>
+    <string name="diag_glass_forget">Olvidar</string>
 </resources>

@@ -4,6 +4,76 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The Diagnostic screen can now settle the window actions on your own car.** "Probe the
+  windows" sends each of the eight glass commands to the driver's window and reads the
+  position back between each, which is the only thing that can establish what they do — the
+  vendor service accepts every value and reports success either way. It asks first, says what
+  to check before the glass starts moving on its own, refuses to start unless the car is
+  stopped with the ignition on, re-checks that before **every** command, and closes the window
+  again afterwards or tells you it could not. What it observes unlocks the five window actions
+  on that car alone, and is forgotten when the firmware generation changes. Nothing is sent
+  anywhere: the finding stays on the head unit.
+- **Double press on the steering buttons.** A third choice beside short and long, on every
+  button the car reports. A single press is held back for the length of the double-tap window
+  **only when a rule is actually waiting on that button's double** — otherwise every button in
+  the car would feel slow to serve a rule nobody wrote.
+- **Two conditions on the head unit's data use: today, and this month.** Android's own
+  counters, the ones the Settings screen shows. Without the permission they report unavailable
+  rather than zero, so a rule never reads a missing permission as a quiet month.
+- **"Media volume, step"** — moves the volume by a number of steps instead of setting one, so
+  a rule can turn it down without discarding what the driver chose.
+- **Three ADAS actions: stability control (ESC), the drowsiness warning, and its
+  sensitivity.** ESC carries a refusal of its own beyond the standstill gate — it will not act
+  until the ignition is known to be in RUN, because the write is a toggle driven by a reading
+  that is not yet true when the car is only half awake, and acting on it would turn ESC off
+  while reporting that it turned it on. A rule that wants it off is honoured a moment later
+  instead.
+- **Climate rules now work on the A9 firmwares (SWI69, SWI131, SWI132).** Climate power, cabin
+  temperature, A/C, AUTO, recirculation, fan level and both defrosters were offered on
+  SWI68/SWI165 alone, because the vendor service behind them does not exist on A9 — on cars
+  whose own HVAC screen works perfectly. EVHardware reaches those through `carapi` instead.
+  ECON and the passenger's own target stay unavailable there: nothing on that platform exposes
+  them.
+- **"Next radio station" and "Previous radio station".** The only radio actions that reach a
+  **DAB** station: tuning takes a frequency, and a DAB service is addressed by ensemble and
+  service id, so there is none to type. Stepping asks the tuner for neither and works on AM,
+  FM and DAB alike.
+
+### Fixed
+
+- **"Media control" could change the audio source instead of skipping a track.** It sent an
+  Android media key, and this head unit publishes one media session
+  (`com.android.bluetooth`): the key reached Bluetooth, woke a phone that was not playing and
+  took the audio away from the radio. It now goes through `SaicMediaPlayer`, which asks the
+  vendor service which source owns the audio and commands that source's own player, and
+  reports "nothing playing" rather than a success when no player will take the command. Saved
+  rules are unchanged — the stored value is still the Android key code.
+
+
+- **The window actions failed three times in a row and the Diagnostic screen called them
+  ready.** Nothing establishes what the eight glass commands do — the vendor service accepts
+  the value and drops it in silence — so the write could only ever report a success the car
+  had not performed, or, for a value left over from the percentage scale the actions carried
+  before 2.5.0, an error the engine then retried three times with backoff. Neither is an
+  honest answer, so the actions are now declared as having no established effect
+  (`ActionType.writeProven`): the Diagnostic screen blocks them with *effect never confirmed
+  on this car*, the rule editor stops listing them, and a rule that still names one — imported,
+  or written before this version — is refused once as unsupported instead of retried. The four
+  window readings are untouched: the car reports a position in percent and that read is
+  ground truth. Send a command from a debug build and watch the position change, and the
+  actions come back.
+
+### Changed
+
+- **The Diagnostic screen's promise is now the whole promise.** *OK* used to mean "every check
+  the app makes before writing passes", which said nothing about writes the vehicle accepts
+  and ignores. An entry whose effect is not established is blocked there and dropped from the
+  editor, so an action offered in a rule is an action known to do something.
+
 ## [2.5.0] - 2026-08-26
 
 ### Fixed

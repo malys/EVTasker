@@ -42,6 +42,22 @@
     <!-- Switching the radio itself on or off, for the "Bluetooth" action. Only that action
          uses it; without it the action reports unsupported and nothing else changes. -->
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <!-- Reads how much data the head unit's own connection has carried, for the two "data
+         used" conditions. Android's counters, the ones the Settings screen shows; nothing is
+         attributed to an app and nothing leaves the car. Signature-level, so without it those
+         two conditions report unavailable and nothing else changes. -->
+    <uses-permission
+        android:name="android.permission.READ_NETWORK_USAGE_HISTORY"
+        tools:ignore="ProtectedPermissions" />
+
+    <!-- Enumerating the head unit's media sessions, for the "media control" action on the
+         A9 generations: they have no SAIC media service, so the framework's sessions are the
+         only way to reach the player that is actually playing. Granted by the platform
+         signature; without it that action falls back to the media key. -->
+    <uses-permission
+        android:name="android.permission.MEDIA_CONTENT_CONTROL"
+        tools:ignore="ProtectedPermissions" />
+
     <!-- Wi-Fi: the network name for the "Wi-Fi network" condition, and the switch for the
          "Wi-Fi" action. The name is read, never sent anywhere. -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

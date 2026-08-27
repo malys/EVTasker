@@ -198,6 +198,7 @@
     <string name="diag_reason_not_readable">in diesem Fahrzeug nicht lesbar</string>
     <string name="diag_reason_layer">Fahrzeugebene nicht bereit</string>
     <string name="diag_reason_firmware">von dieser Firmware nicht unterstützt</string>
+    <string name="diag_reason_write_unproven">Wirkung an diesem Fahrzeug nie bestätigt</string>
     <string name="diag_reason_no_evprofile">EVProfile nicht installiert</string>
     <string name="diag_reason_no_tts">keine Sprachausgabe verfügbar</string>
     <string name="diag_reason_notifications">Benachrichtigungen deaktiviert</string>
@@ -267,6 +268,7 @@
     <string name="editor_trigger">Läuft bei</string>
     <string name="physical_press_short">Kurzer Druck</string>
     <string name="physical_press_long">Langer Druck</string>
+    <string name="physical_press_double">Doppeltippen</string>
     <string name="physical_button_label">TASTE</string>
     <string name="physical_event_label">DRUCKART</string>
     <string name="value_editor_instruction">Wählen Sie den Wert für diese Regel.</string>
@@ -307,4 +309,23 @@
     <string name="about_version_unknown">unbekannt</string>
     <string name="about_close">Schließen</string>
     <string name="value_no_rules">Keine gespeicherte Regel vorhanden</string>
+    <string name="diag_glass_probe">Fenster testen</string>
+    <string name="diag_glass_unknown">Fenster: welcher Befehl die Scheibe bewegt, ist auf diesem Auto unbekannt — die Fensteraktionen werden abgelehnt.</string>
+    <string name="diag_glass_proven">Fenster: Befehl %1$d öffnet, %2$d schließt (getestet am %3$s). Die Fensteraktionen sind verfügbar.</string>
+    <string name="diag_glass_warn_title">Fenster testen?</string>
+    <string name="diag_glass_warn">Das Fahrerfenster öffnet und schließt sich mehrfach von selbst, etwa eine Minute lang.\n\nVorher prüfen: keine Hand oder kein Arm an der Scheibe, kein Tier, kein Kind, kein Regen. Das Auto muss stehen, Zündung an — der Test bricht selbst ab, wenn es losfährt.\n\nNichts anderes kann klären, welcher Befehl die Scheibe bewegt: der Dienst nimmt jeden Wert an und meldet in jedem Fall Erfolg.</string>
+    <string name="diag_glass_warn_go">Testen</string>
+    <string name="diag_glass_running">Fenster werden getestet…</string>
+    <string name="diag_glass_result_title">Fenstertest</string>
+    <string name="diag_glass_result_proven">Befehl %1$d öffnet, %2$d schließt.\n\nDie Fensteraktionen funktionieren jetzt auf diesem Auto.</string>
+    <string name="diag_glass_result_not_stopped">Abgebrochen: das Auto fuhr, oder die Geschwindigkeit war nicht lesbar.</string>
+    <string name="diag_glass_result_ignition">Abgebrochen: die Zündung ist aus, die Fenster haben keinen Strom.</string>
+    <string name="diag_glass_result_unreadable">Abgebrochen: die Fensterposition antwortete nicht mehr, es konnte nichts bewiesen werden.</string>
+    <string name="diag_glass_result_nothing">Kein Befehl hat die Scheibe bewegt. Die Fensteraktionen bleiben abgelehnt — das ist die ehrliche Antwort, kein Fehler des Tests.</string>
+    <string name="diag_glass_result_one_way">Nur eine Richtung gefunden (%1$s). Beide sind nötig, die Fensteraktionen bleiben abgelehnt.</string>
+    <string name="diag_glass_result_open">öffnet mit Befehl %1$d</string>
+    <string name="diag_glass_result_close">schließt mit Befehl %1$d</string>
+    <string name="diag_glass_result_left_open">⚠️ Das Fenster blieb offen — bitte von Hand schließen.</string>
+    <string name="diag_glass_result_steps">Getestete Befehle: %1$s</string>
+    <string name="diag_glass_forget">Verwerfen</string>
 </resources>

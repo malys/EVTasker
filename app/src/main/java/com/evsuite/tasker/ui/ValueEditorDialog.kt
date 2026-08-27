@@ -54,9 +54,10 @@ object ValueEditorDialog {
             val presses = com.evsuite.hardware.PhysicalButtonEventDecoder.Press.entries
             binding.physicalButtonBlock.visibility = View.VISIBLE
             binding.physicalButtonSpinner.adapter = simpleAdapter(context, buttons.map { buttonLabel(it.name) })
-            binding.physicalPressSpinner.adapter = simpleAdapter(
-                context, listOf(context.getString(R.string.physical_press_short), context.getString(R.string.physical_press_long))
-            )
+            // Built from the enum rather than from a hand-written list: the two drifted apart
+            // once already, and a press the decoder can emit but the picker cannot offer is a
+            // rule nobody can write.
+            binding.physicalPressSpinner.adapter = simpleAdapter(context, presses.map { pressLabel(context, it) })
             binding.physicalButtonSpinner.setSelection(
                 buttons.indexOfFirst { condition.number.toInt() in it.codes }.coerceAtLeast(0)
             )
@@ -804,6 +805,17 @@ object ValueEditorDialog {
             .distinctBy { it.value }
             .sortedBy { it.label }
     }
+
+    internal fun pressLabel(
+        context: android.content.Context,
+        press: com.evsuite.hardware.PhysicalButtonEventDecoder.Press,
+    ): String = context.getString(
+        when (press) {
+            com.evsuite.hardware.PhysicalButtonEventDecoder.Press.LONG -> R.string.physical_press_long
+            com.evsuite.hardware.PhysicalButtonEventDecoder.Press.DOUBLE -> R.string.physical_press_double
+            else -> R.string.physical_press_short
+        }
+    )
 
     private fun simpleAdapter(context: Context, items: List<String>) =
         ArrayAdapter(context, R.layout.item_value_choice, items).apply {
