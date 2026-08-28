@@ -265,14 +265,43 @@ class DiagnosticsTest {
     }
 
     @Test
-    fun `radio tuning requires the same vendor service as radio playback`() {
+    fun `the whole tuner family answers for one vendor service`() {
+        // Station stepping used to answer for the AOSP car layer, which is a different
+        // question: the layer can be up with no radio service in sight, and the screen said
+        // "layer not ready" for a radio that was simply absent.
+        val radio = listOf(
+            "PLAY_RADIO", "PAUSE_RADIO", "RADIO_PLAY_PAUSE", "TUNE_RADIO",
+            "RADIO_NEXT_STATION", "RADIO_PREV_STATION", "OPEN_RADIO_SCREEN"
+        )
+
         val none = Diagnostics.actions(allowed, FirmwareGen.SWI68)
-        assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "PLAY_RADIO").reason)
-        assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "TUNE_RADIO").reason)
+        radio.forEach {
+            assertEquals("$it must blame the radio service", Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, it).reason)
+        }
 
         val bound = Diagnostics.actions(allowed.copy(radioService = true), FirmwareGen.SWI68)
-        assertEquals(Diagnostics.Status.OK, entry(bound, "PLAY_RADIO").status)
-        assertEquals(Diagnostics.Status.OK, entry(bound, "TUNE_RADIO").status)
+        radio.forEach { assertEquals("$it is available once the service is bound", Diagnostics.Status.OK, entry(bound, it).status) }
+    }
+
+    @Test
+    fun `a moving car keeps the radio audible and the radio screen shut`() {
+        // The one action of the family that takes the driver's eyes rather than their ears.
+        // Skipping a station at speed is what the wheel buttons already do; opening a
+        // full-screen app is not, and an unreadable speed refuses it the same way.
+        val moving = Diagnostics.actions(
+            allowed.copy(radioService = true, gateVerdict = BridgeContract.VERDICT_MOVING),
+            FirmwareGen.SWI68
+        )
+        assertEquals(Diagnostics.Reason.GATE_MOVING, entry(moving, "OPEN_RADIO_SCREEN").reason)
+        listOf("PLAY_RADIO", "PAUSE_RADIO", "RADIO_PLAY_PAUSE", "RADIO_NEXT_STATION").forEach {
+            assertEquals("$it is audio-only and stays available", Diagnostics.Status.OK, entry(moving, it).status)
+        }
+
+        val unknownSpeed = Diagnostics.actions(
+            allowed.copy(radioService = true, gateVerdict = BridgeContract.VERDICT_UNKNOWN_SPEED),
+            FirmwareGen.SWI68
+        )
+        assertEquals(Diagnostics.Reason.GATE_UNKNOWN_SPEED, entry(unknownSpeed, "OPEN_RADIO_SCREEN").reason)
     }
 
     @Test

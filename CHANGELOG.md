@@ -6,6 +6,34 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Three more things a rule can ask the radio for: silence it, toggle it, open it.** The
+  catalogue could play the radio, tune it and step its stations, so "turn the radio off at
+  arrival" had to be written as media play/pause — which follows whichever source owns the
+  audio and therefore stops your phone when your phone is the one playing. *Silence the
+  radio*, *Radio play/pause* and *Open the radio screen* name the tuner instead, whatever is
+  playing.
+  The toggle asks the tuner which way to go rather than assuming: the head unit reports the
+  radio as *not* playing music — its stream is not the music one — so anything built on that
+  reading would answer a playing radio with another "play", forever. When the car will not
+  report the state at all, the action sends nothing and the history says why. A button on the
+  wheel can be pressed a second time; a rule firing while you are driving cannot, and a
+  guessed direction leaves the car silent on the commute or playing in a hospital car park.
+  *Open the radio screen* is standstill-only, refused on an unreadable speed like every other
+  gated action — it is the one of the three that takes your eyes rather than your ears.
+  Band selection and picking a DAB service directly were considered and refused, with the
+  reasons written down in EVHardware's `docs/radio-action-gap.md`. DAB is still reached by
+  next/previous station, which is the call the car's own launcher makes.
+
+### Fixed
+
+- **The Diagnostic screen no longer blames the car layer for a missing radio.** *Next station*
+  and *Previous station* answered for the AOSP vehicle layer while the rest of the radio
+  family answered for the radio service that actually carries them, so a head unit whose radio
+  service was absent reported "vehicle layer not ready" for two actions and "no vendor
+  service" for the other two — about the same radio, at the same moment.
+
 ## [2.6.0] - 2026-08-27
 
 ### Added

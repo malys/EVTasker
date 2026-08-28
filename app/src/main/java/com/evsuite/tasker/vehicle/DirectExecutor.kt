@@ -102,6 +102,7 @@ class DirectExecutor(
         ActionType.SET_BLUETOOTH     -> setBluetooth(action)
         ActionType.SET_WIFI          -> setWifi(action)
         ActionType.TUNE_RADIO        -> tuneRadio(action)
+        ActionType.RADIO_PLAY_PAUSE  -> radioPlayPause(action)
         else                         -> applyVehicle(action)
         }
     }
@@ -203,8 +204,13 @@ class DirectExecutor(
             ActionType.SET_BATTERY_PREHEAT   -> SaicCharging.setBatteryPreheat(b)
             // Media and telephony — vendor services too.
             ActionType.PLAY_RADIO           -> SaicRadio.play()
+            ActionType.PAUSE_RADIO          -> SaicRadio.pause()
             ActionType.RADIO_NEXT_STATION   -> SaicRadio.nextStation()
             ActionType.RADIO_PREV_STATION   -> SaicRadio.previousStation()
+            // Gated: applyVehicle has already refused it if the car is moving or its speed
+            // could not be read. A radio screen is the only one of the family that takes the
+            // driver's eyes rather than their ears.
+            ActionType.OPEN_RADIO_SCREEN    -> SaicRadio.openScreen()
             ActionType.CALL_NUMBER,
             ActionType.CALL_CONTACT         -> callNumber(a)
             // Handled by execute() before it ever gets here: none of these is a vehicle write,
@@ -224,6 +230,9 @@ class DirectExecutor(
             ActionType.MEDIA_CONTROL,
             ActionType.SET_BLUETOOTH,
             ActionType.SET_WIFI,
+            // Three outcomes, not two: an unreadable tuner state is neither a success nor a
+            // vehicle that refused, and applyVehicle's boolean cannot say which it was.
+            ActionType.RADIO_PLAY_PAUSE,
             // TUNE_RADIO is a vehicle write, but it carries a frequency the driver typed, and
             // "103,5 FM" that parsed to nothing must be reported as that rather than as a radio
             // that refused.
@@ -255,6 +264,27 @@ class DirectExecutor(
             if (ok) BridgeContract.VERDICT_ALLOWED else BridgeContract.VERDICT_ERROR,
             "${station.frequencyKhz} kHz"
         )
+    }
+
+    /**
+     * Toggles the tuner, on the state the tuner reports — never on a guess.
+     *
+     * The three outcomes are three different things to write in the history, which is why
+     * this does not go through the boolean write path. A state that could not be read is an
+     * error rather than an unsupported action: the read fails the same way while the radio
+     * service's bind has not landed yet, and that one is worth the engine's retry. What it is
+     * not is a reason to send a command — [ActionType.PLAY_RADIO] and
+     * [ActionType.PAUSE_RADIO] are there for a driver who knows which direction they want.
+     */
+    private fun radioPlayPause(a: Action): ActionResult = when (SaicRadio.playPause()) {
+        SaicRadio.ToggleResult.PLAYED ->
+            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "playing")
+        SaicRadio.ToggleResult.PAUSED ->
+            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "silenced")
+        SaicRadio.ToggleResult.STATE_UNKNOWN ->
+            ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, "radio state unreadable — nothing sent")
+        SaicRadio.ToggleResult.REFUSED ->
+            ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, "radio refused the command")
     }
 
     /** Digits, `+`, `*` and `#` only: anything else is not a number the car can dial. */

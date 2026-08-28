@@ -285,8 +285,12 @@ object Diagnostics {
             if (caps.climateService) gateReason(type, caps) else Reason.NO_VENDOR_SERVICE
         in CHARGING_ACTIONS ->
             if (caps.chargingService) gateReason(type, caps) else Reason.NO_VENDOR_SERVICE
-        ActionType.PLAY_RADIO, ActionType.TUNE_RADIO ->
-            if (caps.radioService) Reason.NONE else Reason.NO_VENDOR_SERVICE
+        // The whole tuner family binds one vendor service, so one capability answers for all
+        // of it. Station stepping used to fall through to the AOSP car layer below, which
+        // answers a different question entirely: the layer can be up with no radio service in
+        // sight, and the screen said "layer not ready" for a radio that was simply absent.
+        in RADIO_ACTIONS ->
+            if (caps.radioService) gateReason(type, caps) else Reason.NO_VENDOR_SERVICE
         ActionType.CALL_NUMBER, ActionType.CALL_CONTACT ->
             if (caps.phoneService) Reason.NONE else Reason.NO_VENDOR_SERVICE
 
@@ -317,6 +321,13 @@ object Diagnostics {
         ActionType.SET_WINDOWS, ActionType.SET_DOOR_LOCK,
         ActionType.SET_WINDOW_DRIVER, ActionType.SET_WINDOW_PASSENGER,
         ActionType.SET_WINDOW_REAR_LEFT, ActionType.SET_WINDOW_REAR_RIGHT
+    )
+
+    private val RADIO_ACTIONS = setOf(
+        ActionType.PLAY_RADIO, ActionType.PAUSE_RADIO, ActionType.RADIO_PLAY_PAUSE,
+        ActionType.TUNE_RADIO, ActionType.RADIO_NEXT_STATION, ActionType.RADIO_PREV_STATION,
+        // The gated one: gateReason above is what refuses it while the car is moving.
+        ActionType.OPEN_RADIO_SCREEN
     )
 
     private val CHARGING_ACTIONS = setOf(

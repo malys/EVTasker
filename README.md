@@ -213,7 +213,7 @@ Actions cover **profile** application, **driving**, **comfort**, **climate** (on
 and passenger target temperatures, A/C, ECON, AUTO, recirculation, fan level, front and rear
 defrosters), **energy**
 (charge limit, allow charging, scheduled charging and its window, battery pre-heating),
-**audio** (volume, the fine controls, play the radio), **driver assistance**, and **system**
+**audio** (volume, the fine controls, the radio — play, silence, toggle, tune, station stepping, screen), **driver assistance**, and **system**
 (launch an app, show a message, speak through the head unit's text-to-speech engine,
 navigate to a destination, call a number, media play/pause and track skip, Bluetooth and
 Wi-Fi on or off, enable or disable another rule, wait). ADAS state — AEB, ELK, ACC/TJA, TSR, overspeed and
@@ -376,11 +376,21 @@ That buys four things the property ids could not:
   the stock UI), A/C, AUTO, recirculation, fan level, front and rear defrosters.
 - **Battery and charging** — charge limit in percent, allow/deny charging, the scheduled
   charging window, and battery pre-heating.
-- **Radio** — resume the last station, or tune one. It does not open the radio screen: a
-  rule firing at ignition wants the sound, not a screen in front of the driver. The
-  frequency is typed the way a driver says it — `103.5`, `FM 103,5`, `1080 AM` all land —
+- **Radio** — resume the last station, silence it, toggle between the two, tune a station,
+  step through the tuner's own list, or open the radio screen. All of them name the *tuner*,
+  which is what separates them from the media play/pause below: that one follows whichever
+  source owns the audio, so it stops Bluetooth when Bluetooth is the one playing.
+  The frequency is typed the way a driver says it — `103.5`, `FM 103,5`, `1080 AM` all land —
   and text naming no station is reported as that rather than tuned to something near it.
-  DAB is out: `tuneDab` takes a service and ensemble id, not a frequency.
+  The toggle reads the tuner's own play state and, when the car will not report it, sends
+  nothing and says so: a wheel button can be pressed twice, a rule that fires while you are
+  driving cannot, and a guessed direction is a car left silent or left playing.
+  Opening the radio screen is the only one of them that takes the standstill gate — the rest
+  change what you hear, that one changes what is in front of you.
+  **DAB** cannot be tuned by frequency, because a DAB service is addressed by ensemble and
+  service id and there is nothing for a driver to type; next and previous station reach it,
+  which is the same call the car's own launcher makes. Every candidate that was considered
+  and refused is written down in EVHardware's `docs/radio-action-gap.md`.
 - **Calls** — placed by the car's hands-free stack on the paired phone. The head unit has no
   SIM and no dialer, so `ACTION_CALL` would find nothing to handle it.
   A rule can store a typed number or select a name/number from the phone book explicitly
