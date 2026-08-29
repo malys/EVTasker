@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-08-29
+
 ### Added
 
 - **Three more things a rule can ask the radio for: silence it, toggle it, open it.** The
