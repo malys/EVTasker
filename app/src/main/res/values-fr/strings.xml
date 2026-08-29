@@ -276,6 +276,7 @@
     <string name="diag_env_threshold">Verrou de sécurité des écritures</string>
     <string name="diag_reason_vendor">service véhicule indisponible sur cette voiture</string>
     <string name="diag_reason_no_messaging">aucun téléphone sur le profil messages</string>
+    <string name="diag_reason_no_messaging_profile">pas de client MAP sur cet autoradio</string>
     <string name="diag_reason_no_navigation">aucune application de navigation</string>
     <string name="diag_reason_no_location">aucune position disponible</string>
     <string name="diag_reason_not_driven_yet">aucun téléphone à bord (voiture pas encore roulée, aucun téléphone actif)</string>

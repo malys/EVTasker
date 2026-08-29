@@ -212,7 +212,13 @@ object BtDevices {
         } catch (e: Exception) {
             AppLogger.d(TAG, "getProfileProxy($profile): ${e.message}"); false
         }
-        if (!ok) proxyRequested.remove(profile)
+        if (!ok) {
+            // Silence here is what made a missing MAP client look like a missing phone: the
+            // stack refuses the request outright for a profile it does not carry, and the only
+            // trace was an absent "profile proxy N ready" line nobody was looking for.
+            AppLogger.w(TAG, "profile $profile refused by the Bluetooth stack — not carried on this head unit")
+            proxyRequested.remove(profile)
+        }
     }
 
     private fun isConnected(device: BluetoothDevice): Boolean = try {

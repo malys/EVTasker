@@ -336,7 +336,10 @@ class DiagnosticsTest {
             Diagnostics.Reason.NOT_READABLE,
             // Not about the car, but it outlives every drive: only an app update carrying
             // the evidence can change it, so the picker must not keep offering the entry.
-            Diagnostics.Reason.WRITE_UNPROVEN
+            Diagnostics.Reason.WRITE_UNPROVEN,
+            // A head unit whose Bluetooth stack has no MAP client will never send a message,
+            // whatever the phone allows. That is what the car is, not where it is.
+            Diagnostics.Reason.NO_MESSAGING_PROFILE
         )
         val transient = listOf(
             Diagnostics.Reason.NONE,

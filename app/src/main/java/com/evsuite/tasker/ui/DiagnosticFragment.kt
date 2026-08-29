@@ -415,6 +415,7 @@ class DiagnosticFragment : Fragment() {
             Diagnostics.Reason.BLUETOOTH_OFF -> R.string.diag_reason_bluetooth_off
             Diagnostics.Reason.NO_VENDOR_SERVICE -> R.string.diag_reason_vendor
             Diagnostics.Reason.NO_MESSAGING_PHONE -> R.string.diag_reason_no_messaging
+            Diagnostics.Reason.NO_MESSAGING_PROFILE -> R.string.diag_reason_no_messaging_profile
             Diagnostics.Reason.NO_NAVIGATION_APP -> R.string.diag_reason_no_navigation
             Diagnostics.Reason.NO_LOCATION -> R.string.diag_reason_no_location
             Diagnostics.Reason.NOT_DRIVEN_YET -> R.string.diag_reason_not_driven_yet

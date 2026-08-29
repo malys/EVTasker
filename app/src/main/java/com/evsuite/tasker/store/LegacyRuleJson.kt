@@ -1,17 +1,29 @@
 package com.evsuite.tasker.store
 
+import com.evsuite.hardware.catalog.VehicleEnums
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 
 /**
- * Renames catalog entries that changed name, before Gson ever sees them.
+ * Repairs rules saved by an older build, before Gson ever sees them.
  *
  * `WEBHOOK_GET` and `WEBHOOK_POST` became a single `WEBHOOK` whose verb rides on
  * [com.evsuite.tasker.model.Action.flag]. Without this pass, a rule saved by an older build names
  * an entry the catalog no longer has: Gson deserialises the unknown name to null and
  * [RuleStore] then drops the whole rule — the user's webhook rule silently disappears on
  * update, and an exported file made before the merge refuses to import.
+ *
+ * The glass actions are the second case. They used to carry a raw vendor command in 0..7,
+ * which nobody could read and which let a rule ask for a value the service accepts, drops and
+ * reports as applied — an on-vehicle capture showed exactly that, five runs of "ALLOWED" with
+ * the window still fully open throughout. They now carry a state: closed or open. A saved
+ * command has to be reinterpreted, and the honest reading is the user's intent rather than the
+ * vendor's numbering: **every glass write was inert before this** (`writeProven` refused them
+ * until a probe had watched a command move the glass), so no saved number ever moved a window,
+ * and there is no correct behaviour to preserve — only an intention to recover. People typed
+ * these as if they were percentages, so that is how they are read back: 100 meant open, 0 and
+ * 7 meant closed.
  *
  * The rewrite is by name, wherever it sits: an action in the "if", in an "else if" or in the
  * "else" reaches the reader through the same object shape, so the walk is recursive rather
@@ -24,6 +36,21 @@ internal object LegacyRuleJson {
         "WEBHOOK_GET" to false,
         "WEBHOOK_POST" to true
     )
+
+    /** Actions whose `number` changed meaning from a vendor command to a window state. */
+    private val GLASS_ACTIONS = setOf(
+        "SET_WINDOWS", "SET_WINDOW_DRIVER", "SET_WINDOW_PASSENGER",
+        "SET_WINDOW_REAR_LEFT", "SET_WINDOW_REAR_RIGHT"
+    )
+
+    /**
+     * Anything at or above this was typed as "open" by someone thinking in percent.
+     *
+     * The old control was a 0..7 command, so a saved 100 came from a rule written against an
+     * even older percentage control, and a saved 7 came from someone reaching for the top of
+     * the command range to mean "close". Both are intentions, neither was ever obeyed.
+     */
+    private const val OPEN_FROM = 50
 
     /** The migrated JSON, or [json] unchanged when there is nothing to rename. */
     fun migrate(json: String): String = runCatching {
@@ -45,9 +72,27 @@ internal object LegacyRuleJson {
                     obj.add("flag", JsonPrimitive(flag))
                     changed = true
                 }
+                if (type in GLASS_ACTIONS && rewriteGlassNumber(obj)) changed = true
                 obj.entrySet().forEach { changed = rewrite(it.value) || changed }
             }
         }
         return changed
+    }
+
+    /**
+     * @return true when the stored command was replaced by a window state.
+     *
+     * A value that is already a state (0 or 1) is left alone, so the pass is idempotent — it
+     * runs on every load, and a rule saved after the change must not be rewritten again. That
+     * makes 0 ambiguous on purpose: as a command it meant "no movement", as a state it means
+     * closed, and closed is what a rule asking for nothing should settle on.
+     */
+    private fun rewriteGlassNumber(obj: com.google.gson.JsonObject): Boolean {
+        val number = obj.get("number")?.takeIf { it.isJsonPrimitive }?.asJsonPrimitive
+            ?.takeIf { it.isNumber }?.asInt ?: return false
+        if (number == VehicleEnums.WINDOW_CLOSE || number == VehicleEnums.WINDOW_OPEN) return false
+        val state = if (number >= OPEN_FROM) VehicleEnums.WINDOW_OPEN else VehicleEnums.WINDOW_CLOSE
+        obj.add("number", JsonPrimitive(state))
+        return true
     }
 }

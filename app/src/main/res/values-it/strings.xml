@@ -259,6 +259,7 @@
     <string name="diag_env_threshold">Blocco di sicurezza scrittura</string>
     <string name="diag_reason_vendor">servizio del veicolo non disponibile su quest’auto</string>
     <string name="diag_reason_no_messaging">nessun telefono sul profilo messaggi</string>
+    <string name="diag_reason_no_messaging_profile">nessun client MAP su questa unità</string>
     <string name="diag_reason_no_navigation">nessuna app di navigazione</string>
     <string name="diag_reason_no_location">nessuna posizione disponibile</string>
     <string name="diag_reason_not_driven_yet">l’auto non ha ancora viaggiato</string>

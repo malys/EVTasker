@@ -6,6 +6,41 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **A radio band action, and with it DAB.** Ask a rule for AM, FM or **DAB** and the tuner goes
+  there. It was the one thing "tune the radio" could not do: that action takes a frequency you
+  type, and a DAB station is not addressed by one.
+
+### Fixed
+
+- **The window actions asked for a number nobody could read, and one of those numbers did
+  nothing at all.** They took a raw vendor command in 0..7. On a real car, a rule asking for `7`
+  fired five times, said "applied" five times, and the driver's window stayed fully open the
+  whole time — the car accepts that command and quietly ignores it. The editor now offers the
+  two states the glass actually has: **closed** and **open**. Rules you already saved are
+  converted on first launch, reading the old number the way it was evidently meant — 100 was
+  open, 0 and 7 were closed.
+
+- **A call that the car said it refused could be dialled three times.** The action reported an
+  ordinary error, and the engine retries an error three times with backoff — but "the hands-free
+  stack refused the request" does not mean "the phone did not dial", and a rule that places one
+  call should never place three. Calls are no longer retried, on the same argument the SMS
+  action has always used. A number with no dialable character in it is now reported as such,
+  with what you typed, instead of as a car that would not co-operate.
+
+- **"No phone on the message profile" hid two different problems.** If the head unit's Bluetooth
+  stack carries no MAP client at all, no amount of pairing or permission-granting on the phone
+  will ever let it send a message — and the diagnostic said the same thing it says when a phone
+  simply left the car. It now names the case: *no MAP client on this head unit* versus *MAP
+  client present, no phone sharing its messages*. In the first case the SMS action is hidden
+  from the editor, because it can never run on that car. A profile the Bluetooth stack refuses
+  outright is also logged now; previously the only trace was the absence of a line.
+
+### Changed
+
+- **"Vitres" is now "Toutes les vitres".**
+
 ## [2.7.0] - 2026-08-29
 
 ### Added

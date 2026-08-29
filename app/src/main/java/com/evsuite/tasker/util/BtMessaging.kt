@@ -57,6 +57,23 @@ object BtMessaging {
         BtDevices.proxy(context, PROFILE_MAP_CLIENT)
     }
 
+    /**
+     * Why a message cannot be sent — or that it can.
+     *
+     * The two failures are not the same problem and do not have the same remedy. A head unit
+     * whose Bluetooth stack carries no MAP client will never send a message however the phone
+     * is configured; a head unit that has one and no phone on it is waiting for the driver to
+     * allow message access in the phone's own Bluetooth settings. Reporting both as "no phone
+     * on the message profile" sent people to look at the phone for a problem in the car.
+     */
+    enum class Availability { READY, PROFILE_UNAVAILABLE, NO_PHONE }
+
+    fun availability(context: Context): Availability {
+        val proxy = BtDevices.proxy(context, PROFILE_MAP_CLIENT)
+            ?: return Availability.PROFILE_UNAVAILABLE
+        return if (connectedDevices(proxy).isEmpty()) Availability.NO_PHONE else Availability.READY
+    }
+
     /** True when a paired phone is connected on the message profile right now. */
     fun isAvailable(context: Context): Boolean = messagingPhone(context) != null
 

@@ -145,6 +145,8 @@ object DiagnosticProbe {
         val bridgeReachable = try { bridge.connect() } finally { bridge.disconnect() }
 
         val engines = SpeechEngines.describe(appContext)
+        // Asked once: the answer decides both the capability and what the report says.
+        val messaging = BtMessaging.availability(appContext)
         val caps = Diagnostics.Capabilities(
             vehicleLayerReady = EVHardware.isCarPropertyManagerReady(),
             gateVerdict = gateVerdict(),
@@ -156,7 +158,8 @@ object DiagnosticProbe {
             chargingService = SaicCharging.isAvailable,
             radioService = SaicRadio.isAvailable,
             phoneService = SaicPhone.isAvailable,
-            messagingPhone = BtMessaging.isAvailable(appContext),
+            messagingPhone = messaging == BtMessaging.Availability.READY,
+            messagingProfile = messaging != BtMessaging.Availability.PROFILE_UNAVAILABLE,
             navigationApp = hasNavigationApp(appContext),
         )
 
@@ -244,8 +247,13 @@ object DiagnosticProbe {
             EnvCheck(
                 Env.MESSAGING,
                 ok = caps.messagingPhone,
-                detail = BtMessaging.connectedPhoneName(context)
-                    ?: "no phone on the message profile (MAP)"
+                // Two different problems with two different remedies: a head unit with no MAP
+                // client will never send a message, whatever the phone allows.
+                detail = BtMessaging.connectedPhoneName(context) ?: if (!caps.messagingProfile) {
+                    "no MAP client on this head unit — messages cannot be sent from this car"
+                } else {
+                    "MAP client present, no phone sharing its messages"
+                }
             ),
             EnvCheck(
                 Env.LOCATION,

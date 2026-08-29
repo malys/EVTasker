@@ -259,6 +259,7 @@
     <string name="diag_env_threshold">Bloqueo de seguridad de escritura</string>
     <string name="diag_reason_vendor">servicio del vehículo no disponible en este coche</string>
     <string name="diag_reason_no_messaging">ningún teléfono en el perfil de mensajes</string>
+    <string name="diag_reason_no_messaging_profile">sin cliente MAP en esta unidad</string>
     <string name="diag_reason_no_navigation">ninguna aplicación de navegación</string>
     <string name="diag_reason_no_location">ninguna posición disponible</string>
     <string name="diag_reason_not_driven_yet">el coche aún no ha circulado</string>

@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import com.evsuite.hardware.FirmwareInfo
 import com.evsuite.hardware.FirmwareSupport
+import com.evsuite.hardware.GlassEvidence
 import com.evsuite.hardware.EVHardware
 import com.evsuite.hardware.effectProven
 import com.evsuite.hardware.VehicleWriteGate
@@ -30,6 +31,7 @@ import com.evsuite.tasker.model.Action
 import com.evsuite.tasker.model.ActionResult
 import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.MediaCommand
+import com.evsuite.hardware.catalog.VehicleEnums
 import com.evsuite.tasker.store.RuleStore
 import com.evsuite.tasker.ui.ConfirmPrompt
 import com.evsuite.tasker.util.EmulatorDetector
@@ -103,6 +105,9 @@ class DirectExecutor(
         ActionType.SET_WIFI          -> setWifi(action)
         ActionType.TUNE_RADIO        -> tuneRadio(action)
         ActionType.RADIO_PLAY_PAUSE  -> radioPlayPause(action)
+        ActionType.SELECT_RADIO_BAND -> selectRadioBand(action)
+        ActionType.CALL_NUMBER,
+        ActionType.CALL_CONTACT      -> placeCall(action)
         else                         -> applyVehicle(action)
         }
     }
@@ -185,15 +190,21 @@ class DirectExecutor(
             ActionType.SET_REAR_DEFROST     -> SaicClimate.setRearDefrost(b)
             // Glass: the value is a command in 0..7, not a position — see SaicVehicleControl.
             // A command outside that range is refused there rather than sent to be dropped.
-            ActionType.SET_WINDOWS          -> SaicVehicleControl.setAllWindows(i)
+            // The rule stores a state; the car takes a command. glassCommand() is where the
+            // two meet, and it answers null when this car has no proof of which command is
+            // which — which cannot happen here, because effectProven already refused the
+            // action above. Belt and braces: a null reports "no write path" rather than
+            // sending a command nobody established.
+            ActionType.SET_WINDOWS          ->
+                glassCommand(i)?.let { SaicVehicleControl.setAllWindows(it) }
             ActionType.SET_WINDOW_DRIVER    ->
-                SaicVehicleControl.setWindow(SaicVehicleControl.Window.DRIVER, i)
+                glassCommand(i)?.let { SaicVehicleControl.setWindow(SaicVehicleControl.Window.DRIVER, it) }
             ActionType.SET_WINDOW_PASSENGER ->
-                SaicVehicleControl.setWindow(SaicVehicleControl.Window.PASSENGER, i)
+                glassCommand(i)?.let { SaicVehicleControl.setWindow(SaicVehicleControl.Window.PASSENGER, it) }
             ActionType.SET_WINDOW_REAR_LEFT ->
-                SaicVehicleControl.setWindow(SaicVehicleControl.Window.REAR_LEFT, i)
+                glassCommand(i)?.let { SaicVehicleControl.setWindow(SaicVehicleControl.Window.REAR_LEFT, it) }
             ActionType.SET_WINDOW_REAR_RIGHT ->
-                SaicVehicleControl.setWindow(SaicVehicleControl.Window.REAR_RIGHT, i)
+                glassCommand(i)?.let { SaicVehicleControl.setWindow(SaicVehicleControl.Window.REAR_RIGHT, it) }
             ActionType.SET_DOOR_LOCK        -> SaicVehicleControl.setDoorsLocked(b)
             // Energy — vendor charging service.
             ActionType.SET_CHARGE_LIMIT      -> SaicCharging.setChargeLimitPercent(i)
@@ -211,8 +222,6 @@ class DirectExecutor(
             // could not be read. A radio screen is the only one of the family that takes the
             // driver's eyes rather than their ears.
             ActionType.OPEN_RADIO_SCREEN    -> SaicRadio.openScreen()
-            ActionType.CALL_NUMBER,
-            ActionType.CALL_CONTACT         -> callNumber(a)
             // Handled by execute() before it ever gets here: none of these is a vehicle write,
             // so a failure is the app's own (no such profile, no such app, webhook refused) and
             // must be reported as that rather than as a vehicle that would not take the value.
@@ -233,6 +242,12 @@ class DirectExecutor(
             // Three outcomes, not two: an unreadable tuner state is neither a success nor a
             // vehicle that refused, and applyVehicle's boolean cannot say which it was.
             ActionType.RADIO_PLAY_PAUSE,
+            // Same reason: "already on that band" is a success that sent nothing, and an
+            // unreadable band is not a refusal.
+            ActionType.SELECT_RADIO_BAND,
+            // A call is never retried — see placeCall.
+            ActionType.CALL_NUMBER,
+            ActionType.CALL_CONTACT,
             // TUNE_RADIO is a vehicle write, but it carries a frequency the driver typed, and
             // "103,5 FM" that parsed to nothing must be reported as that rather than as a radio
             // that refused.
@@ -287,11 +302,72 @@ class DirectExecutor(
             ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, "radio refused the command")
     }
 
-    /** Digits, `+`, `*` and `#` only: anything else is not a number the car can dial. */
-    private fun callNumber(a: Action): Boolean {
+    /**
+     * Turns the rule's window state into the command this car was observed to obey.
+     *
+     * The catalogue deliberately does not know which of the eight commands opens and which
+     * closes: that is a property of the car, recorded by `GlassProbe` into `GlassEvidence`.
+     * Keeping it out of the rule is what lets a rule exported from one car run on another —
+     * and it is what stops a rule asking for "7", a value the service accepts, drops, and
+     * reports as applied.
+     */
+    private fun glassCommand(state: Int): Int? {
+        val proof = GlassEvidence.proof ?: return null
+        return if (state == VehicleEnums.WINDOW_OPEN) proof.openCommand else proof.closeCommand
+    }
+
+    /**
+     * Puts the tuner on a band, reporting the three outcomes separately.
+     *
+     * "Already on that band" is a success that sent nothing, and the history should say so
+     * rather than claim a switch. An unreadable band sends nothing at all — tuning without
+     * knowing where the tuner is would move the driver off their station for an action that
+     * may have been a no-op.
+     */
+    private fun selectRadioBand(a: Action): ActionResult = when (SaicRadio.selectBand(a.number)) {
+        SaicRadio.BandResult.SWITCHED ->
+            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
+        SaicRadio.BandResult.ALREADY_ON_BAND ->
+            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "already on that band")
+        SaicRadio.BandResult.STATE_UNKNOWN ->
+            ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, "radio band unreadable — nothing sent")
+        SaicRadio.BandResult.UNSUPPORTED_BAND ->
+            ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "band ${a.number}")
+        SaicRadio.BandResult.REFUSED ->
+            ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, "radio refused the band")
+    }
+
+    /**
+     * Places a call through the car's hands-free stack, and **never lets it be retried**.
+     *
+     * Both failures deliberately report UNSUPPORTED rather than ERROR, because the engine
+     * retries an error three times with backoff and neither failure is helped by that:
+     *
+     *  - text that contains no dialable character will not become a number on the second
+     *    attempt, the same reasoning [tuneRadio] already applies to a frequency nobody can
+     *    parse — and the history naming what was typed is what lets the user find the typo;
+     *  - a refused `placeCall` is worse. The return value says the hands-free stack did not
+     *    accept the request, not that the phone did not dial, and those are not the same
+     *    thing. Retrying is how one rule places the same call three times to a driver who
+     *    asked for it once. [com.evsuite.tasker.util.BtMessaging] refuses to retry a message
+     *    on exactly this argument; a call deserves it at least as much, and it did not have
+     *    it — reaching `applyVehicle` as a bare boolean, a refusal was an ERROR like any
+     *    other.
+     *
+     * Digits, `+`, `*` and `#` only: anything else is not a number the car can dial.
+     */
+    private fun placeCall(a: Action): ActionResult {
         val number = a.text.filter { it.isDigit() || it in "+*#" }
-        if (number.isBlank()) return false
-        return SaicPhone.placeCall(number)
+        if (number.isBlank()) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "not a number: ${a.text}")
+        }
+        if (SaicPhone.placeCall(number)) {
+            return ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
+        }
+        return ActionResult(
+            a.type, false, BridgeContract.VERDICT_UNSUPPORTED,
+            "the hands-free stack refused the call — not retried, it may already be ringing"
+        )
     }
 
     private fun gateVerdict(): String = when (VehicleWriteGate.decideNow()) {

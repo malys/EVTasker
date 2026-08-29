@@ -90,6 +90,7 @@ object Diagnostics {
         NO_VENDOR_SERVICE,
         /** No phone is connected on the Bluetooth message profile, so nothing can carry an SMS. */
         NO_MESSAGING_PHONE,
+        NO_MESSAGING_PROFILE,
         /** Nothing on the head unit answers a `geo:` intent. */
         NO_NAVIGATION_APP,
         /** No location permission, or no fix recent enough to place the car. */
@@ -130,6 +131,10 @@ object Diagnostics {
         Reason.NO_NAVIGATION_APP,
         Reason.NO_TTS_ENGINE,
         Reason.NO_EVPROFILE,
+        // The head unit's Bluetooth stack carries no MAP client. Unlike a phone that left with
+        // its owner, this is what the car *is*: no pairing, no permission and no drive changes
+        // it, so the editor should stop offering an action that can never run here.
+        Reason.NO_MESSAGING_PROFILE,
         Reason.NOT_READABLE
     )
 
@@ -174,6 +179,8 @@ object Diagnostics {
         val phoneService: Boolean = false,
         /** A phone connected on the Bluetooth message profile — what carries a text message. */
         val messagingPhone: Boolean = false,
+        /** False when this head unit's Bluetooth stack carries no MAP client at all. */
+        val messagingProfile: Boolean = true,
         /** Something on the head unit answers a `geo:` intent. */
         val navigationApp: Boolean = false,
     )
@@ -306,7 +313,12 @@ object Diagnostics {
         // Not a vendor service: the message leaves through the paired phone over the
         // Bluetooth message profile, so what decides is whether a phone is connected on it.
         ActionType.SEND_SMS ->
-            if (caps.messagingPhone) Reason.NONE else Reason.NO_MESSAGING_PHONE
+            when {
+                caps.messagingPhone -> Reason.NONE
+                // The car, not the phone: no amount of pairing fixes a stack with no MAP client.
+                !caps.messagingProfile -> Reason.NO_MESSAGING_PROFILE
+                else -> Reason.NO_MESSAGING_PHONE
+            }
 
         // Everything else is a direct EVHardware write.
         else -> if (!caps.vehicleLayerReady) Reason.LAYER_NOT_READY else gateReason(type, caps)
@@ -326,6 +338,7 @@ object Diagnostics {
     private val RADIO_ACTIONS = setOf(
         ActionType.PLAY_RADIO, ActionType.PAUSE_RADIO, ActionType.RADIO_PLAY_PAUSE,
         ActionType.TUNE_RADIO, ActionType.RADIO_NEXT_STATION, ActionType.RADIO_PREV_STATION,
+        ActionType.SELECT_RADIO_BAND,
         // The gated one: gateReason above is what refuses it while the car is moving.
         ActionType.OPEN_RADIO_SCREEN
     )
