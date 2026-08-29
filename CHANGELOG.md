@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-08-29
+
 ### Added
 
 - **A radio band action, and with it DAB.** Ask a rule for AM, FM or **DAB** and the tuner goes
