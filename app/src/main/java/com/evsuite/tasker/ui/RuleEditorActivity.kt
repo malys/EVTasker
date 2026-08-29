@@ -102,10 +102,11 @@ class RuleEditorActivity : AppCompatActivity() {
             branches += it.branches
             elseActions = it.elseActions
         }
-        binding.triggerGroup.check(
-            if (existing?.firesOn == RuleTrigger.IGNITION_OFF) R.id.triggerIgnitionOff
-            else R.id.triggerIgnitionOn
-        )
+        binding.triggerGroup.check(when (existing?.firesOn) {
+            RuleTrigger.GEAR_PARK -> R.id.triggerGearPark
+            RuleTrigger.IGNITION_OFF -> R.id.triggerIgnitionOff
+            else -> R.id.triggerIgnitionOn
+        })
 
         binding.addElseIfButton.setOnClickListener {
             if (branches.size > MAX_ELSE_IF) {
@@ -272,8 +273,11 @@ class RuleEditorActivity : AppCompatActivity() {
             name = name,
             enabled = ruleId?.let { store.getById(it)?.enabled } ?: true,
             match = first.match,
-            trigger = if (binding.triggerGroup.checkedButtonId == R.id.triggerIgnitionOff)
-                RuleTrigger.IGNITION_OFF else RuleTrigger.IGNITION_ON,
+            trigger = when (binding.triggerGroup.checkedButtonId) {
+                R.id.triggerGearPark -> RuleTrigger.GEAR_PARK
+                R.id.triggerIgnitionOff -> RuleTrigger.IGNITION_OFF
+                else -> RuleTrigger.IGNITION_ON
+            },
             conditions = first.conditions,
             actions = first.actions,
             // Absent, not empty: a rule with no other case stays exactly what earlier

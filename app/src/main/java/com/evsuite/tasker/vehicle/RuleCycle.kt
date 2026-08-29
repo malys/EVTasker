@@ -102,7 +102,7 @@ object CycleReporter {
 }
 
 /**
- * One rule-evaluation pass, shared by the ignition trigger and the manual "Test now".
+ * One rule-evaluation pass, shared by vehicle triggers and the manual "Test now".
  *
  * Reads the vehicle directly ([VehicleReader]) and applies actions directly
  * ([DirectExecutor]); EVProfile is used only if present, only for the profile action.
@@ -115,6 +115,9 @@ object RuleCycle {
     const val MANUAL = "MANUAL"
     const val PHYSICAL_BUTTON = "PHYSICAL_BUTTON"
 
+    // A P cycle can still be closing glass when ignition-off arrives. Keep whole cycles,
+    // not just individual writes, atomic against every other trigger.
+    @Synchronized
     fun run(
         context: Context,
         trigger: String,

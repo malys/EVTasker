@@ -96,6 +96,13 @@
                     android:text="@string/editor_trigger_on" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/triggerGearPark"
+                    style="@style/Widget.EV.Button.Outlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/editor_trigger_park" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/triggerIgnitionOff"
                     style="@style/Widget.EV.Button.Outlined"
                     android:layout_width="wrap_content"

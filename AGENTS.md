@@ -50,9 +50,13 @@ Adding a vehicle entry without `@SupportedOn` fails `FirmwareSupportTest`.
 ## Triggers are events already received, not new listeners
 
 `TaskerVehicleService` gets every ignition transition from one EVHardware listener. The
-switch-off trigger reads the other end of that same stream — no second listener, no bind, no
-poll. Physical buttons are conditions (never a `RuleTrigger`): a rule containing one is
-addressed by that event and excluded from ignition cycles. EVHardware owns the OEM keycode
+switch-off trigger reads the other end of that same stream — no second listener or bind.
+Gear callbacks are not portable across the supported firmwares, so the P trigger samples
+`EVHardware.isVehicleInPark()` every 500 ms only while ignition is RUN and fires only on a
+confirmed non-P → P transition. Its first readable sample is a silent baseline, so service
+recreation while already parked never fabricates an event. Physical buttons are conditions
+(never a `RuleTrigger`): a rule containing one is
+addressed by that event and excluded from vehicle-trigger cycles. EVHardware owns the OEM keycode
 catalogue and short/long-press state machine; the app only receives the broadcast and feeds
 its payload to that decoder. The receiver requires the
 signature sender permission because that action is otherwise forgeable. Long press fires on

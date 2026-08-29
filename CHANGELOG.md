@@ -6,6 +6,15 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-08-29
+
+### Added
+
+- **Rules can now run when the gear shifts into P.** The trigger fires only on a confirmed
+  non-P → P transition while the vehicle is running, so restarting EVTasker while already
+  parked does not replay it. This gives actions such as closing the windows a live vehicle
+  interface instead of waiting for the switch-off sequence.
+
 ## [2.8.0] - 2026-08-29
 
 ### Added

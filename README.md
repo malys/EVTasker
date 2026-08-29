@@ -83,8 +83,10 @@ EVTasker runs its **own** persistent service: it initialises EVHardware, listens
 ignition directly (no dependency on EVProfile), reads the vehicle and applies the rules'
 actions through EVHardware. Started at boot and on app open.
 
-**Triggers: vehicle start and vehicle switch-off.** Physical buttons are conditions, not a
-third “Runs at” choice: adding one makes that rule event-driven and hides the ignition choice.
+**Triggers: vehicle start, shift to P, and vehicle switch-off.** Shift to P fires only on a
+confirmed non-P → P transition while the vehicle is running; starting the service while the
+car is already parked does not fire it. Physical buttons are conditions, not another “Runs
+at” choice: adding one makes that rule event-driven and hides the vehicle-trigger choice.
 Button rules can choose short or long press on phone, center, directional/OK, source,
 volume up/down, next/previous, mute, left star, right star, or assistant. Decoding and press-state handling live in the
 shared EVHardware library.
@@ -93,15 +95,16 @@ codes (`286` and `18`) are both accepted for firmware compatibility; the assista
 OEM voice keycode `287`. The SAIC broadcast is
 accepted only from a signature-authorized sender because the action itself is not protected.
 
-Each ignition rule chooses one trigger; a rule written before triggers existed runs at start,
-as it always did. Switching off costs nothing extra —
+Each vehicle rule chooses one trigger; a rule written before triggers existed runs at start,
+as it always did. The gear is sampled only while the ignition is in RUN because every supported
+firmware exposes a synchronous P reading but not the same push callback. Switching off costs nothing extra —
 the service already received every ignition transition and simply stopped reading at RUN, so
 there is no second listener, no extra bind and no polling. At switch-off the car is powering
 down: settings that persist (charge limit, locks) land, and anything the vehicle
 drops with the ignition is reported by the history rather than assumed.
 
 The "Test now" button replays the whole path on demand for the **selected rule only**, while
-ignoring its ignition trigger. A master switch on the Rules screen disables
+ignoring its vehicle trigger. A master switch on the Rules screen disables
 automation without deleting rules.
 
 ---

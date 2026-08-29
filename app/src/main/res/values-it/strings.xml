@@ -137,6 +137,7 @@
     <string name="history_trigger_button">Pulsante fisico</string>
     <string name="history_trigger_manual">Prova manuale</string>
     <string name="history_trigger_ignition_off">Spegnimento del veicolo</string>
+    <string name="history_trigger_park">Passaggio a P</string>
     <string name="history_trigger_deferred">Applicato da fermo</string>
     <string name="history_no_bridge">Il livello veicolo non era pronto — nessuna regola è stata applicata.</string>
 
@@ -274,6 +275,7 @@
     <string name="physical_event_label">TIPO DI PRESSIONE</string>
     <string name="value_editor_instruction">Scegli il valore da usare in questa regola.</string>
     <string name="editor_trigger_on">All’avvio</string>
+    <string name="editor_trigger_park">Passaggio a P</string>
     <string name="editor_trigger_off">Allo spegnimento</string>
     <string name="editor_move_up">Sposta su</string>
     <string name="editor_move_down">Sposta giù</string>

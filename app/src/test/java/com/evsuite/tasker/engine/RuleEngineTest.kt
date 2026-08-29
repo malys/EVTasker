@@ -425,16 +425,21 @@ class RuleEngineTest {
     @Test
     fun `un declencheur n adresse que les regles qui lui sont cablees`() {
         val onStart = Rule(name = "start", trigger = RuleTrigger.IGNITION_ON)
+        val onPark = Rule(name = "park", trigger = RuleTrigger.GEAR_PARK)
         val onStop = Rule(name = "stop", trigger = RuleTrigger.IGNITION_OFF)
         val legacy = Rule(name = "legacy")   // écrite avant les déclencheurs
 
         assertEquals(
             listOf("start", "legacy"),
-            addressed(listOf(onStart, onStop, legacy), "IGNITION_ON").map { it.name }
+            addressed(listOf(onStart, onPark, onStop, legacy), "IGNITION_ON").map { it.name }
+        )
+        assertEquals(
+            listOf("park"),
+            addressed(listOf(onStart, onPark, onStop, legacy), "GEAR_PARK").map { it.name }
         )
         assertEquals(
             listOf("stop"),
-            addressed(listOf(onStart, onStop, legacy), "IGNITION_OFF").map { it.name }
+            addressed(listOf(onStart, onPark, onStop, legacy), "IGNITION_OFF").map { it.name }
         )
     }
 

@@ -153,6 +153,7 @@
     <string name="history_trigger_ignition">Vehicle start</string>
     <string name="history_trigger_manual">Manual test</string>
     <string name="history_trigger_ignition_off">Vehicle switch-off</string>
+    <string name="history_trigger_park">Gear shifted to P</string>
     <string name="history_trigger_button">Physical button</string>
     <string name="history_trigger_deferred">Applied at a standstill</string>
     <string name="history_no_bridge">Vehicle layer was not ready — no rule could be applied.</string>
@@ -291,6 +292,7 @@
     <string name="physical_event_label">PRESS TYPE</string>
     <string name="value_editor_instruction">Choose the value to use in this rule.</string>
     <string name="editor_trigger_on">Vehicle start</string>
+    <string name="editor_trigger_park">Shift to P</string>
     <string name="editor_trigger_off">Vehicle switch-off</string>
     <string name="editor_move_up">Move up</string>
     <string name="editor_move_down">Move down</string>

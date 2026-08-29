@@ -159,8 +159,11 @@ class RulesFragment : Fragment() {
         val labels = Labels(requireContext(), btNames = BtDevices.bondedNamesByMac(requireContext()))
         binding.detailName.text = current.name + "  ·  " + getString(
             if (current.hasPhysicalButtonCondition) R.string.history_trigger_button
-            else if (current.firesOn == com.evsuite.tasker.model.RuleTrigger.IGNITION_OFF)
-                R.string.editor_trigger_off else R.string.editor_trigger_on
+            else when (current.firesOn) {
+                com.evsuite.tasker.model.RuleTrigger.GEAR_PARK -> R.string.editor_trigger_park
+                com.evsuite.tasker.model.RuleTrigger.IGNITION_OFF -> R.string.editor_trigger_off
+                else -> R.string.editor_trigger_on
+            }
         )
         binding.detailConditions.text = current.conditions.joinToString("\n") { "• " + labels.describe(it) }
         binding.detailActions.text = current.actions.joinToString("\n") { "• " + labels.describe(it) }

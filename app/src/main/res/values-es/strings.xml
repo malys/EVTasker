@@ -137,6 +137,7 @@
     <string name="history_trigger_button">Botón físico</string>
     <string name="history_trigger_manual">Prueba manual</string>
     <string name="history_trigger_ignition_off">Apagado del vehículo</string>
+    <string name="history_trigger_park">Cambio a P</string>
     <string name="history_trigger_deferred">Aplicado en parada</string>
     <string name="history_no_bridge">La capa del vehículo no estaba lista — no se pudo aplicar ninguna regla.</string>
 
@@ -274,6 +275,7 @@
     <string name="physical_event_label">TIPO DE PULSACIÓN</string>
     <string name="value_editor_instruction">Elija el valor que se usará en esta regla.</string>
     <string name="editor_trigger_on">Al arrancar</string>
+    <string name="editor_trigger_park">Cambio a P</string>
     <string name="editor_trigger_off">Al apagar</string>
     <string name="editor_move_up">Subir</string>
     <string name="editor_move_down">Bajar</string>

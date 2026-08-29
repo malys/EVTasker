@@ -13,15 +13,15 @@ enum class MatchMode { ALL, ANY }
 /**
  * What makes a rule run.
  *
- * The vehicle service already receives every ignition transition — it simply ignored all but
- * RUN. So switching off costs no extra listener, no extra bind and no polling; it is the
- * same event stream, read to the end.
+ * The vehicle service receives every ignition transition and samples the gear while the
+ * ignition is in RUN. [GEAR_PARK] means a confirmed non-P → P transition, not merely that the
+ * service started while the car was already parked.
  *
  * At [IGNITION_OFF] the car is powering down. Settings that persist (charge limit, door
  * locks, windows) land; anything the vehicle drops with the ignition may not, and the
  * history reports what each action returned rather than assuming.
  */
-enum class RuleTrigger { IGNITION_ON, IGNITION_OFF }
+enum class RuleTrigger { IGNITION_ON, GEAR_PARK, IGNITION_OFF }
 
 /**
  * One configured condition.
@@ -111,9 +111,9 @@ const val MAX_ELSE_IF = 4
  * happens when none did. That is what makes "cold: preheat, mild: ventilate, otherwise:
  * nothing" one rule instead of three that each have to exclude the others' ranges by hand.
  *
- * No "last run" field here: rules are evaluated once per ignition cycle and the history
+ * No "last run" field here: rules are evaluated once per addressed event and the history
  * lives in [com.evsuite.tasker.store.HistoryStore]. Mixing the two would rewrite the rules
- * file on every vehicle start.
+ * file on every trigger.
  */
 data class Rule(
     val id: String = UUID.randomUUID().toString(),
@@ -204,7 +204,7 @@ data class Rule(
     val firesOn: RuleTrigger get() = trigger ?: RuleTrigger.IGNITION_ON
 
     /**
-     * Button conditions are event sources themselves; the ignition trigger is ignored.
+     * Button conditions are event sources themselves; the selected vehicle trigger is ignored.
      *
      * Every branch counts: the event addresses the rule, and a button named only in an
      * "else if" still has to bring the rule its press.
@@ -216,7 +216,7 @@ data class Rule(
      * Whether a rule addressed by a button press says so in every case it can run.
      *
      * A button condition does not only test something, it decides which event stream brings
-     * the rule its cycles: naming one anywhere takes the whole rule out of the ignition
+     * the rule its cycles: naming one anywhere takes the whole rule out of the vehicle-trigger
      * cycles and hands it every press instead ([hasPhysicalButtonCondition]). A case that
      * does not name a button is then evaluated on presses of buttons it never mentioned, and
      * an "else" — which tests nothing at all — would run on every press of every button.

@@ -81,13 +81,13 @@ class HistoryFragment : Fragment() {
             val run = runs[position]
             val context = holder.itemView.context
 
-            // Named individually now that a run has four possible origins. "Vehicle start"
-            // over a switch-off cycle, or over a write applied later at a red light, would
-            // put the reader on the wrong end of the drive.
+            // Named individually: "Vehicle start" over a P or switch-off cycle would put
+            // the reader on the wrong end of the drive.
             val trigger = context.getString(
                 when (run.trigger) {
                     RuleCycle.MANUAL -> R.string.history_trigger_manual
                     DeferredWrites.TRIGGER -> R.string.history_trigger_deferred
+                    RuleTrigger.GEAR_PARK.name -> R.string.history_trigger_park
                     RuleTrigger.IGNITION_OFF.name -> R.string.history_trigger_ignition_off
                     RuleCycle.PHYSICAL_BUTTON -> R.string.history_trigger_button
                     else -> R.string.history_trigger_ignition

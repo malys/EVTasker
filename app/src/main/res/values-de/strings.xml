@@ -137,6 +137,7 @@
     <string name="history_trigger_button">Physische Taste</string>
     <string name="history_trigger_manual">Manueller Test</string>
     <string name="history_trigger_ignition_off">Fahrzeug ausgeschaltet</string>
+    <string name="history_trigger_park">In P geschaltet</string>
     <string name="history_trigger_deferred">Im Stand angewendet</string>
     <string name="history_no_bridge">Fahrzeugebene war nicht bereit — keine Regel konnte angewendet werden.</string>
 
@@ -274,6 +275,7 @@
     <string name="physical_event_label">DRUCKART</string>
     <string name="value_editor_instruction">Wählen Sie den Wert für diese Regel.</string>
     <string name="editor_trigger_on">Fahrzeugstart</string>
+    <string name="editor_trigger_park">In P schalten</string>
     <string name="editor_trigger_off">Fahrzeug aus</string>
     <string name="editor_move_up">Nach oben</string>
     <string name="editor_move_down">Nach unten</string>

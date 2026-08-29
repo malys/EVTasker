@@ -94,11 +94,11 @@ jobs:
             no server.
 
             ### Requirements
-            - **EVProfile installed**, signed with the same platform key. Without it,
-              EVTasker starts but has no access to anything: the Diagnostic tab will show
-              "EVProfile bridge: unreachable".
+            - The APK must be signed with the vehicle ROM's platform key so Android grants
+              the signature-level vehicle permissions.
+            - **EVProfile is optional** and is used only by the "apply saved profile" action.
             - R8 is enabled on this build. **Verify on the vehicle** before relying on it:
-              the bridge code is resolved by name at bind time.
+              vendor services and vehicle writes cannot be proven by an emulator.
 
             ### Install
             Copy the APK to a USB stick, open the car's Files app and tap it.

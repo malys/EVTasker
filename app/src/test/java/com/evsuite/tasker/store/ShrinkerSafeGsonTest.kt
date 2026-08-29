@@ -69,11 +69,11 @@ class ShrinkerSafeGsonTest {
     @Test
     fun `a stored trigger survives the round trip`() {
         val rule = Rule(
-            name = "off", trigger = RuleTrigger.IGNITION_OFF,
+            name = "park", trigger = RuleTrigger.GEAR_PARK,
             conditions = emptyList(), actions = emptyList()
         )
         val back = Gson().fromJson(Gson().toJson(arrayOf(rule)), Array<Rule>::class.java)
 
-        assertEquals(RuleTrigger.IGNITION_OFF, back[0].firesOn)
+        assertEquals(RuleTrigger.GEAR_PARK, back[0].firesOn)
     }
 }

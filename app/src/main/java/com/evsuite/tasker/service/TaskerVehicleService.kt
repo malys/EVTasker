@@ -22,6 +22,7 @@ import com.evsuite.tasker.util.BtMessaging
 import com.evsuite.tasker.util.CarLocation
 import com.evsuite.tasker.util.DriveClock
 import com.evsuite.tasker.util.Notifier
+import com.evsuite.tasker.util.ParkTriggerDetector
 import com.evsuite.tasker.vehicle.BtOnboard
 import com.evsuite.tasker.vehicle.BtTracker
 import com.evsuite.tasker.vehicle.ProfileBridge
@@ -53,6 +54,8 @@ class TaskerVehicleService : Service() {
          * long motorway leg costs nothing measurable.
          */
         private const val ONBOARD_SAMPLE_MS = 15_000L
+        /** Gear has no portable push callback on every supported generation. Poll only in RUN. */
+        private const val PARK_SAMPLE_MS = 500L
         private const val HARDKEY_ACTION = "com.saic.keyevent.hardkey.report"
         private const val SYSTEMUI_HARDKEY_ACTION = "com.android.systemui.ACTION_HARD_KEY_EVENT"
         const val HARDKEY_PERMISSION = "com.evsuite.tasker.permission.RECEIVE_HARDKEY"
@@ -78,9 +81,15 @@ class TaskerVehicleService : Service() {
     private var hardkeyReceiver: BroadcastReceiver? = null
     private val physicalButtons = PhysicalButtonEventDecoder()
 
-    /** Last transition acted on, so a re-asserted ignition state does not re-run a cycle. */
+    /** Last ignition transition acted on, so a re-asserted state does not re-run a cycle. */
     @Volatile
     private var lastTrigger: RuleTrigger? = null
+
+    private val parkTrigger = ParkTriggerDetector()
+
+    /** Stops an in-flight park sample from scheduling itself again after ignition-off. */
+    @Volatile
+    private var vehicleRunning = false
 
     /**
      * Off the main thread: sampling reads the car and the Bluetooth stack over binder, and
@@ -96,6 +105,16 @@ class TaskerVehicleService : Service() {
             // ask again — the fix would stay null for the rest of the drive.
             CarLocation.ensureTracking(applicationContext)
             onboardHandler.postDelayed(this, ONBOARD_SAMPLE_MS)
+        }
+    }
+
+    private val parkSampler = object : Runnable {
+        override fun run() {
+            if (!vehicleRunning) return
+            if (parkTrigger.sample(EVHardware.isVehicleInPark())) {
+                runRulesFor(RuleTrigger.GEAR_PARK, "Gear entered P")
+            }
+            if (vehicleRunning) onboardHandler.postDelayed(this, PARK_SAMPLE_MS)
         }
     }
 
@@ -153,6 +172,7 @@ class TaskerVehicleService : Service() {
         // started sampling on a car that had just been switched off.
         if (EVHardware.getCurrentIgnitionState() == EVHardware.IgnitionState.ON) {
             startOnboardSampling()
+            startParkSampling()
         }
         // No "EVProfile is also installed" notification here any more. It fired on every
         // service start on the cars where the two apps are meant to run together, and it said
@@ -181,7 +201,9 @@ class TaskerVehicleService : Service() {
         btReceiver?.let { runCatching { unregisterReceiver(it) } }
         hardkeyReceiver?.let { runCatching { unregisterReceiver(it) } }
         CarLocation.stopTracking(applicationContext)
+        vehicleRunning = false
         onboardHandler.removeCallbacks(onboardSampler)
+        onboardHandler.removeCallbacks(parkSampler)
         onboardThread.quitSafely()
     }
 
@@ -192,6 +214,33 @@ class TaskerVehicleService : Service() {
 
     private fun stopOnboardSampling() {
         onboardHandler.removeCallbacks(onboardSampler)
+    }
+
+    private fun startParkSampling() {
+        if (vehicleRunning) return
+        vehicleRunning = true
+        onboardHandler.removeCallbacks(parkSampler)
+        onboardHandler.post {
+            parkTrigger.reset()
+            if (vehicleRunning) parkSampler.run()
+        }
+    }
+
+    private fun stopParkSampling() {
+        if (!vehicleRunning) return
+        vehicleRunning = false
+        onboardHandler.removeCallbacks(parkSampler)
+        // Keep detector mutation on its sampling thread.
+        onboardHandler.post { parkTrigger.reset() }
+    }
+
+    private fun runRulesFor(trigger: RuleTrigger, event: String) {
+        if (AppState.isAutomationEnabled(this)) {
+            AppLogger.i(TAG, "$event → evaluating ${trigger.name} rules")
+            thread(name = "mg4-tasker-cycle") { RuleCycle.run(this, trigger.name) }
+        } else {
+            AppLogger.i(TAG, "$event but automation disabled — ignored")
+        }
     }
 
     /**
@@ -206,6 +255,11 @@ class TaskerVehicleService : Service() {
      */
     private fun registerIgnitionListener() {
         val listener: (Int) -> Unit = { state ->
+            // Park reads exist only while the vehicle is genuinely running. ACC/CRANK are
+            // neither a new ignition-rule event nor permission to keep polling the gear.
+            if (state == EVHardware.CarIgnitionItem.RUN) startParkSampling()
+            else stopParkSampling()
+
             val trigger = when (state) {
                 EVHardware.CarIgnitionItem.RUN -> RuleTrigger.IGNITION_ON
                 EVHardware.CarIgnitionItem.OFF -> RuleTrigger.IGNITION_OFF
@@ -225,12 +279,7 @@ class TaskerVehicleService : Service() {
                 } else {
                     stopOnboardSampling()
                 }
-                if (AppState.isAutomationEnabled(this)) {
-                    AppLogger.i(TAG, "Ignition $state → evaluating ${trigger.name} rules")
-                    thread(name = "mg4-tasker-cycle") { RuleCycle.run(this, trigger.name) }
-                } else {
-                    AppLogger.i(TAG, "Ignition $state but automation disabled — ignored")
-                }
+                runRulesFor(trigger, "Ignition $state")
             }
         }
         ignitionListener = listener

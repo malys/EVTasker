@@ -84,7 +84,7 @@ data class RuleRun(
         }
 }
 
-/** Trace of a full trigger (one ignition cycle, or a manual test). */
+/** Trace of one complete vehicle, button, or manual trigger. */
 data class EngineRun(
     val timestamp: Long,
     val trigger: String,

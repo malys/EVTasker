@@ -153,6 +153,7 @@
     <string name="history_trigger_ignition">Démarrage véhicule</string>
     <string name="history_trigger_manual">Test manuel</string>
     <string name="history_trigger_ignition_off">Extinction véhicule</string>
+    <string name="history_trigger_park">Passage en P</string>
     <string name="history_trigger_button">Bouton physique</string>
     <string name="history_trigger_deferred">Appliqué à l\'arrêt</string>
     <string name="history_no_bridge">La couche véhicule n\'était pas prête — aucune règle n\'a pu s\'appliquer.</string>
@@ -291,6 +292,7 @@
     <string name="physical_event_label">TYPE D’APPUI</string>
     <string name="value_editor_instruction">Choisissez la valeur à utiliser dans cette règle.</string>
     <string name="editor_trigger_on">Au démarrage</string>
+    <string name="editor_trigger_park">Passage en P</string>
     <string name="editor_trigger_off">À l’extinction</string>
     <string name="editor_move_up">Monter</string>
     <string name="editor_move_down">Descendre</string>
