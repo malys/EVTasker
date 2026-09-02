@@ -6,7 +6,7 @@
 [![Security](https://github.com/malys/EVTasker/actions/workflows/security.yml/badge.svg)](https://github.com/malys/EVTasker/actions/workflows/security.yml)
 [![Unstable](https://github.com/malys/EVTasker/actions/workflows/unstable.yml/badge.svg)](https://github.com/malys/EVTasker/actions/workflows/unstable.yml)
 [![Release](https://img.shields.io/github/v/release/malys/EVTasker?include_prereleases&amp;sort=semver)](https://github.com/malys/EVTasker/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue.svg)](LICENSE)
 
 > ⚠️ **This app changes vehicle settings automatically and runs on a car.** Read
 > [DISCLAIMER.md](DISCLAIMER.md) before installing. A rule is you delegating a setting
@@ -763,4 +763,5 @@ what would break without them. Anything touching the interface follows
 [DESIGN.md](DESIGN.md).
 
 ## Legal
-MIT — see [LICENSE](LICENSE) and [LICENSE.md](LICENSE.md).
+Source-available under the PolyForm Noncommercial License 1.0.0. Commercial use is not
+permitted. See [LICENSE](LICENSE) and [LICENSE.md](LICENSE.md).

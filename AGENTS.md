@@ -9,6 +9,9 @@ only automation-specific additions.
 
 Commit author: malys.training@gmail.com
 
+License exception: EVTasker's own sources use PolyForm Noncommercial 1.0.0, not the
+workspace MIT default. EVHardware remains separately licensed.
+
 ## The one rule that shapes everything
 
 **Automation never bypasses EVHardware.** EVTasker reads a snapshot and executes named,
