@@ -102,9 +102,14 @@
     <string name="value_to">bis</string>
     <string name="value_ok">Bestätigen</string>
     <string name="group_integration">Integration</string>
-    <string name="editor_tune_and_play_radio">Radio einstellen und abspielen</string>
-    <string name="editor_radio_sequence_hint">Stellt den Sender ein, wartet 1 Sekunde und spielt ihn ab</string>
+    <string name="editor_tune_and_play_radio">Radio: Band, Sender und Wiedergabe</string>
+    <string name="editor_radio_sequence_hint">Wählt das Band, stellt den Sender ein und spielt ab</string>
     <string name="editor_radio_play_switch">Radio einschalten</string>
+    <string name="value_radio_play">Wiedergabe</string>
+    <string name="value_radio_band_any">Band aus der Frequenz</string>
+    <string name="value_confirm_timeout_no">keine Antwort = nein</string>
+    <string name="value_confirm_timeout_yes">keine Antwort = ja</string>
+    <string name="editor_confirm_timeout_switch">Keine Antwort gilt als Ja</string>
     <string name="value_no_bt_devices">Kein gekoppeltes Bluetooth-Gerät</string>
     <string name="value_no_contacts">Keine synchronisierten Kontakte. Kontaktfreigabe am gekoppelten Telefon erlauben.</string>
     <string name="value_contact_hint">Kontakt oder Nummer suchen</string>

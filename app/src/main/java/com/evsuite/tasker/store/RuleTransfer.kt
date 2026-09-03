@@ -114,7 +114,8 @@ object RuleTransfer {
         payload = action.payload,
         displayName = action.displayName,
         minutesFrom = action.minutesFrom,
-        minutesTo = action.minutesTo
+        minutesTo = action.minutesTo,
+        yesOnNoAnswer = action.yesOnNoAnswer
     )
 
     fun decode(json: String): Result {
@@ -274,7 +275,10 @@ object RuleTransfer {
                 payload = raw.payload,
                 displayName = raw.displayName,
                 minutesFrom = raw.minutesFrom ?: 0,
-                minutesTo = raw.minutesTo ?: 0
+                minutesTo = raw.minutesTo ?: 0,
+                // Absent in every file exported before the setting existed, and false is what
+                // those rules did: silence stopped them.
+                yesOnNoAnswer = raw.yesOnNoAnswer ?: false
             )
         }
         return Parsed.Ok(actions)
@@ -332,6 +336,7 @@ object RuleTransfer {
         val payload: String? = null,
         val displayName: String? = null,
         val minutesFrom: Int? = null,
-        val minutesTo: Int? = null
+        val minutesTo: Int? = null,
+        val yesOnNoAnswer: Boolean? = null
     )
 }

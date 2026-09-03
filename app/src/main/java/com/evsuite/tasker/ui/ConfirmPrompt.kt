@@ -16,8 +16,12 @@ import java.util.concurrent.TimeUnit
  * [com.evsuite.hardware.catalog.ActionType.DELAY], under the same cycle budget.
  *
  * The wait is bounded because the alternative is a rule holding the cycle open until the
- * next ignition. Silence is a no, not a yes: the actions behind a confirmation are the ones
- * the user did not want applied unattended.
+ * next ignition. What silence then means is the rule's to say — [Answer.NO_ANSWER] reports
+ * it rather than deciding it, because both readings are real: a rule that unlocks the doors
+ * wants a deliberate yes, and a rule that warns before it acts wants to act anyway.
+ *
+ * [Answer.NOT_ASKED] is the third one, and it is not a synonym for silence: the question
+ * never reached the screen, so there was nobody to be silent. It is always a no.
  */
 object ConfirmPrompt {
 
@@ -42,7 +46,26 @@ object ConfirmPrompt {
         return resolved.coerceIn(spec.min, spec.max) * 1_000L
     }
 
-    enum class Answer { YES, NO, NO_ANSWER }
+    enum class Answer {
+        /** The driver said yes. */
+        YES,
+
+        /** The driver said no, or left the question — both are a deliberate refusal. */
+        NO,
+
+        /** The question was on screen for its whole wait and nobody touched it. */
+        NO_ANSWER,
+
+        /**
+         * The question never reached the driver: another prompt held the screen, or the
+         * window would not start.
+         *
+         * Kept apart from [NO_ANSWER] because the "carry on when nobody answers" setting must
+         * not fire on it. Nobody declined to answer — nobody was asked, and a rule that acted
+         * on that would act on a question the driver never saw.
+         */
+        NOT_ASKED
+    }
 
     /**
      * Rendezvous rather than a buffer: an answer only counts while a rule is waiting for it.
@@ -59,14 +82,14 @@ object ConfirmPrompt {
      *
      * One prompt at a time: two rules asking at once would stack two full-screen windows
      * over the driver, and the second answer would be attributed to whichever rule happened
-     * to be waiting. A second call while one is open is [Answer.NO_ANSWER] — its rule stops
-     * rather than proceeding on someone else's yes.
+     * to be waiting. A second call while one is open is [Answer.NOT_ASKED] — its rule stops
+     * rather than proceeding on someone else's yes, or on a silence nobody was offered.
      */
     fun ask(context: Context, question: String, timeoutMs: Long = TIMEOUT_MS): Answer {
         synchronized(gate) {
             if (waiting) {
                 AppLogger.w(TAG, "another confirmation is already on screen")
-                return Answer.NO_ANSWER
+                return Answer.NOT_ASKED
             }
             waiting = true
         }
@@ -75,7 +98,7 @@ object ConfirmPrompt {
             answers.poll(timeoutMs, TimeUnit.MILLISECONDS) ?: Answer.NO_ANSWER
         } catch (e: Exception) {
             AppLogger.w(TAG, "ask: ${e.message}")
-            Answer.NO_ANSWER
+            Answer.NOT_ASKED
         } finally {
             val close = synchronized(gate) {
                 waiting = false

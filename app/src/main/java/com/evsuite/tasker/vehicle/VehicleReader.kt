@@ -8,6 +8,7 @@ import com.evsuite.hardware.catalog.SnapshotKeys
 import com.evsuite.hardware.catalog.VehicleEnums
 import com.evsuite.hardware.saic.SaicCharging
 import com.evsuite.hardware.saic.SaicClimate
+import com.evsuite.hardware.saic.SaicRadio
 import com.evsuite.hardware.saic.SaicNav
 import com.evsuite.hardware.saic.SaicWeather
 import com.evsuite.hardware.saic.SaicVehicleControl
@@ -206,6 +207,12 @@ object VehicleReader {
         SaicCharging.scheduleStopMinutes()?.let { put(SnapshotKeys.KEY_CHARGE_WINDOW_STOP, it) }
         SaicCharging.batteryPreheatOn()?.let { put(SnapshotKeys.KEY_BATTERY_PREHEAT, it) }
         SaicCharging.rangeKm()?.let { put(SnapshotKeys.KEY_RANGE_KM, it) }
+
+        // The tuner's own play state, which the platform's media reading cannot give:
+        // AudioManager.isMusicActive is false while the radio plays, its stream not being the
+        // music one. Absent when the radio service will not answer — a radio that cannot be
+        // read is not a radio that is off.
+        SaicRadio.isPlaying()?.let { put(SnapshotKeys.KEY_RADIO_PLAYING, it) }
     }
 
     private val WINDOW_KEYS = listOf(

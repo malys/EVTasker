@@ -124,7 +124,25 @@ class Labels(
                 val unit = action.type.spec.unitRes.takeIf { it != 0 }
                     ?.let { " " + context.getString(it) } ?: ""
                 val seconds = action.number.takeIf { it > 0 } ?: ActionType.ASK_CONFIRM_DEFAULT_SECONDS
-                "$name : ${action.text} ($seconds$unit)"
+                // What silence does is half of what this action means, so the rule list says
+                // it: two rules with the same question behave in opposite ways without it.
+                val silence = context.getString(
+                    if (action.yesOnNoAnswer) R.string.value_confirm_timeout_yes
+                    else R.string.value_confirm_timeout_no
+                )
+                "$name : ${action.text} ($seconds$unit, $silence)"
+            }
+
+            // Band, frequency and playback in the order the editor asks for them, minus
+            // whatever this rule left out — a DAB rule has no frequency to print.
+            ValueKind.RADIO -> {
+                // 0 is the band of a rule saved before the merge: it named none, and the
+                // frequency it carries is what says which one it reaches.
+                val band = if (action.number == 0) context.getString(R.string.value_radio_band_any)
+                    else optionLabel(action.type.spec.options, action.number)
+                val station = action.text.takeIf { it.isNotBlank() }?.let { " $it" }.orEmpty()
+                val play = if (action.flag) ", " + context.getString(R.string.value_radio_play) else ""
+                "$name : $band$station$play"
             }
 
             ValueKind.WEBHOOK ->

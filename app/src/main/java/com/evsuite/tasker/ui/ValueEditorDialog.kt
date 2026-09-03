@@ -20,6 +20,8 @@ import com.evsuite.tasker.model.Condition
 import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.ConditionType
 import com.evsuite.hardware.catalog.ValueKind
+import com.evsuite.hardware.saic.RadioFrequency
+import com.evsuite.hardware.saic.SaicRadio
 import com.evsuite.tasker.util.BtDevices
 import java.util.Calendar
 
@@ -177,13 +179,20 @@ object ValueEditorDialog {
             initialDays = emptyList()
         )
 
-        // The catalogue entry is the merged "tune and play radio"; this switch is what
-        // un-merges it, so changing station without starting playback stays reachable. On by
-        // default, and TEXT leaves [Action.flag] free for it.
-        val radioPlay = action.type == ActionType.TUNE_RADIO
+        // The radio entry carries band, frequency and playback together; this switch is the
+        // third of the three, and it is what keeps "change station, stay silent" reachable.
+        val radioPlay = spec.kind == ValueKind.RADIO
         if (radioPlay) {
             binding.radioPlaySwitch.visibility = View.VISIBLE
             binding.radioPlaySwitch.isChecked = action.flag
+        }
+
+        // A question can be a permission to ask for, or a chance to object to. The wait is
+        // the same either way; what silence means at the end of it is not, so the rule says.
+        val confirm = spec.kind == ValueKind.CONFIRM
+        if (confirm) {
+            binding.confirmTimeoutSwitch.visibility = View.VISIBLE
+            binding.confirmTimeoutSwitch.isChecked = action.yesOnNoAnswer
         }
 
         showEditor(context, action.type.labelRes, binding) {
@@ -209,7 +218,9 @@ object ValueEditorDialog {
                             state.choiceLabel().ifBlank { null }
                         else action.displayName,
                         minutesFrom = state.minutesFrom,
-                        minutesTo = state.minutesTo
+                        minutesTo = state.minutesTo,
+                        yesOnNoAnswer = if (confirm) binding.confirmTimeoutSwitch.isChecked
+                            else action.yesOnNoAnswer
                     )
                 )
                 true
@@ -360,6 +371,52 @@ object ValueEditorDialog {
                     binding.choiceSpinner.setSelection(index)
                     number = options.getOrNull(index)?.value?.toFloat() ?: initialNumber
                     binding.choiceSpinner.onItemSelected { i -> number = options[i].value.toFloat() }
+                }
+            }
+
+            /**
+             * Band, then frequency — in that order, because the band decides whether there is
+             * a frequency to ask for at all. **DAB** has none: a DAB service is an ensemble
+             * and a service id, so the field is taken away rather than left there to be
+             * filled in with something that can never be tuned.
+             */
+            ValueKind.RADIO -> {
+                binding.choiceSpinner.visibility = View.VISIBLE
+                val options = spec.options
+                // 0 is what a rule saved before the band existed carries. Reading the band out
+                // of its own text is what keeps that rule showing the station it tunes; a
+                // fresh action has neither, and FM is where a radio starts.
+                val initialBand = initialNumber.toInt().takeIf { it != 0 }
+                    ?: RadioFrequency.parse(initialText)?.band
+                    ?: SaicRadio.BAND_FM
+                val index = options.indexOfFirst { it.value == initialBand }.coerceAtLeast(0)
+                binding.choiceSpinner.adapter =
+                    simpleAdapter(context, options.map { context.getString(it.labelRes) })
+                binding.choiceSpinner.setSelection(index)
+                number = options[index].value.toFloat()
+
+                spec.hintRes.takeIf { it != 0 }?.let { binding.textInput.hint = context.getString(it) }
+                binding.textInput.setText(initialText)
+
+                // A frequency that is not on screen is not part of what the rule says. Keeping
+                // the typed text aside rather than clearing the field lets a driver step
+                // through DAB and back without retyping their station, while the rule that
+                // gets saved on DAB carries no frequency at all — the executor would ignore it,
+                // and the rule list would still print it.
+                var typed = initialText
+                fun syncFrequency(band: Int) {
+                    val dab = band == SaicRadio.BAND_DAB
+                    binding.textBlock.visibility = if (dab) View.GONE else View.VISIBLE
+                    text = if (dab) "" else typed
+                }
+                binding.textInput.addTextChangedListener {
+                    typed = it.trim()
+                    syncFrequency(number.toInt())
+                }
+                syncFrequency(number.toInt())
+                binding.choiceSpinner.onItemSelected { i ->
+                    number = options[i].value.toFloat()
+                    syncFrequency(options[i].value)
                 }
             }
 

@@ -105,7 +105,6 @@ class DirectExecutor(
         ActionType.SET_WIFI          -> setWifi(action)
         ActionType.TUNE_RADIO        -> tuneRadio(action)
         ActionType.RADIO_PLAY_PAUSE  -> radioPlayPause(action)
-        ActionType.SELECT_RADIO_BAND -> selectRadioBand(action)
         ActionType.CALL_NUMBER,
         ActionType.CALL_CONTACT      -> placeCall(action)
         else                         -> applyVehicle(action)
@@ -242,15 +241,13 @@ class DirectExecutor(
             // Three outcomes, not two: an unreadable tuner state is neither a success nor a
             // vehicle that refused, and applyVehicle's boolean cannot say which it was.
             ActionType.RADIO_PLAY_PAUSE,
-            // Same reason: "already on that band" is a success that sent nothing, and an
-            // unreadable band is not a refusal.
-            ActionType.SELECT_RADIO_BAND,
             // A call is never retried — see placeCall.
             ActionType.CALL_NUMBER,
             ActionType.CALL_CONTACT,
             // TUNE_RADIO is a vehicle write, but it carries a frequency the driver typed, and
             // "103,5 FM" that parsed to nothing must be reported as that rather than as a radio
-            // that refused.
+            // that refused. Its band half has three outcomes too: "already on that band" is a
+            // success that sent nothing, and an unreadable band is not a refusal.
             ActionType.TUNE_RADIO -> null
             // Waiting between two actions is the engine's business — it is what runs them in
             // sequence. Reaching here would mean an action ran outside a rule.
@@ -259,9 +256,16 @@ class DirectExecutor(
     }
 
     /**
-     * A frequency the driver typed. Text that names no station is unsupported, not an error:
-     * retrying "FM 250" three times with backoff will not make it a station, and the history
-     * showing what was typed is what lets the user find the typo.
+     * The one tuner action: a band, a frequency, or both.
+     *
+     * A rule that names no frequency names a band, and that is a complete instruction —
+     * `SaicRadio.selectBand` reads where the tuner is and moves it, which is the only form
+     * **DAB** has. A rule that names a frequency tunes it, on the band the rule picked or, for
+     * everything saved before the band existed, on the band the text implies.
+     *
+     * Text that names no station is unsupported, not an error: retrying "FM 250" three times
+     * with backoff will not make it a station, and the history showing what was typed is what
+     * lets the user find the typo.
      *
      * Playback follows [Action.flag], the editor's "enable radio" switch. It has to be
      * decided here rather than by a separate play action after the tune, because the vendor
@@ -270,7 +274,11 @@ class DirectExecutor(
      * caller can achieve by not asking for playback.
      */
     private fun tuneRadio(a: Action): ActionResult {
-        val station = RadioFrequency.parse(a.text)
+        // 0 is the band of every rule saved before the merge: it means "read the text".
+        val band = a.number.takeIf { it != 0 }
+        // DAB has no frequency to type, so the band alone is all a DAB rule can carry.
+        if (band != null && (band == SaicRadio.BAND_DAB || a.text.isBlank())) return selectRadioBand(a, band)
+        val station = RadioFrequency.parse(a.text, band)
             ?: return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "not a frequency: ${a.text}")
         val ok = SaicRadio.tune(station.band, station.frequencyKhz, andPlay = a.flag)
         return ActionResult(
@@ -324,18 +332,19 @@ class DirectExecutor(
      * knowing where the tuner is would move the driver off their station for an action that
      * may have been a no-op.
      */
-    private fun selectRadioBand(a: Action): ActionResult = when (SaicRadio.selectBand(a.number)) {
-        SaicRadio.BandResult.SWITCHED ->
-            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
-        SaicRadio.BandResult.ALREADY_ON_BAND ->
-            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "already on that band")
-        SaicRadio.BandResult.STATE_UNKNOWN ->
-            ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, "radio band unreadable — nothing sent")
-        SaicRadio.BandResult.UNSUPPORTED_BAND ->
-            ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "band ${a.number}")
-        SaicRadio.BandResult.REFUSED ->
-            ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, "radio refused the band")
-    }
+    private fun selectRadioBand(a: Action, band: Int): ActionResult =
+        when (SaicRadio.selectBand(band, andPlay = a.flag)) {
+            SaicRadio.BandResult.SWITCHED ->
+                ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
+            SaicRadio.BandResult.ALREADY_ON_BAND ->
+                ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "already on that band")
+            SaicRadio.BandResult.STATE_UNKNOWN ->
+                ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, "radio band unreadable — nothing sent")
+            SaicRadio.BandResult.UNSUPPORTED_BAND ->
+                ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "band $band")
+            SaicRadio.BandResult.REFUSED ->
+                ActionResult(a.type, false, BridgeContract.VERDICT_ERROR, "radio refused the band")
+        }
 
     /**
      * Places a call through the car's hands-free stack, and **never lets it be retried**.
@@ -637,8 +646,17 @@ class DirectExecutor(
                 ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "confirmed")
             ConfirmPrompt.Answer.NO ->
                 ActionResult(a.type, true, BridgeContract.VERDICT_DECLINED, "declined")
+            // The rule says what its own silence means, and the history says which reading
+            // was applied — "no answer" alone would leave the user to remember the setting.
             ConfirmPrompt.Answer.NO_ANSWER ->
-                ActionResult(a.type, false, BridgeContract.VERDICT_DECLINED, "no answer")
+                if (a.yesOnNoAnswer)
+                    ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "no answer — continued")
+                else
+                    ActionResult(a.type, false, BridgeContract.VERDICT_DECLINED, "no answer")
+            // Never the permissive reading: the question did not reach the driver, so there
+            // is no silence to interpret.
+            ConfirmPrompt.Answer.NOT_ASKED ->
+                ActionResult(a.type, false, BridgeContract.VERDICT_DECLINED, "question not shown")
         }
     }
 

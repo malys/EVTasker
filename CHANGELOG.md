@@ -6,6 +6,45 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **A confirmation can now treat silence as a yes.** The *Ask for confirmation* editor gained
+  a *No answer counts as yes* switch, so a rule that asks before it acts carries on when nobody
+  answers. The default is unchanged and stays the cautious one — silence stops the rule — but
+  the other half of the need is just as real: "close the windows in five minutes?" wants to be
+  answered by silence, where "unlock the doors?" does not. A deliberate no, and leaving the
+  question, still stop the rule; so does a question that never reached the screen, because
+  another prompt holding the screen is not somebody declining to answer. The setting rides in
+  its own `yesOnNoAnswer` field rather than on `flag`, which the editor writes for every action
+  with a default of `true` — reading it there would have flipped every confirmation ever
+  written. It is exported and imported with the rule, and the rule list says which reading each
+  question carries.
+
+- **A rule can ask whether the radio is playing.** The new *Radio playing* condition reads the
+  tuner's own state (`RadioBean`), which is a different question from the existing *Media
+  playing*: `AudioManager.isMusicActive` is false while the radio plays, its stream not being
+  the music one, so the platform reading calls a car with the radio on silent and no rule could
+  ask about the radio at all. Both are kept — a rule that must not talk over the driver's music
+  wants the media one, a rule that changes station or silences the news wants this one. A radio
+  service that will not answer leaves the condition unavailable rather than false.
+
+- **The published catalogue is generated.** The README now points at
+  `EVHardware/docs/catalogue.md`, which names every condition and every action with what it asks
+  for, whether it is refused while moving, and its firmware generations — rendered from the
+  enums by a test that fails on a stale copy.
+
+### Changed
+
+- **Radio band, station and playback are one action.** The separate *Radio band* entry is gone
+  and *Radio: band, station and play* does all three, because they were always one instruction:
+  a band could not carry a station, a station could not reach DAB, and a driver saying "FM 103.5,
+  and play it" had to write two rows. Leaving the frequency empty is the band-only form, which is
+  the only one **DAB** has — the editor takes the frequency field away once DAB is picked, since
+  a DAB service is addressed by ensemble and service id and there is nothing to type. A frequency
+  that disagrees with the band above it is refused rather than resolved. Rules and exported files
+  naming `SELECT_RADIO_BAND` are migrated on load, keeping their band and their playback, so
+  nothing written before this disappears or falls silent.
+
 ## [2.9.0] - 2026-08-29
 
 ### Added

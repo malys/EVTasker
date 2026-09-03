@@ -218,6 +218,16 @@
             android:textSize="@dimen/text_body"
             android:visibility="gone" />
 
+        <!-- ASK_CONFIRM only: what the rule does when the question is left unanswered. -->
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/confirmTimeoutSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target"
+            android:text="@string/editor_confirm_timeout_switch"
+            android:textSize="@dimen/text_body"
+            android:visibility="gone" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/payloadBlock"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"

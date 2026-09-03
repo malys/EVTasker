@@ -185,8 +185,8 @@ An unreadable condition makes the rule **not evaluable** — it does not fire, a
 history names the missing signal. Unreadable is never treated as false.
 
 Conditions span **context** (Bluetooth, time of day, day of week, firmware, near a place,
-the Wi-Fi network, media playing, a call in progress, how long the drive has lasted, a plain
-chance in a hundred), **environment** (outside temperature, the weather where the car is),
+the Wi-Fi network, media playing, the radio playing, a call in progress, how long the drive
+has lasted, a plain chance in a hundred), **environment** (outside temperature, the weather where the car is),
 **driving** (ignition, park, speed, odometer, drive mode,
 regeneration, energy saving), **energy** (battery level, charging, charging state, charge
 limit, remaining range, scheduled charging and the two ends of its window, battery
@@ -216,7 +216,7 @@ Actions cover **profile** application, **driving**, **comfort**, **climate** (on
 and passenger target temperatures, A/C, ECON, AUTO, recirculation, fan level, front and rear
 defrosters), **energy**
 (charge limit, allow charging, scheduled charging and its window, battery pre-heating),
-**audio** (volume, the fine controls, the radio — play, silence, toggle, tune, station stepping, screen), **driver assistance**, and **system**
+**audio** (volume, the fine controls, the radio — play, silence, toggle, band and station, station stepping, screen), **driver assistance**, and **system**
 (launch an app, show a message, speak through the head unit's text-to-speech engine,
 navigate to a destination, call a number, media play/pause and track skip, Bluetooth and
 Wi-Fi on or off, enable or disable another rule, wait). ADAS state — AEB, ELK, ACC/TJA, TSR, overspeed and
@@ -273,8 +273,15 @@ Value controls open on **what the car reports right now** — the brightness sli
 the screen already is, not at 5%. Reopening a saved action shows what the rule says instead,
 so editing a rule cannot quietly rewrite it.
 
-The exact per-entry list and its firmware support is generated, not hand-written — see
-below.
+**The exact per-entry list is generated, not hand-written.**
+[`EVHardware/docs/catalogue.md`](EVHardware/docs/catalogue.md) names every condition and every
+action there is, with what it asks for, whether it is refused while moving, and the firmware
+generations it is declared on. It is rendered from `ConditionType` and `ActionType` by a test
+that fails when the committed copy is stale, so it cannot promise an entry the app does not
+carry — the hand-written list it replaced had gone a year without mentioning twenty of them.
+The per-generation grid is beside it in
+[`firmware-matrix.md`](EVHardware/docs/firmware-matrix.md), and the Diagnostic screen stays the
+only answer for the car in front of you.
 
 ---
 
@@ -379,21 +386,35 @@ That buys four things the property ids could not:
   the stock UI), A/C, AUTO, recirculation, fan level, front and rear defrosters.
 - **Battery and charging** — charge limit in percent, allow/deny charging, the scheduled
   charging window, and battery pre-heating.
-- **Radio** — resume the last station, silence it, toggle between the two, tune a station,
-  step through the tuner's own list, or open the radio screen. All of them name the *tuner*,
-  which is what separates them from the media play/pause below: that one follows whichever
-  source owns the audio, so it stops Bluetooth when Bluetooth is the one playing.
-  The frequency is typed the way a driver says it — `103.5`, `FM 103,5`, `1080 AM` all land —
-  and text naming no station is reported as that rather than tuned to something near it.
+- **Radio** — resume the last station, silence it, toggle between the two, put the tuner on a
+  band and a station, step through the tuner's own list, or open the radio screen. A rule can
+  also **ask whether the radio is playing**, which is not the same question as *media playing*:
+  `AudioManager.isMusicActive` is false while the tuner plays, its stream not being the music
+  one, so the platform reading calls a car with the radio on silent. A rule that changes station
+  or silences the news wants the radio condition; one that must not talk over the driver's own
+  music wants the media one. All of them
+  name the *tuner*, which is what separates them from the media play/pause below: that one
+  follows whichever source owns the audio, so it stops Bluetooth when Bluetooth is the one
+  playing.
+  **Band, station and playback are one action**, because they are one instruction: "put the
+  radio on FM 103.5 and play it" is what a driver means, and it used to take two rows that each
+  had half of it. The frequency is typed the way a driver says it — `103.5`, `FM 103,5`,
+  `1080 AM` all land — and text naming no station is reported as that rather than tuned to
+  something near it. A frequency that disagrees with the band picked above it is refused for
+  the same reason: two things were said, and quietly keeping one of them is how a rule ends up
+  on a station nobody chose.
+  Leaving the frequency out is not an omission but the other half of the action: the tuner
+  moves to that band and lands on the station this car was last heard on there. That is how
+  **DAB** is reached, and the only way it can be — a DAB *service* is addressed by ensemble and
+  service id, so there is nothing for a driver to type, and the editor stops asking once DAB is
+  chosen. Next and previous station then move along it, which is the same call the car's own
+  launcher makes.
   The toggle reads the tuner's own play state and, when the car will not report it, sends
   nothing and says so: a wheel button can be pressed twice, a rule that fires while you are
   driving cannot, and a guessed direction is a car left silent or left playing.
   Opening the radio screen is the only one of them that takes the standstill gate — the rest
-  change what you hear, that one changes what is in front of you.
-  **DAB** cannot be tuned by frequency, because a DAB service is addressed by ensemble and
-  service id and there is nothing for a driver to type; next and previous station reach it,
-  which is the same call the car's own launcher makes. Every candidate that was considered
-  and refused is written down in EVHardware's `docs/radio-action-gap.md`.
+  change what you hear, that one changes what is in front of you. Every candidate that was
+  considered and refused is written down in EVHardware's `docs/radio-action-gap.md`.
 - **Calls** — placed by the car's hands-free stack on the paired phone. The head unit has no
   SIM and no dialer, so `ACTION_CALL` would find nothing to handle it.
   A rule can store a typed number or select a name/number from the phone book explicitly
@@ -428,14 +449,25 @@ is about is usually the place it is written at; the destination does not, becaus
 one place a rule never navigates to.
 
 **Ask for confirmation** is the one action whose answer decides the rest of the rule. It
-shows its question full-screen and runs the actions after it only on "yes". Anything else —
-"no", leaving the screen, or silence until the countdown runs out — stops the branch where it
+shows its question full-screen and runs the actions after it only on "yes". "No" — and
+leaving the screen, which is the same thing said with a gesture — stops the branch where it
 stands, and the history shows the rule as *skipped* rather than failed. The wait is part of
 the action: 5 to 60 seconds, 10 by default, because a question asked before the doors unlock
 is answered at once while one asked at the end of a drive has to survive the driver looking
 away. Actions that never ran get no history line, since there is no verdict to report for
 them. One prompt at a time: a second rule asking while one is open is refused its answer
 rather than given someone else's.
+
+**What silence means is the rule's to decide.** By default nobody answering is a no: the
+actions behind a confirmation are the ones you did not want applied unattended. The switch
+*No answer counts as yes* turns that around, and it exists because the other half of the need
+is just as real — a rule that acts unless it is stopped, where the question is a chance to
+object rather than a permission to ask for. "Close the windows in five minutes?" wants to be
+answered by silence; "unlock the doors?" does not. It changes nothing about a deliberate no,
+and it never applies to a question that could not be put on screen — another prompt holding
+the screen is not somebody declining to answer, so that stops the rule whatever the switch
+says. The rule list shows which reading each question carries, because two rules with the same
+words otherwise behave in opposite ways with nothing saying so.
 
 ---
 
@@ -669,7 +701,7 @@ in (via the on-screen keyboard) is:
 ## Building
 ```bash
 mise install        # JDK 17 (AGP 9.1.1)
-mise run test       # JVM unit tests (also regenerates docs/firmware-matrix.md)
+mise run test       # JVM unit tests (also regenerates EVHardware/docs/{firmware-matrix,catalogue}.md)
 mise run build      # debug APK
 mise run check      # what CI runs
 mise run release    # release APK (R8 on)
@@ -708,8 +740,9 @@ refusals and missing data — is testable on the JVM, with no vehicle.
 One enum line in `ConditionType` or `ActionType`, one string, and — for a vehicle entry —
 one `@SupportedOn(...)`. The editor builds itself from the `ValueSpec`; no screen to write.
 For a vehicle action, add the matching branch to `DirectExecutor` (EVTasker writes the
-vehicle directly through EVHardware, where the catalogue lives). The firmware matrix
-regenerates on the next test run.
+vehicle directly through EVHardware, where the catalogue lives). The firmware matrix and the
+published catalogue both regenerate on the next test run — commit them with the entry, or the
+test that renders them fails on the stale copy.
 
 ---
 

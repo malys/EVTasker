@@ -62,7 +62,19 @@ data class Action(
     val displayName: String? = null,
     /** [ActionType.SET_CHARGE_WINDOW] — minutes since midnight, start and end. */
     val minutesFrom: Int = 0,
-    val minutesTo: Int = 0
+    val minutesTo: Int = 0,
+    /**
+     * [ActionType.ASK_CONFIRM] — whether a question nobody answered lets the rule carry on.
+     *
+     * Its own field rather than [flag], which every editor save already writes for every
+     * action: an [ActionType.ASK_CONFIRM] saved before this existed carries `flag = true`
+     * because that is the model default, and reading the permissive meaning off it would
+     * silently turn every confirmation ever written into one that proceeds on silence.
+     *
+     * Non-null with the cautious default, so an absent field — which is what Gson finds in
+     * every rule saved before now — reads as the behaviour those rules were written for.
+     */
+    val yesOnNoAnswer: Boolean = false
 )
 
 /**

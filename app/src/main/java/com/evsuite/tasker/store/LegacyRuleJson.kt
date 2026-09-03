@@ -25,6 +25,11 @@ import com.google.gson.JsonPrimitive
  * these as if they were percentages, so that is how they are read back: 100 meant open, 0 and
  * 7 meant closed.
  *
+ * `SELECT_RADIO_BAND` is the third. Band, frequency and playback were one instruction split
+ * across two entries, and the split was the wrong seam — a band could not carry a station and
+ * a station could not reach DAB. They merged into `TUNE_RADIO`, which reads the band from the
+ * same `number` the band action already stored, so the rewrite is the name and nothing else.
+ *
  * The rewrite is by name, wherever it sits: an action in the "if", in an "else if" or in the
  * "else" reaches the reader through the same object shape, so the walk is recursive rather
  * than a list of paths that a later branch shape could outgrow.
@@ -70,6 +75,16 @@ internal object LegacyRuleJson {
                 if (flag != null) {
                     obj.add("type", JsonPrimitive("WEBHOOK"))
                     obj.add("flag", JsonPrimitive(flag))
+                    changed = true
+                }
+                if (type == "SELECT_RADIO_BAND") {
+                    obj.add("type", JsonPrimitive("TUNE_RADIO"))
+                    // No frequency: the band alone is what the old action meant, and it is
+                    // what the merged one reads as "put the tuner on this band".
+                    obj.add("text", JsonPrimitive(""))
+                    // The old band switch always took the audio focus (`tune(andPlay = true)`),
+                    // so the rule played the radio whether or not anyone wrote that down.
+                    obj.add("flag", JsonPrimitive(true))
                     changed = true
                 }
                 if (type in GLASS_ACTIONS && rewriteGlassNumber(obj)) changed = true

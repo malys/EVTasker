@@ -338,7 +338,6 @@ object Diagnostics {
     private val RADIO_ACTIONS = setOf(
         ActionType.PLAY_RADIO, ActionType.PAUSE_RADIO, ActionType.RADIO_PLAY_PAUSE,
         ActionType.TUNE_RADIO, ActionType.RADIO_NEXT_STATION, ActionType.RADIO_PREV_STATION,
-        ActionType.SELECT_RADIO_BAND,
         // The gated one: gateReason above is what refuses it while the car is moving.
         ActionType.OPEN_RADIO_SCREEN
     )
