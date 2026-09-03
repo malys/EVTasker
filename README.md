@@ -277,8 +277,9 @@ so editing a rule cannot quietly rewrite it.
 [`EVHardware/docs/catalogue.md`](EVHardware/docs/catalogue.md) names every condition and every
 action there is, with what it asks for, whether it is refused while moving, and the firmware
 generations it is declared on. It is rendered from `ConditionType` and `ActionType` by a test
-that fails when the committed copy is stale, so it cannot promise an entry the app does not
+that rewrites it on every `mise run test`, so it cannot promise an entry the app does not
 carry — the hand-written list it replaced had gone a year without mentioning twenty of them.
+Commit it with the change that moved it, the way the firmware matrix is already committed.
 The per-generation grid is beside it in
 [`firmware-matrix.md`](EVHardware/docs/firmware-matrix.md), and the Diagnostic screen stays the
 only answer for the car in front of you.
@@ -742,7 +743,7 @@ one `@SupportedOn(...)`. The editor builds itself from the `ValueSpec`; no scree
 For a vehicle action, add the matching branch to `DirectExecutor` (EVTasker writes the
 vehicle directly through EVHardware, where the catalogue lives). The firmware matrix and the
 published catalogue both regenerate on the next test run — commit them with the entry, or the
-test that renders them fails on the stale copy.
+repository ships a list that no longer matches the app.
 
 ---
 
