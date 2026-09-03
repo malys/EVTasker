@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-09-03
+
 ### Added
 
 - **A confirmation can now treat silence as a yes.** The *Ask for confirmation* editor gained
