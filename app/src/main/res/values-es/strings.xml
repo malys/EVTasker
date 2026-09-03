@@ -268,6 +268,7 @@
     <string name="diag_reason_no_messaging_profile">sin cliente MAP en esta unidad</string>
     <string name="diag_reason_no_navigation">ninguna aplicación de navegación</string>
     <string name="diag_reason_no_location">ninguna posición disponible</string>
+    <string name="diag_reason_weather_unanswered">sin respuesta del servicio meteorológico</string>
     <string name="diag_reason_not_driven_yet">el coche aún no ha circulado</string>
     <string name="diag_reason_no_handsfree">teléfono manos libres ilegible</string>
     <string name="paste_header">**Contraseña:** `%1$s` · caduca una hora después del envío.\n\nAlojado gratuitamente por [April](https://www.april.org) en %2$s. Si esto te ha ahorrado un viaje al taller, [haz una donación](https://www.april.org/adherer).</string>

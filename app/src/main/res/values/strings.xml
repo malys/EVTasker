@@ -285,6 +285,7 @@
     <string name="diag_reason_no_messaging_profile">no MAP client on this head unit</string>
     <string name="diag_reason_no_navigation">no navigation app</string>
     <string name="diag_reason_no_location">no position available</string>
+    <string name="diag_reason_weather_unanswered">no answer from the weather service</string>
     <string name="diag_reason_not_driven_yet">no phone on board yet (car has not driven, no active phone)</string>
     <string name="diag_reason_no_handsfree">hands-free phone unreadable</string>
     <string name="paste_header">**Password:** `%1$s` · expires one hour after upload.\n\nHosted free of charge by [April](https://www.april.org) on %2$s. If this saved you a trip to the garage, [make a donation](https://www.april.org/adherer).</string>

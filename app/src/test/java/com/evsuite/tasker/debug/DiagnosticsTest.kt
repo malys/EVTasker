@@ -151,6 +151,20 @@ class DiagnosticsTest {
         assertEquals(ConditionType.entries.map { it.name }, entries.map { it.name })
     }
 
+    /**
+     * A check run in a garage has no fix, so the weather query is never sent. Recording that
+     * as a verdict about the car would hide the condition from the editor until someone
+     * re-ran the diagnostic somewhere with a sky.
+     */
+    @Test
+    fun `an unanswered weather query does not hide the condition`() {
+        val weather = entry(Diagnostics.conditions(Snapshot(), null), "WEATHER_NOW")
+
+        assertEquals(Diagnostics.Status.BLOCKED, weather.status)
+        assertEquals(Diagnostics.Reason.WEATHER_UNANSWERED, weather.reason)
+        assertFalse(weather.reason.describesTheCar)
+    }
+
     // ---------- Actions ----------
 
     @Test
@@ -350,6 +364,9 @@ class DiagnosticsTest {
             Diagnostics.Reason.EVPROFILE_UNREACHABLE,
             Diagnostics.Reason.NOTIFICATIONS_OFF,
             Diagnostics.Reason.NO_LOCATION,
+            // The weather query needs a position and a live round-trip: a check run in a
+            // garage answers nothing about whether this head unit has a weather service.
+            Diagnostics.Reason.WEATHER_UNANSWERED,
             Diagnostics.Reason.NOT_DRIVEN_YET,
             Diagnostics.Reason.NO_HANDSFREE_INFO,
             // A phone leaves the car with its owner. "No phone on the message profile" is

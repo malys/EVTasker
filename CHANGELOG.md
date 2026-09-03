@@ -31,7 +31,7 @@ All notable changes to this project are documented here. Format follows
 - **The published catalogue is generated.** The README now points at
   `EVHardware/docs/catalogue.md`, which names every condition and every action with what it asks
   for, whether it is refused while moving, and its firmware generations — rendered from the
-  enums by a test that fails on a stale copy.
+  enums and rewritten by the test run, the way the firmware matrix already is.
 
 ### Changed
 
@@ -44,6 +44,17 @@ All notable changes to this project are documented here. Format follows
   that disagrees with the band above it is refused rather than resolved. Rules and exported files
   naming `SELECT_RADIO_BAND` are migrated on load, keeping their band and their playback, so
   nothing written before this disappears or falls silent.
+
+### Fixed
+
+- **The weather condition disappeared from the editor after a diagnostic run indoors.** The
+  check reported an unreadable weather reading as `NOT_READABLE`, a verdict about the car, and
+  the rule editor hides those — so a check run in a garage, or one whose query did not come
+  back inside its two seconds, took *Weather* out of the condition picker until someone
+  re-ran the diagnostic under an open sky. The query needs a position and a live round-trip to
+  the head unit's provider, and neither absence says anything about whether this car has a
+  weather service: it is now reported as `WEATHER_UNANSWERED`, which the Diagnostic screen
+  shows as *no answer from the weather service* and which never hides the condition.
 
 ## [2.9.0] - 2026-08-29
 

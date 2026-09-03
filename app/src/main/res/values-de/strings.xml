@@ -268,6 +268,7 @@
     <string name="diag_reason_no_messaging_profile">kein MAP-Client auf dieser Haupteinheit</string>
     <string name="diag_reason_no_navigation">keine Navigations-App</string>
     <string name="diag_reason_no_location">keine Position verfügbar</string>
+    <string name="diag_reason_weather_unanswered">keine Antwort vom Wetterdienst</string>
     <string name="diag_reason_not_driven_yet">das Auto ist noch nicht gefahren</string>
     <string name="diag_reason_no_handsfree">Freisprechtelefon nicht lesbar</string>
     <string name="paste_header">**Passwort:** `%1$s` · verfällt eine Stunde nach dem Hochladen.\n\nKostenlos gehostet von [April](https://www.april.org) auf %2$s. Wenn Ihnen das einen Werkstattbesuch erspart hat, [spenden Sie etwas](https://www.april.org/adherer).</string>

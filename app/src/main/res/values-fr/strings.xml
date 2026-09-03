@@ -285,6 +285,7 @@
     <string name="diag_reason_no_messaging_profile">pas de client MAP sur cet autoradio</string>
     <string name="diag_reason_no_navigation">aucune application de navigation</string>
     <string name="diag_reason_no_location">aucune position disponible</string>
+    <string name="diag_reason_weather_unanswered">aucune réponse du service météo</string>
     <string name="diag_reason_not_driven_yet">aucun téléphone à bord (voiture pas encore roulée, aucun téléphone actif)</string>
     <string name="diag_reason_no_handsfree">téléphone mains-libres illisible</string>
     <string name="paste_header">**Mot de passe :** `%1$s` · expire une heure après l’envoi.\n\nHébergé gracieusement par [April](https://www.april.org) sur %2$s. Si cela vous a évité un passage au garage, [faites un don](https://www.april.org/adherer).</string>

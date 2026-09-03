@@ -95,6 +95,14 @@ object Diagnostics {
         NO_NAVIGATION_APP,
         /** No location permission, or no fix recent enough to place the car. */
         NO_LOCATION,
+        /**
+         * The weather service was not asked, or did not answer in time.
+         *
+         * The query needs a position and a round-trip that may reach the network, so it comes
+         * back empty in a garage, on a cold radio, or past its two seconds. That describes the
+         * moment, not the car — see [describesTheCar].
+         */
+        WEATHER_UNANSWERED,
         /** The car has not moved yet, so no device can be called "on board". */
         NOT_DRIVEN_YET,
         /** The platform would not say which phone the head unit made hands-free. */
@@ -258,6 +266,7 @@ object Diagnostics {
         type == ConditionType.BT_DEVICE_HANDSFREE -> Reason.NO_HANDSFREE_INFO
         type in BLUETOOTH_CONDITIONS -> Reason.BLUETOOTH_OFF
         type == ConditionType.LOCATION_WITHIN -> Reason.NO_LOCATION
+        type == ConditionType.WEATHER_NOW -> Reason.WEATHER_UNANSWERED
         !snapshot.bridgeAvailable -> Reason.LAYER_NOT_READY
         else -> Reason.NOT_READABLE
     }
