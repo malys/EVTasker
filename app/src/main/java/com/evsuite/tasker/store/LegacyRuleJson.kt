@@ -1,6 +1,7 @@
 package com.evsuite.tasker.store
 
 import com.evsuite.hardware.catalog.VehicleEnums
+import com.evsuite.hardware.catalog.WeatherConditions
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
@@ -29,6 +30,13 @@ import com.google.gson.JsonPrimitive
  * across two entries, and the split was the wrong seam — a band could not carry a station and
  * a station could not reach DAB. They merged into `TUNE_RADIO`, which reads the band from the
  * same `number` the band action already stored, so the rewrite is the name and nothing else.
+ *
+ * `WEATHER_NOW` is the fourth. It compared the head unit's own weather phrase, typed by
+ * hand, against the one the service answered — a value nobody could guess and that changed
+ * with the display language. It now stores one of [WeatherConditions]' states, so the typed
+ * phrase is read back through the same classifier the reading goes through: "pluie" becomes
+ * rain, and a phrase nothing recognises is left alone rather than turned into a state the
+ * rule never asked for.
  *
  * The rewrite is by name, wherever it sits: an action in the "if", in an "else if" or in the
  * "else" reaches the reader through the same object shape, so the walk is recursive rather
@@ -88,6 +96,7 @@ internal object LegacyRuleJson {
                     changed = true
                 }
                 if (type in GLASS_ACTIONS && rewriteGlassNumber(obj)) changed = true
+                if (type == "WEATHER_NOW" && rewriteWeatherPhrase(obj)) changed = true
                 obj.entrySet().forEach { changed = rewrite(it.value) || changed }
             }
         }
@@ -108,6 +117,24 @@ internal object LegacyRuleJson {
         if (number == VehicleEnums.WINDOW_CLOSE || number == VehicleEnums.WINDOW_OPEN) return false
         val state = if (number >= OPEN_FROM) VehicleEnums.WINDOW_OPEN else VehicleEnums.WINDOW_CLOSE
         obj.add("number", JsonPrimitive(state))
+        return true
+    }
+
+    /**
+     * @return true when a typed weather phrase became a state.
+     *
+     * Idempotent, like the glass pass: a condition already carrying a state has no phrase
+     * left to read, so a second run finds nothing to do. A phrase the classifier does not
+     * recognise keeps its text and its 0 — the rule stops matching, which is the honest
+     * outcome for a wording this build cannot place, and reopening it in the editor is what
+     * repairs it.
+     */
+    private fun rewriteWeatherPhrase(obj: com.google.gson.JsonObject): Boolean {
+        val phrase = obj.get("text")?.takeIf { it.isJsonPrimitive }?.asString?.takeIf { it.isNotBlank() }
+            ?: return false
+        val state = WeatherConditions.classify(phrase) ?: return false
+        obj.add("number", JsonPrimitive(state))
+        obj.add("text", JsonPrimitive(""))
         return true
     }
 }

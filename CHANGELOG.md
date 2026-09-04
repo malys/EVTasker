@@ -6,6 +6,23 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **The weather condition is a list now, not a phrase to type.** It compared what the head
+  unit's weather service answered — "Light rain", "Pluie faible" — against a string typed by
+  hand, so writing the rule meant guessing the provider's exact wording, in the language the
+  car happened to be set to, and the rule stopped matching the day that language changed. The
+  editor offers seven states instead: clear, cloudy, rain, snow, thunderstorm, fog, wind. The
+  phrase is classified on the way in, in the six languages the apps ship, so a rule stores a
+  state the app owns rather than the provider's words. A phrase nothing recognises leaves the
+  condition **unavailable** rather than guessing at fine weather. Rules saved with a typed
+  phrase are read back through the same classifier — "pluie" becomes rain; a wording this
+  build cannot place keeps its text and stops matching, and reopening it in the editor is what
+  repairs it.
+- **Audio conditions have their own group in the picker**, the way the actions already did.
+  *Media playing*, *Radio playing* and *Media volume* were spread across *Context* and
+  *Comfort*; a rule about the radio is now written next to the one about the volume.
+
 ## [2.10.0] - 2026-09-03
 
 ### Added

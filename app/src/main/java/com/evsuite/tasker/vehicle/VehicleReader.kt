@@ -5,6 +5,7 @@ import com.evsuite.hardware.DataUsage
 import com.evsuite.hardware.FirmwareInfo
 import com.evsuite.hardware.EVHardware
 import com.evsuite.hardware.catalog.SnapshotKeys
+import com.evsuite.hardware.catalog.WeatherConditions
 import com.evsuite.hardware.catalog.VehicleEnums
 import com.evsuite.hardware.saic.SaicCharging
 import com.evsuite.hardware.saic.SaicClimate
@@ -240,11 +241,14 @@ object VehicleReader {
         if (fix == null) return@buildMap
         val language = weatherLanguage()
 
-        if (wants(wanted, SnapshotKeys.KEY_WEATHER_TEXT)) {
+        // The service answers a phrase, the catalogue owns a state: classify here, once, so
+        // no rule ever holds the provider's wording. A phrase nothing recognises writes no
+        // key at all — the condition then reads as "cannot tell", never as fine weather.
+        if (wants(wanted, SnapshotKeys.KEY_WEATHER_CONDITION)) {
             SaicWeather.currentAt(fix.latitude, fix.longitude, language)
                 ?.text
-                ?.takeIf { it.isNotBlank() }
-                ?.let { put(SnapshotKeys.KEY_WEATHER_TEXT, it) }
+                ?.let { WeatherConditions.classify(it) }
+                ?.let { put(SnapshotKeys.KEY_WEATHER_CONDITION, it) }
         }
     }
 
