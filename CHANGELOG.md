@@ -6,6 +6,30 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.12.0] - 2026-09-23
+
+### Added
+
+- **A button condition can be picked by pressing the button.** The value editor's "Detect by
+  pressing the button…" waits for a steering-wheel press and fills in the button and the press type. "Run
+  now" on a rule with a button condition asks for the press too, and shows the name of the
+  button it received before running.
+- **Keys the app does not name can still be bound.** A press on an unlisted key is shown as
+  "Other key (code N)" and can be used in a condition.
+
+### Changed
+
+- **Buttons have readable names.** The list says "📞 Phone", "Driver display pad ▲", "★ Left
+  star" and so on, instead of internal identifiers.
+
+### Fixed
+
+- **Next track no longer fires phone rules, and a phone press is no longer a double press.**
+  The head unit reports each key on two broadcasts with different numbering; EVHardware now
+  reads each in its own code space.
+- **Changing a rule's button condition replaces it.** Adding a button condition used to keep
+  the previous one, so the old buttons kept counting.
+
 ## [2.11.1] - 2026-09-17
 
 ### Changed
