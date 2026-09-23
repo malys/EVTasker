@@ -52,21 +52,36 @@ object ValueEditorDialog {
         val labels = Labels(context)
 
         if (spec.kind == ValueKind.PHYSICAL_BUTTON) {
-            val buttons = com.evsuite.hardware.PhysicalButtonEventDecoder.Button.entries
+            // Key ids, not buttons: a key the table does not name joins the list once pressed.
+            val keys = com.evsuite.hardware.PhysicalButtonEventDecoder.Button.entries
+                .map { it.id }.toMutableList()
             val presses = com.evsuite.hardware.PhysicalButtonEventDecoder.Press.entries
+            fun showKeys(selected: Int) {
+                if (selected !in keys) keys += selected
+                binding.physicalButtonSpinner.adapter = simpleAdapter(context, keys.map { buttonLabel(context, it) })
+                binding.physicalButtonSpinner.setSelection(keys.indexOf(selected))
+            }
             binding.physicalButtonBlock.visibility = View.VISIBLE
-            binding.physicalButtonSpinner.adapter = simpleAdapter(context, buttons.map { buttonLabel(it.name) })
+            binding.physicalDetectButton.visibility = View.VISIBLE
+            // A new condition stores 0, which is no key: it opens on the first entry.
+            val stored = condition.number.toInt()
+            val known = stored in keys ||
+                com.evsuite.hardware.PhysicalButtonEventDecoder.unknownKey(stored) != null
+            showKeys(if (known) stored else keys.first())
             // Built from the enum rather than from a hand-written list: the two drifted apart
             // once already, and a press the decoder can emit but the picker cannot offer is a
             // rule nobody can write.
             binding.physicalPressSpinner.adapter = simpleAdapter(context, presses.map { pressLabel(context, it) })
-            binding.physicalButtonSpinner.setSelection(
-                buttons.indexOfFirst { condition.number.toInt() in it.codes }.coerceAtLeast(0)
-            )
             binding.physicalPressSpinner.setSelection(presses.indexOfFirst { it.name == condition.text }.coerceAtLeast(0))
+            binding.physicalDetectButton.setOnClickListener {
+                ButtonCapture.show(context, R.string.button_capture_use) { event ->
+                    showKeys(event.keyId)
+                    binding.physicalPressSpinner.setSelection(presses.indexOf(event.press))
+                }
+            }
             showEditor(context, condition.type.labelRes, binding) {
                     onDone(condition.copy(
-                        number = buttons[binding.physicalButtonSpinner.selectedItemPosition].codes.first().toFloat(),
+                        number = keys[binding.physicalButtonSpinner.selectedItemPosition].toFloat(),
                         text = presses[binding.physicalPressSpinner.selectedItemPosition].name
                     ))
                     true
@@ -125,8 +140,42 @@ object ValueEditorDialog {
         }
     }
 
-    private fun buttonLabel(name: String): String = name.lowercase()
-        .split('_').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
+    /** What the driver sees on the wheel, not the decoder's constant. */
+    internal fun buttonLabel(context: Context, keyId: Int): String {
+        val button = com.evsuite.hardware.PhysicalButtonEventDecoder.Button.byId(keyId)
+        if (button == null) {
+            val (source, code) = com.evsuite.hardware.PhysicalButtonEventDecoder.unknownKey(keyId)
+                ?: return "?"
+            return context.getString(
+                if (source == com.evsuite.hardware.PhysicalButtonEventDecoder.Source.SYSTEM_UI) {
+                    R.string.physical_button_unknown_system
+                } else {
+                    R.string.physical_button_unknown
+                },
+                code
+            )
+        }
+        return context.getString(
+            when (button) {
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.PHONE -> R.string.physical_button_phone
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.UP -> R.string.physical_button_up
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.DOWN -> R.string.physical_button_down
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.OK -> R.string.physical_button_ok
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.LEFT -> R.string.physical_button_left
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.RIGHT -> R.string.physical_button_right
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.SOURCE -> R.string.physical_button_source
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.CENTER -> R.string.physical_button_center
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.VOLUME_UP -> R.string.physical_button_volume_up
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.VOLUME_DOWN -> R.string.physical_button_volume_down
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.MEDIA_NEXT -> R.string.physical_button_next
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.MEDIA_PREVIOUS -> R.string.physical_button_previous
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.MUTE -> R.string.physical_button_mute
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.STAR_LEFT -> R.string.physical_button_star_left
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.STAR_RIGHT -> R.string.physical_button_star_right
+                com.evsuite.hardware.PhysicalButtonEventDecoder.Button.ASSISTANT -> R.string.physical_button_voice
+            }
+        )
+    }
 
     fun editAction(
         context: Context,

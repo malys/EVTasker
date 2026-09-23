@@ -92,6 +92,18 @@ class RulesFragment : Fragment() {
      */
     private fun runNow() {
         val rule = selected ?: return
+        // A button rule has nothing to test without a press: ask for one, and the test runs on
+        // the press the car actually reported — which also shows which button that was.
+        if (rule.hasPhysicalButtonCondition) {
+            ButtonCapture.show(requireContext(), R.string.button_capture_run) { event ->
+                runNow(rule, event.value)
+            }
+            return
+        }
+        runNow(rule, null)
+    }
+
+    private fun runNow(rule: Rule, buttonEvent: String?) {
         toast(getString(R.string.rules_running))
         val handler = Handler(Looper.getMainLooper())
         CycleReporter.listener = { run ->
@@ -102,7 +114,7 @@ class RulesFragment : Fragment() {
         }
         // The test reuses the run service: testing a rule must take exactly the
         // vehicle-start path, otherwise the test proves nothing.
-        TaskerRunService.start(requireContext(), rule.id)
+        TaskerRunService.start(requireContext(), rule.id, buttonEvent)
     }
 
     private fun showRunResult(run: EngineRun) {

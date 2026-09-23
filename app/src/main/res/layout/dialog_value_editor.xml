@@ -118,6 +118,16 @@
             </LinearLayout>
         </LinearLayout>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/physicalDetectButton"
+            style="@style/Widget.EV.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:minHeight="@dimen/touch_target"
+            android:text="@string/physical_button_detect"
+            android:visibility="gone" />
+
         <TextView
             android:id="@+id/choiceEmpty"
             android:layout_width="match_parent"

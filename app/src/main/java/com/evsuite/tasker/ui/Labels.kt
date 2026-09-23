@@ -70,9 +70,7 @@ class Labels(
             ValueKind.TEXT -> "$name ${operator(condition.op)} ${condition.text}"
 
             ValueKind.PHYSICAL_BUTTON -> {
-                val button = com.evsuite.hardware.PhysicalButtonEventDecoder.Button.entries
-                    .firstOrNull { condition.number.toInt() in it.codes }?.name?.lowercase()?.replace('_', ' ')
-                    ?: "?"
+                val button = ValueEditorDialog.buttonLabel(context, condition.number.toInt())
                 val press = ValueEditorDialog.pressLabel(
                     context,
                     com.evsuite.hardware.PhysicalButtonEventDecoder.Press.entries

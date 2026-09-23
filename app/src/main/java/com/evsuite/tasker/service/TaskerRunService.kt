@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import com.evsuite.hardware.EVHardware
+import com.evsuite.hardware.PhysicalButtonEventDecoder
+import com.evsuite.hardware.catalog.SnapshotKeys
 import com.evsuite.tasker.store.AppState
 import com.evsuite.tasker.util.Notifier
 import com.evsuite.tasker.vehicle.RuleCycle
@@ -22,10 +24,14 @@ class TaskerRunService : Service() {
 
     companion object {
         private const val EXTRA_RULE_ID = "ruleId"
+        private const val EXTRA_EVENT = "event"
 
-        fun start(context: Context, ruleId: String) {
+        /** [buttonEvent]: the press a button rule is tested on, as [PhysicalButtonEventDecoder.Event.value]. */
+        fun start(context: Context, ruleId: String, buttonEvent: String? = null) {
             context.startForegroundService(
-                Intent(context, TaskerRunService::class.java).putExtra(EXTRA_RULE_ID, ruleId)
+                Intent(context, TaskerRunService::class.java)
+                    .putExtra(EXTRA_RULE_ID, ruleId)
+                    .putExtra(EXTRA_EVENT, buttonEvent)
             )
         }
     }
@@ -38,7 +44,13 @@ class TaskerRunService : Service() {
             EVHardware.init(applicationContext)      // idempotent
             EVHardware.initAudio(applicationContext) // idempotent; binds the vendor audio helper
             VendorServices.connect(applicationContext)
-            RuleCycle.run(this, "MANUAL", ruleId = intent?.getStringExtra(EXTRA_RULE_ID))
+            val event = intent?.getStringExtra(EXTRA_EVENT)
+            RuleCycle.run(
+                this,
+                "MANUAL",
+                eventReadings = event?.let { mapOf(SnapshotKeys.KEY_PHYSICAL_BUTTON_EVENT to it) }.orEmpty(),
+                ruleId = intent?.getStringExtra(EXTRA_RULE_ID)
+            )
             stopSelf(startId)
         }
         return START_NOT_STICKY

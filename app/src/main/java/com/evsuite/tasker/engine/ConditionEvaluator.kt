@@ -48,9 +48,11 @@ object ConditionEvaluator {
     private fun evaluatePhysicalButton(c: Condition, s: Snapshot): ConditionOutcome {
         val actual = s.string(com.evsuite.hardware.catalog.SnapshotKeys.KEY_PHYSICAL_BUTTON_EVENT)
             ?: return ConditionOutcome.UNAVAILABLE
-        val button = com.evsuite.hardware.PhysicalButtonEventDecoder.Button.entries
-            .firstOrNull { c.number.toInt() in it.codes } ?: return ConditionOutcome.UNAVAILABLE
-        val expected = "${button.name}:${c.text}"
+        val expected = com.evsuite.hardware.PhysicalButtonEventDecoder.Event(
+            c.number.toInt(),
+            com.evsuite.hardware.PhysicalButtonEventDecoder.Press.entries
+                .firstOrNull { it.name == c.text } ?: return ConditionOutcome.UNAVAILABLE
+        ).value
         return if (actual == expected) ConditionOutcome.MATCH else ConditionOutcome.NO_MATCH
     }
 

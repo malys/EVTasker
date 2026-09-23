@@ -27,7 +27,7 @@ class ConditionEvaluatorTest {
     @Test
     fun `only the matching physical button condition matches`() {
         val event = PhysicalButtonEventDecoder.Event(
-            PhysicalButtonEventDecoder.Button.STAR_LEFT,
+            PhysicalButtonEventDecoder.Button.STAR_LEFT.id,
             PhysicalButtonEventDecoder.Press.LONG
         )
         val current = snapshot(*event.readings().map { it.key to it.value }.toTypedArray())
@@ -40,6 +40,23 @@ class ConditionEvaluatorTest {
             ConditionOutcome.NO_MATCH,
             ConditionEvaluator.evaluate(Condition(ConditionType.PHYSICAL_BUTTON,
                 number = PhysicalButtonEventDecoder.Button.STAR_RIGHT.codes.first().toFloat(), text = "LONG"), current)
+        )
+    }
+
+    @Test
+    fun `a key the table does not name can still be bound`() {
+        val keyId = PhysicalButtonEventDecoder.unknownKeyId(PhysicalButtonEventDecoder.Source.HARDKEY_REPORT, 3)
+        val current = snapshot(
+            *PhysicalButtonEventDecoder.Event(keyId, PhysicalButtonEventDecoder.Press.DOUBLE)
+                .readings().map { it.key to it.value }.toTypedArray()
+        )
+        assertEquals(
+            ConditionOutcome.MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.PHYSICAL_BUTTON, number = keyId.toFloat(), text = "DOUBLE"), current)
+        )
+        assertEquals(
+            ConditionOutcome.NO_MATCH,
+            ConditionEvaluator.evaluate(Condition(ConditionType.PHYSICAL_BUTTON, number = keyId.toFloat(), text = "SHORT"), current)
         )
     }
 

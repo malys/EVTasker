@@ -170,6 +170,10 @@ class BranchEditorActivity : AppCompatActivity() {
                 withLocationIfNeeded(type) {
                     val fresh = Condition(type = type)
                     ValueEditorDialog.editCondition(this, fresh, mediaVolumeMax, currentPoint()) { configured ->
+                        // A press is one button: a second button in the same case replaces the
+                        // first. Kept side by side, "all" could never match again and "any"
+                        // kept the old button firing the rule.
+                        if (configured.type.eventDriven) conditions.removeAll { it.type.eventDriven }
                         conditions += configured
                         renderConditions()
                     }

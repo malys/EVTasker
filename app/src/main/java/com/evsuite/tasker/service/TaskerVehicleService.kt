@@ -71,6 +71,15 @@ class TaskerVehicleService : Service() {
         var isRunning: Boolean = false
             private set
 
+        /**
+         * Takes the next presses instead of the rules, while a screen asks the driver to press
+         * a button. Read on the main thread, where the receiver runs.
+         *
+         * A press made to name a button is not a request to run what that button is bound to.
+         */
+        @Volatile
+        var buttonCapture: ((PhysicalButtonEventDecoder.Event) -> Unit)? = null
+
         fun start(context: Context) {
             context.startForegroundService(Intent(context, TaskerVehicleService::class.java))
         }
@@ -305,8 +314,7 @@ class TaskerVehicleService : Service() {
     }
 
     /** A single press waiting to see whether a second one follows, per button. */
-    private val pendingShortPresses =
-        mutableMapOf<PhysicalButtonEventDecoder.Button, Runnable>()
+    private val pendingShortPresses = mutableMapOf<Int, Runnable>()
 
     private val buttonHandler = Handler(Looper.getMainLooper())
 
@@ -324,17 +332,17 @@ class TaskerVehicleService : Service() {
      */
     private fun dispatchButton(event: PhysicalButtonEventDecoder.Event) {
         if (event.press == PhysicalButtonEventDecoder.Press.DOUBLE) {
-            pendingShortPresses.remove(event.button)?.let { buttonHandler.removeCallbacks(it) }
+            pendingShortPresses.remove(event.keyId)?.let { buttonHandler.removeCallbacks(it) }
             runButtonCycle(event)
             return
         }
-        if (event.press == PhysicalButtonEventDecoder.Press.SHORT && isDoubleTapArmed(event.button)) {
-            pendingShortPresses.remove(event.button)?.let { buttonHandler.removeCallbacks(it) }
+        if (event.press == PhysicalButtonEventDecoder.Press.SHORT && isDoubleTapArmed(event.keyId)) {
+            pendingShortPresses.remove(event.keyId)?.let { buttonHandler.removeCallbacks(it) }
             val pending = Runnable {
-                pendingShortPresses.remove(event.button)
+                pendingShortPresses.remove(event.keyId)
                 runButtonCycle(event)
             }
-            pendingShortPresses[event.button] = pending
+            pendingShortPresses[event.keyId] = pending
             buttonHandler.postDelayed(pending, PhysicalButtonEventDecoder.DOUBLE_TAP_MS)
             return
         }
@@ -342,18 +350,18 @@ class TaskerVehicleService : Service() {
     }
 
     /**
-     * Whether any enabled rule waits on a double tap of [button].
+     * Whether any enabled rule waits on a double tap of the key [keyId].
      *
      * Read per press rather than cached: rules change while the service lives, and a stale
      * answer here either delays a press for nothing or defeats a rule the user just wrote.
      */
-    private fun isDoubleTapArmed(button: PhysicalButtonEventDecoder.Button): Boolean =
+    private fun isDoubleTapArmed(keyId: Int): Boolean =
         RuleStore(this).getAll().any { rule ->
             rule.enabled && rule.branches.any { branch ->
                 branch.conditions.any {
                     it.type.spec.kind == ValueKind.PHYSICAL_BUTTON &&
                         it.text == PhysicalButtonEventDecoder.Press.DOUBLE.name &&
-                        it.number.toInt() in button.codes
+                        it.number.toInt() == keyId
                 }
             }
         }
@@ -382,8 +390,14 @@ class TaskerVehicleService : Service() {
                 val longPress = intent.getBooleanExtra("android.intent.extra.hardkey.longpress", false) ||
                     intent.getBooleanExtra("LONG_PRESS", false) ||
                     intent.getBooleanExtra("longpress", false)
-                val event = physicalButtons.accept(keyCode, down, longPress) ?: return
-                AppLogger.i(TAG, "Physical button ${event.button} ${event.press}")
+                val source = if (intent.action == SYSTEMUI_HARDKEY_ACTION) {
+                    PhysicalButtonEventDecoder.Source.SYSTEM_UI
+                } else {
+                    PhysicalButtonEventDecoder.Source.HARDKEY_REPORT
+                }
+                val event = physicalButtons.accept(keyCode, down, longPress, source = source) ?: return
+                AppLogger.i(TAG, "Physical button ${event.value} ($source $keyCode)")
+                buttonCapture?.let { it(event); return }
                 if (AppState.isAutomationEnabled(this@TaskerVehicleService)) dispatchButton(event)
             }
         }
