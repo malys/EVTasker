@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.13.0] - 2026-09-28
+
 ### Added
 
 - **Position trigger.** A rule can now run when the car reaches a place, instead of only at
