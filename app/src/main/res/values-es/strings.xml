@@ -143,6 +143,7 @@
     <string name="history_trigger_manual">Prueba manual</string>
     <string name="history_trigger_ignition_off">Apagado del vehículo</string>
     <string name="history_trigger_park">Cambio a P</string>
+    <string name="history_trigger_location">Ubicación alcanzada</string>
     <string name="history_trigger_deferred">Aplicado en parada</string>
     <string name="history_no_bridge">La capa del vehículo no estaba lista — no se pudo aplicar ninguna regla.</string>
 
@@ -309,6 +310,8 @@
     <string name="editor_trigger_on">Al arrancar</string>
     <string name="editor_trigger_park">Cambio a P</string>
     <string name="editor_trigger_off">Al apagar</string>
+    <string name="editor_trigger_location">Ubicación</string>
+    <string name="editor_location_trigger_rules">Una regla de ubicación necesita una condición «cerca de un lugar» y no puede hacer preguntas ni abrir el selector de perfil: se ejecuta en marcha.</string>
     <string name="editor_move_up">Subir</string>
     <string name="editor_move_down">Bajar</string>
     <string name="editor_delay_budget">Las esperas de esta regla suman más de %1$d segundos. Redúzcalas: las acciones siguientes se ejecutarían mucho después del evento del vehículo.</string>

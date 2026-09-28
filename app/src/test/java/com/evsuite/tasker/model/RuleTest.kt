@@ -214,4 +214,19 @@ class RuleTest {
     fun `une regle sans bouton n est pas concernee`() {
         assertTrue(branched().buttonAddressingIsSound)
     }
+
+    @Test
+    fun `une regle de position exige un lieu et refuse les actions a l ecran`() {
+        val near = Condition(ConditionType.LOCATION_WITHIN, text = "48.85,2.29", number = 200f)
+        val notify = Action(ActionType.SHOW_NOTIFICATION, text = "ok")
+        fun rule(c: Condition, a: Action) =
+            Rule(name = "pos", trigger = RuleTrigger.LOCATION, conditions = listOf(c), actions = listOf(a))
+
+        assertTrue(rule(near, notify).positionTriggerIsSound)
+        assertFalse(rule(condition, notify).positionTriggerIsSound)
+        assertFalse(rule(near, Action(ActionType.ASK_CONFIRM, text = "?")).positionTriggerIsSound)
+        assertFalse(rule(near, Action(ActionType.SHOW_PROFILE_PICKER)).positionTriggerIsSound)
+        // Other triggers are not concerned.
+        assertTrue(rule(condition, notify).copy(trigger = RuleTrigger.IGNITION_ON).positionTriggerIsSound)
+    }
 }

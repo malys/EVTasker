@@ -20,8 +20,12 @@ enum class MatchMode { ALL, ANY }
  * At [IGNITION_OFF] the car is powering down. Settings that persist (charge limit, door
  * locks, windows) land; anything the vehicle drops with the ignition may not, and the
  * history reports what each action returned rather than assuming.
+ *
+ * [LOCATION] is sampled while the ignition is in RUN: the rule runs once when one of its
+ * "near a place" conditions turns true (arriving, or leaving when the condition says "not
+ * near"), never repeatedly while the car stays where it is. See [positionTriggerIsSound].
  */
-enum class RuleTrigger { IGNITION_ON, GEAR_PARK, IGNITION_OFF }
+enum class RuleTrigger { IGNITION_ON, GEAR_PARK, IGNITION_OFF, LOCATION }
 
 /**
  * One configured condition.
@@ -239,7 +243,23 @@ data class Rule(
      */
     val buttonAddressingIsSound: Boolean get() = !hasPhysicalButtonCondition ||
         (otherwise.isEmpty() && branches.all { branch -> branch.conditions.any { it.type.eventDriven } })
+
+    /**
+     * Whether a position-triggered rule can fire, and fire safely.
+     *
+     * The event *is* a "near a place" condition turning true, so a rule without one would
+     * never run. And it runs mostly while the car moves: an action that puts a question or a
+     * picker in front of the driver is refused, per the suite rule against driver-facing
+     * overlays while moving. Refused at save and import, like [buttonAddressingIsSound].
+     */
+    val positionTriggerIsSound: Boolean get() = firesOn != RuleTrigger.LOCATION ||
+        hasPhysicalButtonCondition ||
+        (branches.any { b -> b.conditions.any { it.type == ConditionType.LOCATION_WITHIN } } &&
+            (branches.flatMap { it.actions } + otherwise).none { it.type in SCREEN_ACTIONS })
 }
+
+/** Actions that wait for the driver's hands on the screen. */
+private val SCREEN_ACTIONS = setOf(ActionType.ASK_CONFIRM, ActionType.SHOW_PROFILE_PICKER)
 
 /** Whether a list of actions changes anything, or is only waiting. */
 private fun List<Action>.doesSomething(): Boolean = any { it.type != ActionType.DELAY }

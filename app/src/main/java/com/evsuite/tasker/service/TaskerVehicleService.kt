@@ -21,6 +21,7 @@ import com.evsuite.tasker.util.BtDevices
 import com.evsuite.tasker.util.BtMessaging
 import com.evsuite.tasker.util.CarLocation
 import com.evsuite.tasker.util.DriveClock
+import com.evsuite.tasker.util.LocationTriggerDetector
 import com.evsuite.tasker.util.Notifier
 import com.evsuite.tasker.util.ParkTriggerDetector
 import com.evsuite.tasker.vehicle.BtOnboard
@@ -56,6 +57,12 @@ class TaskerVehicleService : Service() {
         private const val ONBOARD_SAMPLE_MS = 15_000L
         /** Gear has no portable push callback on every supported generation. Poll only in RUN. */
         private const val PARK_SAMPLE_MS = 500L
+        /**
+         * How often position rules are checked while in RUN. At 50 km/h the car covers ~70 m
+         * between two looks — inside any radius worth writing — and each look is one cached
+         * fix and one read of the rule store, no vehicle binder call.
+         */
+        private const val LOCATION_SAMPLE_MS = 5_000L
         private const val HARDKEY_ACTION = "com.saic.keyevent.hardkey.report"
         private const val SYSTEMUI_HARDKEY_ACTION = "com.android.systemui.ACTION_HARD_KEY_EVENT"
         const val HARDKEY_PERMISSION = "com.evsuite.tasker.permission.RECEIVE_HARDKEY"
@@ -95,6 +102,7 @@ class TaskerVehicleService : Service() {
     private var lastTrigger: RuleTrigger? = null
 
     private val parkTrigger = ParkTriggerDetector()
+    private val locationTrigger = LocationTriggerDetector()
 
     /** Stops an in-flight park sample from scheduling itself again after ignition-off. */
     @Volatile
@@ -124,6 +132,21 @@ class TaskerVehicleService : Service() {
                 runRulesFor(RuleTrigger.GEAR_PARK, "Gear entered P")
             }
             if (vehicleRunning) onboardHandler.postDelayed(this, PARK_SAMPLE_MS)
+        }
+    }
+
+    /** Shares the park sampler's lifecycle and thread: RUN only, detector reset at each edge. */
+    private val locationSampler = object : Runnable {
+        override fun run() {
+            if (!vehicleRunning) return
+            val rules = RuleStore(this@TaskerVehicleService).getAll().filter {
+                it.enabled && !it.hasPhysicalButtonCondition && it.firesOn == RuleTrigger.LOCATION
+            }
+            val fix = CarLocation.lastKnown(applicationContext)
+            for (id in locationTrigger.sample(rules, fix)) {
+                runRulesFor(RuleTrigger.LOCATION, "Position condition turned true", id)
+            }
+            if (vehicleRunning) onboardHandler.postDelayed(this, LOCATION_SAMPLE_MS)
         }
     }
 
@@ -213,6 +236,7 @@ class TaskerVehicleService : Service() {
         vehicleRunning = false
         onboardHandler.removeCallbacks(onboardSampler)
         onboardHandler.removeCallbacks(parkSampler)
+        onboardHandler.removeCallbacks(locationSampler)
         onboardThread.quitSafely()
     }
 
@@ -229,9 +253,14 @@ class TaskerVehicleService : Service() {
         if (vehicleRunning) return
         vehicleRunning = true
         onboardHandler.removeCallbacks(parkSampler)
+        onboardHandler.removeCallbacks(locationSampler)
         onboardHandler.post {
             parkTrigger.reset()
-            if (vehicleRunning) parkSampler.run()
+            locationTrigger.reset()
+            if (vehicleRunning) {
+                parkSampler.run()
+                locationSampler.run()
+            }
         }
     }
 
@@ -239,14 +268,18 @@ class TaskerVehicleService : Service() {
         if (!vehicleRunning) return
         vehicleRunning = false
         onboardHandler.removeCallbacks(parkSampler)
+        onboardHandler.removeCallbacks(locationSampler)
         // Keep detector mutation on its sampling thread.
-        onboardHandler.post { parkTrigger.reset() }
+        onboardHandler.post {
+            parkTrigger.reset()
+            locationTrigger.reset()
+        }
     }
 
-    private fun runRulesFor(trigger: RuleTrigger, event: String) {
+    private fun runRulesFor(trigger: RuleTrigger, event: String, ruleId: String? = null) {
         if (AppState.isAutomationEnabled(this)) {
-            AppLogger.i(TAG, "$event → evaluating ${trigger.name} rules")
-            thread(name = "mg4-tasker-cycle") { RuleCycle.run(this, trigger.name) }
+            AppLogger.i(TAG, "$event → evaluating ${trigger.name} rules${ruleId?.let { " ($it)" }.orEmpty()}")
+            thread(name = "mg4-tasker-cycle") { RuleCycle.run(this, trigger.name, ruleId = ruleId) }
         } else {
             AppLogger.i(TAG, "$event but automation disabled — ignored")
         }

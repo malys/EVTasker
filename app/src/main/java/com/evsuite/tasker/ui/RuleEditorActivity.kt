@@ -105,6 +105,7 @@ class RuleEditorActivity : AppCompatActivity() {
         binding.triggerGroup.check(when (existing?.firesOn) {
             RuleTrigger.GEAR_PARK -> R.id.triggerGearPark
             RuleTrigger.IGNITION_OFF -> R.id.triggerIgnitionOff
+            RuleTrigger.LOCATION -> R.id.triggerLocation
             else -> R.id.triggerIgnitionOn
         })
 
@@ -276,6 +277,7 @@ class RuleEditorActivity : AppCompatActivity() {
             trigger = when (binding.triggerGroup.checkedButtonId) {
                 R.id.triggerGearPark -> RuleTrigger.GEAR_PARK
                 R.id.triggerIgnitionOff -> RuleTrigger.IGNITION_OFF
+                R.id.triggerLocation -> RuleTrigger.LOCATION
                 else -> RuleTrigger.IGNITION_ON
             },
             conditions = first.conditions,
@@ -300,6 +302,10 @@ class RuleEditorActivity : AppCompatActivity() {
         // would run on presses it never mentioned.
         if (!rule.buttonAddressingIsSound) {
             toastLong(getString(R.string.editor_button_cases)); return
+        }
+        // Without a place the trigger never fires; with a question it would ask a moving driver.
+        if (!rule.positionTriggerIsSound) {
+            toastLong(getString(R.string.editor_location_trigger_rules)); return
         }
         // Said now rather than through a wait cut short in the history after the drive.
         if (rule.totalDelayMs > com.evsuite.tasker.model.DELAY_BUDGET_MS) {

@@ -224,6 +224,7 @@ object RuleTransfer {
         // and a rule addressed by a button must name one in every case it can run.
         if (!rule.isComplete()) return Result.Invalid(Reason.MALFORMED)
         if (!rule.buttonAddressingIsSound) return Result.Invalid(Reason.MALFORMED)
+        if (!rule.positionTriggerIsSound) return Result.Invalid(Reason.MALFORMED)
 
         return Result.Ok(listOf(rule))
     }

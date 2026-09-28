@@ -57,7 +57,11 @@ switch-off trigger reads the other end of that same stream — no second listene
 Gear callbacks are not portable across the supported firmwares, so the P trigger samples
 `EVHardware.isVehicleInPark()` every 500 ms only while ignition is RUN and fires only on a
 confirmed non-P → P transition. Its first readable sample is a silent baseline, so service
-recreation while already parked never fabricates an event. Physical buttons are conditions
+recreation while already parked never fabricates an event. The position trigger shares that sampling lifecycle (every 5 s, RUN only):
+`LocationTriggerDetector` fires per "near a place" condition on a confirmed false → true edge,
+with the same silent baseline, and `RuleCycle` runs only the rule whose place it was. It runs
+while moving, so `Rule.positionTriggerIsSound` refuses screen-taking actions (question,
+profile picker) at save and import. Physical buttons are conditions
 (never a `RuleTrigger`): a rule containing one is
 addressed by that event and excluded from vehicle-trigger cycles. EVHardware owns the OEM keycode
 catalogue and short/long-press state machine; the app only receives the broadcast and feeds

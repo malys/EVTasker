@@ -159,6 +159,7 @@
     <string name="history_trigger_manual">Test manuel</string>
     <string name="history_trigger_ignition_off">Extinction véhicule</string>
     <string name="history_trigger_park">Passage en P</string>
+    <string name="history_trigger_location">Position atteinte</string>
     <string name="history_trigger_button">Bouton physique</string>
     <string name="history_trigger_deferred">Appliqué à l\'arrêt</string>
     <string name="history_no_bridge">La couche véhicule n\'était pas prête — aucune règle n\'a pu s\'appliquer.</string>
@@ -326,6 +327,8 @@
     <string name="editor_trigger_on">Au démarrage</string>
     <string name="editor_trigger_park">Passage en P</string>
     <string name="editor_trigger_off">À l’extinction</string>
+    <string name="editor_trigger_location">Position</string>
+    <string name="editor_location_trigger_rules">Une règle déclenchée par la position doit contenir une condition « proche d\'un lieu », et ne peut ni poser de question ni ouvrir le choix de profil : elle s\'exécute en roulant.</string>
     <string name="editor_move_up">Monter</string>
     <string name="editor_move_down">Descendre</string>
     <string name="editor_delay_budget">Les attentes de cette règle dépassent %1$d secondes au total. Réduisez-les : les actions suivantes s’exécuteraient longtemps après l’événement du véhicule.</string>

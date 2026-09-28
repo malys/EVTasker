@@ -174,6 +174,7 @@ class RulesFragment : Fragment() {
             else when (current.firesOn) {
                 com.evsuite.tasker.model.RuleTrigger.GEAR_PARK -> R.string.editor_trigger_park
                 com.evsuite.tasker.model.RuleTrigger.IGNITION_OFF -> R.string.editor_trigger_off
+                com.evsuite.tasker.model.RuleTrigger.LOCATION -> R.string.editor_trigger_location
                 else -> R.string.editor_trigger_on
             }
         )

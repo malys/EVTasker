@@ -143,6 +143,7 @@
     <string name="history_trigger_manual">Manueller Test</string>
     <string name="history_trigger_ignition_off">Fahrzeug ausgeschaltet</string>
     <string name="history_trigger_park">In P geschaltet</string>
+    <string name="history_trigger_location">Ort erreicht</string>
     <string name="history_trigger_deferred">Im Stand angewendet</string>
     <string name="history_no_bridge">Fahrzeugebene war nicht bereit — keine Regel konnte angewendet werden.</string>
 
@@ -309,6 +310,8 @@
     <string name="editor_trigger_on">Fahrzeugstart</string>
     <string name="editor_trigger_park">In P schalten</string>
     <string name="editor_trigger_off">Fahrzeug aus</string>
+    <string name="editor_trigger_location">Ort</string>
+    <string name="editor_location_trigger_rules">Eine Ortsregel braucht eine Bedingung „in der Nähe eines Ortes“ und darf weder fragen noch die Profilauswahl öffnen: Sie läuft während der Fahrt.</string>
     <string name="editor_move_up">Nach oben</string>
     <string name="editor_move_down">Nach unten</string>
     <string name="editor_delay_budget">Die Wartezeiten dieser Regel ergeben zusammen mehr als %1$d Sekunden. Kürzen Sie sie: Die folgenden Aktionen würden lange nach dem Fahrzeugereignis laufen.</string>

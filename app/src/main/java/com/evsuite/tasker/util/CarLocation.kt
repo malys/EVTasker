@@ -29,11 +29,12 @@ object CarLocation {
     private const val MAX_AGE_MS = 30 * 60 * 1000L
 
     /**
-     * Cadence of the service's subscription. Far below [MAX_AGE_MS], so the cache is never
-     * the reason a condition is unanswerable, and far above a navigation app's, because
-     * nothing here needs to know which lane the car is in.
+     * Cadence of the service's subscription. Matches the position trigger's sampling: at
+     * 60 s the fix jumped ~800 m between updates at 50 km/h and an arrival was noticed a
+     * minute late or, through a small radius, not at all. Still well above a navigation
+     * app's, because nothing here needs to know which lane the car is in.
      */
-    private const val TRACK_INTERVAL_MS = 60_000L
+    private const val TRACK_INTERVAL_MS = 5_000L
 
     /** How long an inactive subscription may stay inactive before the watchdog re-arms it. */
     const val TRACK_RETRY_INTERVAL_MS = 60_000L

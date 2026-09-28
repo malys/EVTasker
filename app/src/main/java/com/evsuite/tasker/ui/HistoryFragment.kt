@@ -89,6 +89,7 @@ class HistoryFragment : Fragment() {
                     DeferredWrites.TRIGGER -> R.string.history_trigger_deferred
                     RuleTrigger.GEAR_PARK.name -> R.string.history_trigger_park
                     RuleTrigger.IGNITION_OFF.name -> R.string.history_trigger_ignition_off
+                    RuleTrigger.LOCATION.name -> R.string.history_trigger_location
                     RuleCycle.PHYSICAL_BUTTON -> R.string.history_trigger_button
                     else -> R.string.history_trigger_ignition
                 }

@@ -109,6 +109,13 @@
                     android:layout_height="wrap_content"
                     android:text="@string/editor_trigger_off" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/triggerLocation"
+                    style="@style/Widget.EV.Button.Outlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/editor_trigger_location" />
+
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
             <!-- THE CASES

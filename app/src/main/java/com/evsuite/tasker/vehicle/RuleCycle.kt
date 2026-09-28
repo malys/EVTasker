@@ -130,7 +130,12 @@ object RuleCycle {
         val rules = when (trigger) {
             MANUAL -> all.filter { it.id == ruleId }
             PHYSICAL_BUTTON -> all.filter { it.hasPhysicalButtonCondition }
-            else -> all.filter { !it.hasPhysicalButtonCondition && it.firesOn.name == trigger }
+            // A position event belongs to the one rule whose place it is: its neighbours are
+            // not arriving anywhere, so [ruleId] narrows a trigger cycle too when given.
+            else -> all.filter {
+                !it.hasPhysicalButtonCondition && it.firesOn.name == trigger &&
+                    (ruleId == null || it.id == ruleId)
+            }
         }
         if (rules.isEmpty()) {
             AppLogger.i(TAG, "no rules for $trigger (${all.size} total) — skipped")

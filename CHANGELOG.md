@@ -6,6 +6,21 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Position trigger.** A rule can now run when the car reaches a place, instead of only at
+  start, P or switch-off. While the ignition is on, its "near a place" conditions are checked
+  every 5 s; the rule runs once when one turns true (arriving — or leaving, for "not near"),
+  never again while the car stays there, and a drive that starts inside the zone does not
+  count as an arrival. Vehicle writes still take the standstill gate, so on the move they are
+  refused and shown as such. Such a rule must contain a place condition and may not ask a
+  question or open the profile picker, since it runs while driving.
+
+### Changed
+
+- The GPS subscription updates every 5 s instead of every 60 s, so an arrival is noticed
+  within a few dozen metres.
+
 ## [2.12.0] - 2026-09-23
 
 ### Added
