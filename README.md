@@ -46,6 +46,7 @@ Discover the rest of the suite:
 
 ## Contents
 
+- [Part of EVSuite](#part-of-evsuite)
 - [Screenshots](#screenshots)
 - [How it works](#how-it-works)
 - [Requirements](#requirements)
