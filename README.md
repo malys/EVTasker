@@ -5,8 +5,9 @@
 [![Tests](https://github.com/malys/EVTasker/actions/workflows/tests.yml/badge.svg)](https://github.com/malys/EVTasker/actions/workflows/tests.yml)
 [![Security](https://github.com/malys/EVTasker/actions/workflows/security.yml/badge.svg)](https://github.com/malys/EVTasker/actions/workflows/security.yml)
 [![Unstable](https://github.com/malys/EVTasker/actions/workflows/unstable.yml/badge.svg)](https://github.com/malys/EVTasker/actions/workflows/unstable.yml)
-[![Release](https://img.shields.io/github/v/release/malys/EVTasker?include_prereleases&amp;sort=semver)](https://github.com/malys/EVTasker/releases)
+[![Release](https://img.shields.io/github/v/release/malys/EVTasker?include_prereleases&sort=semver)](https://github.com/malys/EVTasker/releases)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue.svg)](LICENSE)
+[![Part of EVSuite](https://img.shields.io/badge/part%20of-EVSuite-2f81f7)](https://malys.github.io/EVSuite/)
 
 > ⚠️ **This app changes vehicle settings automatically and runs on a car.** Read
 > [DISCLAIMER.md](DISCLAIMER.md) before installing. A rule is you delegating a setting
@@ -24,6 +25,22 @@ EVTasker is **independent**. It reads and writes the vehicle directly through th
 [EVHardware](https://github.com/malys/EVHardware) layer and works with **no EVProfile
 installed**. EVProfile is optional: when present, one extra action — *apply an EVProfile
 profile* — becomes available.
+
+## Part of EVSuite
+
+EVTasker is one app of [**EVSuite**](https://malys.github.io/EVSuite/), a family of independent,
+offline-first apps for the MG4 head unit (Android Automotive OS 9). Each app installs on its
+own — pick only what you need. User guides and install instructions:
+<https://malys.github.io/EVSuite/>.
+
+Discover the rest of the suite:
+
+[![EVProfile](https://img.shields.io/badge/EVProfile-settings%20%26%20drive%20profiles-2f81f7?logo=github)](https://github.com/malys/EVProfile)
+[![EVABRPUploader](https://img.shields.io/badge/EVABRPUploader-ABRP%20telemetry-2f81f7?logo=github)](https://github.com/malys/EVABRPUploader)
+[![EVChargePilot](https://img.shields.io/badge/EVChargePilot-energy%20%26%20trips-2f81f7?logo=github)](https://github.com/malys/EVChargePilot)
+[![EVLauncher](https://img.shields.io/badge/EVLauncher-home%20launcher-2f81f7?logo=github)](https://github.com/malys/EVLauncher)
+[![EVSwipe](https://img.shields.io/badge/EVSwipe-swipe%20shortcuts-2f81f7?logo=github)](https://github.com/malys/EVSwipe)
+[![EVHardware](https://img.shields.io/badge/EVHardware-shared%20vehicle%20library-2f81f7?logo=github)](https://github.com/malys/EVHardware)
 
 ---
 
@@ -744,8 +761,6 @@ For a vehicle action, add the matching branch to `DirectExecutor` (EVTasker writ
 vehicle directly through EVHardware, where the catalogue lives). The firmware matrix and the
 published catalogue both regenerate on the next test run — commit them with the entry, or the
 repository ships a list that no longer matches the app.
-
----
 
 ### Channels
 
