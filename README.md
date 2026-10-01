@@ -7,7 +7,7 @@
 [![Unstable](https://github.com/malys/EVTasker/actions/workflows/unstable.yml/badge.svg)](https://github.com/malys/EVTasker/actions/workflows/unstable.yml)
 [![Release](https://img.shields.io/github/v/release/malys/EVTasker?include_prereleases&sort=semver)](https://github.com/malys/EVTasker/releases)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue.svg)](LICENSE)
-[![Part of EVSuite](https://img.shields.io/badge/part%20of-EVSuite-2f81f7)](https://malys.github.io/EVSuite/)
+[![Part of EVSuite](https://img.shields.io/badge/part%20of-EVSuite-2f81f7)](https://malys.github.io/EVSuite_site/)
 
 > ⚠️ **This app changes vehicle settings automatically and runs on a car.** Read
 > [DISCLAIMER.md](DISCLAIMER.md) before installing. A rule is you delegating a setting
@@ -28,10 +28,10 @@ profile* — becomes available.
 
 ## Part of EVSuite
 
-EVTasker is one app of [**EVSuite**](https://malys.github.io/EVSuite/), a family of independent,
+EVTasker is one app of [**EVSuite**](https://malys.github.io/EVSuite_site/), a family of independent,
 offline-first apps for the MG4 head unit (Android Automotive OS 9). Each app installs on its
 own — pick only what you need. User guides and install instructions:
-<https://malys.github.io/EVSuite/>.
+<https://malys.github.io/EVSuite_site/>.
 
 Discover the rest of the suite:
 
