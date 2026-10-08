@@ -172,6 +172,10 @@ class DirectExecutor(
             // Blocking for about a second: EVHardware reads the state three times before it
             // dares toggle it. The executor already runs off the main thread.
             ActionType.SET_ESC              -> EVHardware.setEsc(b)
+            // Exterior lights (CR-046) — gated; ExteriorLights refuses low-beam OFF / high-beam ON.
+            ActionType.SET_HEADLIGHTS       -> EVHardware.setHeadlightsSwitch(i)
+            ActionType.SET_HIGH_BEAM        -> EVHardware.setHighBeamSwitch(i)
+            ActionType.SET_FOG_LIGHTS       -> EVHardware.setFogLights(b)
             ActionType.SET_DROWSINESS       -> EVHardware.setDrowsiness(b)
             ActionType.SET_DROWSINESS_SENSITIVITY -> EVHardware.setDrowsinessSensitivity(i)
             ActionType.SET_ACC_TJA_MODE     -> EVHardware.setAccTjaMode(i)

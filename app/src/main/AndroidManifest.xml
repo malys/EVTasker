@@ -16,6 +16,10 @@
     <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />
     <uses-permission android:name="android.car.permission.CAR_VENDOR_EXTENSION" />
     <uses-permission android:name="android.car.permission.CONTROL_CAR_CLIMATE" />
+    <!-- Exterior lights (CR-046): read for light conditions, control for the standstill
+         actions. Signature-level, granted by the platform signature like the rest. -->
+    <uses-permission android:name="android.car.permission.CAR_EXTERIOR_LIGHTS" />
+    <uses-permission android:name="android.car.permission.CONTROL_CAR_EXTERIOR_LIGHTS" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
     <!-- Own vehicle service: foreground + wake + start at boot to catch the ignition. -->

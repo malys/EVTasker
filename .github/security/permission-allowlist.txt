@@ -13,6 +13,11 @@ android.car.permission.CAR_ENERGY
 android.car.permission.CAR_POWERTRAIN
 android.car.permission.CAR_VENDOR_EXTENSION
 android.car.permission.CONTROL_CAR_CLIMATE
+# CR-046 (owner request 2026-10-08): light conditions read HEADLIGHTS/HIGH_BEAM/FOG_LIGHTS_STATE;
+# light actions write the matching _SWITCH only at 0 km/h (VehicleWriteGate), never low beams
+# OFF, never high beam forced ON (ExteriorLights). Both unused until a generation is proven.
+android.car.permission.CAR_EXTERIOR_LIGHTS
+android.car.permission.CONTROL_CAR_EXTERIOR_LIGHTS
 android.permission.WRITE_SETTINGS
 
 # --- Own vehicle service ---

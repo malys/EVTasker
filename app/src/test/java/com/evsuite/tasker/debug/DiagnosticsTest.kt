@@ -1,6 +1,7 @@
 package com.evsuite.tasker.debug
 
 import com.evsuite.hardware.FirmwareGen
+import com.evsuite.hardware.FirmwareSupport
 import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.ConditionType
 import com.evsuite.hardware.catalog.SnapshotKeys
@@ -421,11 +422,16 @@ class DiagnosticsTest {
 
         val unproven = ActionType.entries.filter { !it.writeProven }.map { it.name }
         assertTrue("the glass is the case this exists for", "SET_WINDOWS" in unproven)
+        // Every unproven write is blocked and hidden, whatever the reason given.
         unproven.forEach {
-            assertEquals(Diagnostics.Reason.WRITE_UNPROVEN, entry(entries, it).reason)
             assertEquals(Diagnostics.Status.BLOCKED, entry(entries, it).status)
             assertTrue("$it must not be offered in the editor", entry(entries, it).hidden)
         }
+        // The reason is WRITE_UNPROVEN where the firmware carries it. Where it does not — the
+        // CR-046 lights, supported on no generation yet — the firmware verdict comes first.
+        ActionType.entries
+            .filter { !it.writeProven && FirmwareSupport.gensOf(it)?.contains(FirmwareGen.SWI68) != false }
+            .forEach { assertEquals(Diagnostics.Reason.WRITE_UNPROVEN, entry(entries, it.name).reason) }
         assertTrue(
             "no OK action may be unproven",
             entries.filter { it.status == Diagnostics.Status.OK }.none { it.name in unproven }

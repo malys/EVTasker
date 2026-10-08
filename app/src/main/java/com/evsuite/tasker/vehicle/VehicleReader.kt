@@ -107,6 +107,14 @@ object VehicleReader {
                 putIfReadable(SnapshotKeys.KEY_BRIGHTNESS, EVHardware.getScreenBrightnessPercent())
             }
 
+            // Exterior lights (CR-046): null until a generation is proven, so absent — never OFF.
+            EVHardware.headlightsStateOrNull()?.let { put(SnapshotKeys.KEY_HEADLIGHTS, it) }
+            EVHardware.highBeamOnOrNull()?.let { put(SnapshotKeys.KEY_HIGH_BEAM, it) }
+            EVHardware.fogLightsOnOrNull()?.let { put(SnapshotKeys.KEY_FOG_LIGHTS, it) }
+            EVHardware.headlightsSwitchOrNull()?.let { put(SnapshotKeys.KEY_HEADLIGHTS_SWITCH, it) }
+            EVHardware.highBeamSwitchOrNull()?.let { put(SnapshotKeys.KEY_HIGH_BEAM_SWITCH, it) }
+            EVHardware.fogLightsSwitchOnOrNull()?.let { put(SnapshotKeys.KEY_FOG_LIGHTS_SWITCH, it) }
+
             // The `…OrNull` readers, not the Boolean ones: those answer false for a signal
             // the firmware never returned, which the engine would read as "the feature is
             // off" and act on. Absent from the snapshot is the honest answer.
