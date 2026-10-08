@@ -312,6 +312,7 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.LOCATION -> R.string.diag_env_location
             DiagnosticProbe.Env.WRITE_THRESHOLD -> R.string.diag_env_threshold
             DiagnosticProbe.Env.GLASS_AND_LOCKS -> R.string.diag_env_glass
+            DiagnosticProbe.Env.EXTERIOR_LIGHTS -> R.string.diag_env_lights
         }
     )
 
@@ -350,7 +351,8 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.MESSAGING,
             DiagnosticProbe.Env.LOCATION,
             DiagnosticProbe.Env.WRITE_THRESHOLD,
-            DiagnosticProbe.Env.GLASS_AND_LOCKS -> R.string.diag_bt_off
+            DiagnosticProbe.Env.GLASS_AND_LOCKS,
+            DiagnosticProbe.Env.EXTERIOR_LIGHTS -> R.string.diag_bt_off
         }
     )
 
@@ -498,6 +500,7 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.LOCATION,
             DiagnosticProbe.Env.WRITE_THRESHOLD,
             DiagnosticProbe.Env.GLASS_AND_LOCKS,
+            DiagnosticProbe.Env.EXTERIOR_LIGHTS,
         )
     }
 }

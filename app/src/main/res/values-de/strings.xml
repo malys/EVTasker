@@ -274,6 +274,7 @@
     <string name="diag_reason_no_handsfree">Freisprechtelefon nicht lesbar</string>
     <string name="paste_header">**Passwort:** `%1$s` · verfällt eine Stunde nach dem Hochladen.\n\nKostenlos gehostet von [April](https://www.april.org) auf %2$s. Wenn Ihnen das einen Werkstattbesuch erspart hat, [spenden Sie etwas](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Fenster und Verriegelung</string>
+    <string name="diag_env_lights">Außenbeleuchtung</string>
     <string name="editor_trigger">Läuft bei</string>
     <string name="physical_press_short">Kurzer Druck</string>
     <string name="physical_press_long">Langer Druck</string>

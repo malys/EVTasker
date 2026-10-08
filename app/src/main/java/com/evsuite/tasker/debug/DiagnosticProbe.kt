@@ -4,6 +4,7 @@ import android.content.Context
 import com.evsuite.hardware.FirmwareInfo
 import com.evsuite.hardware.FirmwareSupport
 import com.evsuite.hardware.EVHardware
+import com.evsuite.hardware.ExteriorLights
 import com.evsuite.hardware.VehicleWriteGate
 import com.evsuite.hardware.saic.SaicCharging
 import com.evsuite.hardware.saic.SaicClimate
@@ -97,6 +98,11 @@ object DiagnosticProbe {
          * open is what confirms it.
          */
         GLASS_AND_LOCKS,
+        /**
+         * The six exterior-light properties, raw (CR-046). This row is the evidence that proves
+         * a generation: export once with a light off, once on, and check the state follows.
+         */
+        EXTERIOR_LIGHTS,
     }
 
     data class Report(
@@ -286,6 +292,12 @@ object DiagnosticProbe {
                             ?: "?"
                         ) +
                     " glass-write=command 0..${SaicVehicleControl.WINDOW_COMMAND_MAX}"
+            ),
+            EnvCheck(
+                Env.EXTERIOR_LIGHTS,
+                // Red until the generation is proven: the light entries stay hidden until then.
+                ok = ExteriorLights.isProven(FirmwareInfo.getGeneration()),
+                detail = EVHardware.probeExteriorLights().joinToString("\n")
             ),
         )
     }

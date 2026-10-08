@@ -274,6 +274,7 @@
     <string name="diag_reason_no_handsfree">teléfono manos libres ilegible</string>
     <string name="paste_header">**Contraseña:** `%1$s` · caduca una hora después del envío.\n\nAlojado gratuitamente por [April](https://www.april.org) en %2$s. Si esto te ha ahorrado un viaje al taller, [haz una donación](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Ventanillas y bloqueo</string>
+    <string name="diag_env_lights">Luces exteriores</string>
     <string name="editor_trigger">Se ejecuta</string>
     <string name="physical_press_short">Pulsación corta</string>
     <string name="physical_press_long">Pulsación larga</string>
