@@ -6,6 +6,23 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.14.0] - 2026-10-08
+
+### Added
+
+- **Light conditions and actions (CR-046).** Conditions: low beams (off / on / daytime
+  running), high beam on, fog lights on. Actions: low beams ON / AUTO, high beam OFF / AUTO,
+  fog lights on/off. They are applied **only at 0 km/h**: a refusal is shown when the car is
+  moving or its speed is unreadable. A rule can never switch the low beams off, nor force the
+  high beam on. **Hidden for now**: no MG4 generation is proven yet. They appear once an
+  EVProfile Diagnostic capture proves a generation.
+
+### Changed
+
+- Updated EVHardware to 1.15.0.
+- New permissions `CAR_EXTERIOR_LIGHTS` and `CONTROL_CAR_EXTERIOR_LIGHTS`. Both are
+  signature-level and granted by the platform signature.
+
 ## [2.13.0] - 2026-09-28
 
 ### Added
