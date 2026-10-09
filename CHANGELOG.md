@@ -6,6 +6,20 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.14.1] - 2026-10-09
+
+### Added
+
+- **Diagnostic: exterior-light evidence row (CR-046).** New `EXTERIOR_LIGHTS` line in the
+  Environment section and the Export report: the raw readout of the six light properties
+  (low beam, high beam, fog — state and switch), read-only. It stays red until a generation
+  is proven. Export it parked with each light off and then on: that capture is what unlocks
+  the light conditions and actions, instead of an EVProfile capture.
+
+### Changed
+
+- Updated EVHardware to its `master` (raw exterior-light probe).
+
 ## [2.14.0] - 2026-10-08
 
 ### Added
