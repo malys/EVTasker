@@ -29,6 +29,17 @@ object CarLocation {
     private const val MAX_AGE_MS = 30 * 60 * 1000L
 
     /**
+     * How old a fix may be and still say what the sky is like where the car is.
+     *
+     * The ignition cycle runs a second after boot, long before the first satellite lock, so
+     * at [MAX_AGE_MS] the only fix on offer — the one from where the car was parked — was
+     * always too old, and every weather rule on ignition was not evaluable. A parked car is
+     * where it was parked, and weather is regional: a day-old fix places it well enough for
+     * that question, never for "near a place".
+     */
+    const val WEATHER_MAX_AGE_MS = 24 * 60 * 60 * 1000L
+
+    /**
      * Cadence of the service's subscription. Matches the position trigger's sampling: at
      * 60 s the fix jumped ~800 m between updates at 50 km/h and an arrival was noticed a
      * minute late or, through a small radius, not at all. Still well above a navigation
@@ -61,7 +72,7 @@ object CarLocation {
         ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
 
     /** @return the most recent usable fix, or null when there is none. */
-    fun lastKnown(context: Context): Fix? {
+    fun lastKnown(context: Context, maxAgeMs: Long = MAX_AGE_MS): Fix? {
         if (!hasPermission(context)) return null
         val manager = ContextCompat.getSystemService(context, LocationManager::class.java) ?: return null
         return try {
@@ -69,7 +80,7 @@ object CarLocation {
             (manager.getProviders(true)
                 .mapNotNull { provider -> manager.getLastKnownLocation(provider) }
                 + listOfNotNull(liveFix))
-                .filter { now - it.time <= MAX_AGE_MS }
+                .filter { now - it.time <= maxAgeMs }
                 .maxByOrNull { it.time }
                 ?.let { Fix(it.latitude, it.longitude) }
         } catch (e: SecurityException) {

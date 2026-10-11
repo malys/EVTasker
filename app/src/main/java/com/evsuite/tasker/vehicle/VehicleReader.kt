@@ -1,6 +1,7 @@
 package com.evsuite.tasker.vehicle
 
 import android.content.Context
+import com.evsuite.hardware.AppLogger
 import com.evsuite.hardware.DataUsage
 import com.evsuite.hardware.FirmwareInfo
 import com.evsuite.hardware.EVHardware
@@ -30,6 +31,8 @@ import java.util.Calendar
  * EVHardware is not ready yet, so no rule fires on empty data.
  */
 object VehicleReader {
+
+    private const val TAG = "EVTasker.Reader"
 
     fun read(
         /** For the platform-context readings: what is playing, which network, a live call. */
@@ -71,7 +74,7 @@ object VehicleReader {
             // is not up. The vendor services are bound separately too, so their readings are
             // taken here as well rather than being lost with the AOSP layer.
             return Snapshot(
-                readings = vendorReadings() + headUnitReadings(fix, wanted) + platformReadings(context),
+                readings = vendorReadings() + headUnitReadings(context, fix, wanted) + platformReadings(context),
                 btMacs = btMacs,
                 btAvailable = btAvailable,
                 btOnboardMacs = btOnboardMacs,
@@ -147,7 +150,7 @@ object VehicleReader {
 
             put(SnapshotKeys.KEY_FIRMWARE_GEN, FirmwareInfo.getGeneration().name)
             putAll(vendorReadings())
-            putAll(headUnitReadings(fix, wanted))
+            putAll(headUnitReadings(context, fix, wanted))
             putAll(platformReadings(context))
         }
 
@@ -238,22 +241,30 @@ object VehicleReader {
      * a car whose vehicle hub answers perfectly may have no navigation adapter at all, and
      * the two must not take each other down.
      *
-     * The weather needs a position, so it is only asked when there is a fix. No fix means the
-     * reading is absent, which is the honest answer — the last known weather somewhere else is
-     * not weather here.
+     * The weather needs a position, so it is only asked when there is a fix — but not the
+     * fix [fix] is: that one must place the car within a few metres for "near a place", and
+     * at ignition it is always absent. Weather takes [CarLocation.WEATHER_MAX_AGE_MS]. No fix
+     * even then means the reading is absent, which is the honest answer.
      */
-    private fun headUnitReadings(fix: CarLocation.Fix?, wanted: Set<String>?): Map<String, Any> = buildMap {
+    private fun headUnitReadings(
+        context: Context,
+        fix: CarLocation.Fix?,
+        wanted: Set<String>?
+    ): Map<String, Any> = buildMap {
         SaicNav.totalMileageKm()?.let { put(SnapshotKeys.KEY_ODOMETER_KM, it) }
-        // Everything below costs real time — see `wanted`. Without a fix there is nothing to
-        // ask about: the last known weather somewhere else is not weather here.
-        if (fix == null) return@buildMap
-        val language = weatherLanguage()
 
         // The service answers a phrase, the catalogue owns a state: classify here, once, so
         // no rule ever holds the provider's wording. A phrase nothing recognises writes no
         // key at all — the condition then reads as "cannot tell", never as fine weather.
+        // Costs real time — see `wanted`.
         if (wants(wanted, SnapshotKeys.KEY_WEATHER_CONDITION)) {
-            SaicWeather.currentAt(fix.latitude, fix.longitude, language)
+            val where = fix ?: CarLocation.lastKnown(context, CarLocation.WEATHER_MAX_AGE_MS)
+            if (where == null) {
+                // Says which half failed: no position at all, or a service that did not answer.
+                AppLogger.i(TAG, "weather not asked — no fix in the last 24 h")
+                return@buildMap
+            }
+            SaicWeather.currentAt(where.latitude, where.longitude, weatherLanguage())
                 ?.text
                 ?.let { WeatherConditions.classify(it) }
                 ?.let { put(SnapshotKeys.KEY_WEATHER_CONDITION, it) }
