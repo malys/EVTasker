@@ -6,6 +6,27 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.14.2] - 2026-10-11
+
+### Fixed
+
+- **A weather rule on ignition was never evaluable.** The cycle runs a second after boot, before
+  any satellite lock, and the only fix on offer — where the car was parked — was past the
+  30-minute limit "near a place" needs. Weather now takes a fix up to 24 hours old; a parked car
+  has not moved and weather is regional. When even that finds nothing, the log says so, which
+  separates "no position" from "the service did not answer".
+- **The diagnostic report no longer carries secrets.** Its rules section held webhook URLs
+  verbatim — query, auth key and all — and the numbers the car calls or texts. A webhook keeps
+  its host and loses path, query and body; call and SMS targets are masked.
+- **A run recorded before the clock was set shows no date.** The head unit boots on its RTC
+  default, 2019-01-01, and an ignition cycle can run before the network corrects it. The history
+  now says the clock was not set rather than showing that date.
+- `PASSENGER_TEMP` and `DOORS_LOCKED` are hidden in the editor on SWI68, where neither reads.
+
+### Changed
+
+- Updated EVHardware to 1.15.1.
+
 ## [2.14.1] - 2026-10-09
 
 ### Added
