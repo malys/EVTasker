@@ -6,6 +6,28 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.15.0] - 2026-10-11
+
+### Added
+
+- **Weather fallback position (Settings → Weather).** Pick a saved place, usually home: weather
+  conditions use it when the car has had no GPS position for 24 hours, as after days parked. The
+  log names the place whenever it is used. None is chosen by default.
+- **Diagnostic: front-door evidence row (`FRONT_DOORS`).** Subscribes to the door-open property
+  the way MG4Control does on SWI68/69/131/165, and prints the managers, the subscriptions, the
+  direct read and the last event per front door. Export with the doors shut, open one, export
+  again: that capture is what would unlock `FRONT_DOOR_OPEN` on SWI68.
+- **Diagnostic: climate-zone row (`CLIMATE_ZONES`).** The driver and passenger targets as the
+  climate service answers them. A passenger -1 means no passenger zone.
+
+### Changed
+
+- **Time, weekday and date conditions wait for the clock.** Before the head unit's clock is set
+  (it boots on 2019-01-01), they are not evaluable instead of matching against that date, and
+  the diagnostic reports `CLOCK_UNSET`. A rule that needs them does not fire on that ignition.
+- `SET_PASSENGER_TEMP` is hidden in the editor on SWI68, where the passenger target reads -1.
+- Updated EVHardware to 1.16.0.
+
 ## [2.14.2] - 2026-10-11
 
 ### Fixed
