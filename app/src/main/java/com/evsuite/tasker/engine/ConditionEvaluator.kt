@@ -119,6 +119,7 @@ object ConditionEvaluator {
     }
 
     private fun evaluateTimeRange(c: Condition, s: Snapshot): ConditionOutcome {
+        if (!s.clockSet) return ConditionOutcome.UNAVAILABLE
         val now = s.minutesOfDay
         // A range crossing midnight (22:00 → 06:00) is legitimate and common ("at
         // night"). The interval is then the union of the two pieces.
@@ -131,11 +132,13 @@ object ConditionEvaluator {
     }
 
     private fun evaluateDays(c: Condition, s: Snapshot): ConditionOutcome {
+        if (!s.clockSet) return ConditionOutcome.UNAVAILABLE
         if (c.days.isEmpty()) return ConditionOutcome.UNAVAILABLE
         return match(s.dayOfWeek in c.days)
     }
 
     private fun evaluateDate(c: Condition, s: Snapshot): ConditionOutcome {
+        if (!s.clockSet) return ConditionOutcome.UNAVAILABLE
         if (!isIsoDate(c.text) || !isIsoDate(s.localDate)) return ConditionOutcome.UNAVAILABLE
         val equal = c.text == s.localDate
         return match(if (c.op == CompareOp.NE) !equal else equal)

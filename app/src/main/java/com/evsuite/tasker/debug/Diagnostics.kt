@@ -103,6 +103,11 @@ object Diagnostics {
          * moment, not the car — see [describesTheCar].
          */
         WEATHER_UNANSWERED,
+        /**
+         * The head unit still runs on its boot default, so the time, weekday and date are not
+         * known. Corrected within minutes of boot — a moment, not the car.
+         */
+        CLOCK_UNSET,
         /** The car has not moved yet, so no device can be called "on board". */
         NOT_DRIVEN_YET,
         /** The platform would not say which phone the head unit made hands-free. */
@@ -267,9 +272,16 @@ object Diagnostics {
         type in BLUETOOTH_CONDITIONS -> Reason.BLUETOOTH_OFF
         type == ConditionType.LOCATION_WITHIN -> Reason.NO_LOCATION
         type == ConditionType.WEATHER_NOW -> Reason.WEATHER_UNANSWERED
+        !snapshot.clockSet && type in CLOCK_CONDITIONS -> Reason.CLOCK_UNSET
         !snapshot.bridgeAvailable -> Reason.LAYER_NOT_READY
         else -> Reason.NOT_READABLE
     }
+
+    private val CLOCK_CONDITIONS = setOf(
+        ConditionType.TIME_OF_DAY,
+        ConditionType.DAY_OF_WEEK,
+        ConditionType.DATE
+    )
 
     private val BLUETOOTH_CONDITIONS = setOf(
         ConditionType.BT_DEVICE_CONNECTED,

@@ -16,6 +16,12 @@
     <string name="config_section_rule_editor">EDITOR DE REGLAS</string>
     <string name="config_expert_rules">Modo experto</string>
     <string name="config_expert_rules_explain">Permite ramas Si no, si y Si no al crear reglas. Las reglas avanzadas existentes siempre permanecen visibles.</string>
+    <string name="config_section_weather">METEOROLOGÍA</string>
+    <string name="config_weather_fallback">Posición de respaldo: %1$s</string>
+    <string name="config_weather_fallback_none">ninguna</string>
+    <string name="config_weather_fallback_title">Posición de respaldo para el tiempo</string>
+    <string name="config_weather_fallback_explain">La usan las condiciones meteorológicas cuando el coche no ha tenido posición GPS en 24 horas. Elija un lugar guardado, normalmente casa.</string>
+    <string name="config_weather_fallback_empty">Aún no hay lugares guardados. Guarde uno desde una condición de posición.</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automatización activada</string>
@@ -271,11 +277,14 @@
     <string name="diag_reason_no_navigation">ninguna aplicación de navegación</string>
     <string name="diag_reason_no_location">ninguna posición disponible</string>
     <string name="diag_reason_weather_unanswered">sin respuesta del servicio meteorológico</string>
+    <string name="diag_reason_clock_unset">reloj aún sin ajustar</string>
     <string name="diag_reason_not_driven_yet">el coche aún no ha circulado</string>
     <string name="diag_reason_no_handsfree">teléfono manos libres ilegible</string>
     <string name="paste_header">**Contraseña:** `%1$s` · caduca una hora después del envío.\n\nAlojado gratuitamente por [April](https://www.april.org) en %2$s. Si esto te ha ahorrado un viaje al taller, [haz una donación](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Ventanillas y bloqueo</string>
     <string name="diag_env_lights">Luces exteriores</string>
+    <string name="diag_env_doors">Puertas delanteras</string>
+    <string name="diag_env_climate_zones">Zonas de climatización</string>
     <string name="editor_trigger">Se ejecuta</string>
     <string name="physical_press_short">Pulsación corta</string>
     <string name="physical_press_long">Pulsación larga</string>

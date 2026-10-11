@@ -56,6 +56,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_lg"
+            android:text="@string/config_section_weather"
+            android:textAppearance="@style/Text.EV.SectionHeader" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/weatherFallbackButton"
+            style="@style/Widget.EV.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target"
+            android:layout_marginTop="@dimen/spacing_sm" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:text="@string/config_weather_fallback_explain"
+            android:textAppearance="@style/Text.EV.Secondary"
+            android:lineSpacingMultiplier="1.3" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_lg"
             android:text="@string/config_section_rules_file"
             android:textAppearance="@style/Text.EV.SectionHeader" />
 

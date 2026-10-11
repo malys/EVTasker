@@ -19,13 +19,14 @@ import com.evsuite.tasker.databinding.FragmentConfigBinding
 import com.evsuite.tasker.model.Rule
 import com.evsuite.tasker.store.AppState
 import com.evsuite.tasker.store.LanguageStore
+import com.evsuite.tasker.store.PlaceStore
 import com.evsuite.tasker.store.RuleFiles
 import com.evsuite.tasker.store.RuleStore
 import com.evsuite.tasker.store.RuleTransfer
 import java.io.File
 
 /**
- * Every user-configurable parameter of the app: language, editor and rule files.
+ * Every user-configurable parameter of the app: language, editor, weather and rule files.
  *
  * They used to sit in the rules pane, above the list. They are set once and then never
  * looked at again, so they were paying for themselves in list rows on every screen the
@@ -53,6 +54,9 @@ class ConfigFragment : Fragment() {
         binding.expertRulesSwitch.setOnCheckedChangeListener { _, enabled ->
             AppState.setExpertRulesEnabled(requireContext(), enabled)
         }
+
+        renderWeatherFallback()
+        binding.weatherFallbackButton.setOnClickListener { pickWeatherFallback() }
 
         binding.exportButton.setOnClickListener { exportRules() }
         binding.importButton.setOnClickListener { importRules() }
@@ -102,6 +106,37 @@ class ConfigFragment : Fragment() {
             .setSingleChoiceItems(names, current) { dialog, which ->
                 dialog.dismiss()
                 LanguageStore.setTag(requireContext(), tags[which])
+            }
+            .setNegativeButton(R.string.editor_cancel, null)
+            .show()
+    }
+
+    // ---------- Weather fallback ----------
+
+    private fun renderWeatherFallback() {
+        val name = AppState.weatherFallbackPlace(requireContext())
+            ?: getString(R.string.config_weather_fallback_none)
+        binding.weatherFallbackButton.text = getString(R.string.config_weather_fallback, name)
+    }
+
+    /**
+     * Saved places only: they are what the location condition already offers, and a point
+     * typed here would be a second way to name the same thing.
+     */
+    private fun pickWeatherFallback() {
+        val places = PlaceStore.all(requireContext())
+        if (places.isEmpty()) {
+            toastLong(getString(R.string.config_weather_fallback_empty))
+            return
+        }
+        val names = listOf(getString(R.string.config_weather_fallback_none)) + places.map { it.name }
+        val current = places.indexOfFirst { it.name == AppState.weatherFallbackPlace(requireContext()) } + 1
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.config_weather_fallback_title)
+            .setSingleChoiceItems(names.toTypedArray(), current) { dialog, which ->
+                dialog.dismiss()
+                AppState.setWeatherFallbackPlace(requireContext(), places.getOrNull(which - 1)?.name)
+                renderWeatherFallback()
             }
             .setNegativeButton(R.string.editor_cancel, null)
             .show()

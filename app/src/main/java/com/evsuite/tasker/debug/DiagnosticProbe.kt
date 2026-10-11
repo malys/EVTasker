@@ -6,6 +6,8 @@ import com.evsuite.hardware.FirmwareSupport
 import com.evsuite.hardware.EVHardware
 import com.evsuite.hardware.ExteriorLights
 import com.evsuite.hardware.VehicleWriteGate
+import com.evsuite.hardware.catalog.ActionType
+import com.evsuite.hardware.catalog.ConditionType
 import com.evsuite.hardware.saic.SaicCharging
 import com.evsuite.hardware.saic.SaicClimate
 import com.evsuite.hardware.saic.SaicPhone
@@ -103,6 +105,18 @@ object DiagnosticProbe {
          * a generation: export once with a light off, once on, and check the state follows.
          */
         EXTERIOR_LIGHTS,
+        /**
+         * The front-door open state through the change subscription MG4Control uses on the
+         * firmwares where the on-demand read throws. Evidence for `FRONT_DOOR_OPEN`: export
+         * with the doors shut, open one, export again — proven when the event follows.
+         */
+        FRONT_DOORS,
+        /**
+         * The driver and passenger targets exactly as the climate service answers them. A
+         * passenger -1 is the converter's answer for a zone the car does not have, which is
+         * why `PASSENGER_TEMP` and `SET_PASSENGER_TEMP` are hidden where it shows.
+         */
+        CLIMATE_ZONES,
     }
 
     data class Report(
@@ -298,6 +312,17 @@ object DiagnosticProbe {
                 // Red until the generation is proven: the light entries stay hidden until then.
                 ok = ExteriorLights.isProven(FirmwareInfo.getGeneration()),
                 detail = EVHardware.probeExteriorLights().joinToString("\n")
+            ),
+            EnvCheck(
+                Env.FRONT_DOORS,
+                ok = FirmwareSupport.isSupported(ConditionType.FRONT_DOOR_OPEN, FirmwareSupport.parse(FirmwareInfo.getGeneration().name)),
+                detail = EVHardware.probeFrontDoors()
+            ),
+            EnvCheck(
+                Env.CLIMATE_ZONES,
+                ok = FirmwareSupport.isSupported(ActionType.SET_PASSENGER_TEMP, FirmwareSupport.parse(FirmwareInfo.getGeneration().name)),
+                detail = "driver=${SaicClimate.driverTemp() ?: "?"} " +
+                    "passenger=${SaicClimate.passengerTempState() ?: "?"} (raw)"
             ),
         )
     }

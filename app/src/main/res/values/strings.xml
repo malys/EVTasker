@@ -16,6 +16,12 @@
     <string name="config_section_rule_editor">RULE EDITOR</string>
     <string name="config_expert_rules">Expert mode</string>
     <string name="config_expert_rules_explain">Allow Else if and Else branches when creating rules. Existing advanced rules always remain visible.</string>
+    <string name="config_section_weather">WEATHER</string>
+    <string name="config_weather_fallback">Fallback position: %1$s</string>
+    <string name="config_weather_fallback_none">none</string>
+    <string name="config_weather_fallback_title">Weather fallback position</string>
+    <string name="config_weather_fallback_explain">Used by weather conditions when the car has had no GPS position for 24 hours. Pick a saved place, usually home.</string>
+    <string name="config_weather_fallback_empty">No saved place yet. Save one from a location condition first.</string>
 
     <!-- Catalogue groups -->
 
@@ -288,11 +294,14 @@
     <string name="diag_reason_no_navigation">no navigation app</string>
     <string name="diag_reason_no_location">no position available</string>
     <string name="diag_reason_weather_unanswered">no answer from the weather service</string>
+    <string name="diag_reason_clock_unset">clock not set yet</string>
     <string name="diag_reason_not_driven_yet">no phone on board yet (car has not driven, no active phone)</string>
     <string name="diag_reason_no_handsfree">hands-free phone unreadable</string>
     <string name="paste_header">**Password:** `%1$s` · expires one hour after upload.\n\nHosted free of charge by [April](https://www.april.org) on %2$s. If this saved you a trip to the garage, [make a donation](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Windows and locks</string>
     <string name="diag_env_lights">Exterior lights</string>
+    <string name="diag_env_doors">Front doors</string>
+    <string name="diag_env_climate_zones">Climate zones</string>
     <string name="editor_trigger">Runs at</string>
     <string name="physical_press_short">Short press</string>
     <string name="physical_press_long">Long press</string>

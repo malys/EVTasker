@@ -16,6 +16,12 @@
     <string name="config_section_rule_editor">REGEL-EDITOR</string>
     <string name="config_expert_rules">Expertenmodus</string>
     <string name="config_expert_rules_explain">Erlaubt Sonst-wenn- und Sonst-Zweige beim Erstellen von Regeln. Vorhandene erweiterte Regeln bleiben immer sichtbar.</string>
+    <string name="config_section_weather">WETTER</string>
+    <string name="config_weather_fallback">Ersatzposition: %1$s</string>
+    <string name="config_weather_fallback_none">keine</string>
+    <string name="config_weather_fallback_title">Ersatzposition für das Wetter</string>
+    <string name="config_weather_fallback_explain">Wird von Wetterbedingungen genutzt, wenn das Auto seit 24 Stunden keine GPS-Position hatte. Wählen Sie einen gespeicherten Ort, meist Zuhause.</string>
+    <string name="config_weather_fallback_empty">Noch kein Ort gespeichert. Speichern Sie einen über eine Positionsbedingung.</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automatisierung aktiviert</string>
@@ -271,11 +277,14 @@
     <string name="diag_reason_no_navigation">keine Navigations-App</string>
     <string name="diag_reason_no_location">keine Position verfügbar</string>
     <string name="diag_reason_weather_unanswered">keine Antwort vom Wetterdienst</string>
+    <string name="diag_reason_clock_unset">Uhr noch nicht gestellt</string>
     <string name="diag_reason_not_driven_yet">das Auto ist noch nicht gefahren</string>
     <string name="diag_reason_no_handsfree">Freisprechtelefon nicht lesbar</string>
     <string name="paste_header">**Passwort:** `%1$s` · verfällt eine Stunde nach dem Hochladen.\n\nKostenlos gehostet von [April](https://www.april.org) auf %2$s. Wenn Ihnen das einen Werkstattbesuch erspart hat, [spenden Sie etwas](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Fenster und Verriegelung</string>
     <string name="diag_env_lights">Außenbeleuchtung</string>
+    <string name="diag_env_doors">Vordertüren</string>
+    <string name="diag_env_climate_zones">Klimazonen</string>
     <string name="editor_trigger">Läuft bei</string>
     <string name="physical_press_short">Kurzer Druck</string>
     <string name="physical_press_long">Langer Druck</string>

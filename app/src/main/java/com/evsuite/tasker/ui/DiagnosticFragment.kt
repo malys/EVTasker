@@ -313,6 +313,8 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.WRITE_THRESHOLD -> R.string.diag_env_threshold
             DiagnosticProbe.Env.GLASS_AND_LOCKS -> R.string.diag_env_glass
             DiagnosticProbe.Env.EXTERIOR_LIGHTS -> R.string.diag_env_lights
+            DiagnosticProbe.Env.FRONT_DOORS -> R.string.diag_env_doors
+            DiagnosticProbe.Env.CLIMATE_ZONES -> R.string.diag_env_climate_zones
         }
     )
 
@@ -352,7 +354,9 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.LOCATION,
             DiagnosticProbe.Env.WRITE_THRESHOLD,
             DiagnosticProbe.Env.GLASS_AND_LOCKS,
-            DiagnosticProbe.Env.EXTERIOR_LIGHTS -> R.string.diag_bt_off
+            DiagnosticProbe.Env.EXTERIOR_LIGHTS,
+            DiagnosticProbe.Env.FRONT_DOORS,
+            DiagnosticProbe.Env.CLIMATE_ZONES -> R.string.diag_bt_off
         }
     )
 
@@ -421,6 +425,7 @@ class DiagnosticFragment : Fragment() {
             Diagnostics.Reason.NO_NAVIGATION_APP -> R.string.diag_reason_no_navigation
             Diagnostics.Reason.NO_LOCATION -> R.string.diag_reason_no_location
             Diagnostics.Reason.WEATHER_UNANSWERED -> R.string.diag_reason_weather_unanswered
+            Diagnostics.Reason.CLOCK_UNSET -> R.string.diag_reason_clock_unset
             Diagnostics.Reason.NOT_DRIVEN_YET -> R.string.diag_reason_not_driven_yet
             Diagnostics.Reason.NO_HANDSFREE_INFO -> R.string.diag_reason_no_handsfree
             Diagnostics.Reason.LAYER_NOT_READY -> R.string.diag_reason_layer
@@ -501,6 +506,8 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.WRITE_THRESHOLD,
             DiagnosticProbe.Env.GLASS_AND_LOCKS,
             DiagnosticProbe.Env.EXTERIOR_LIGHTS,
+            DiagnosticProbe.Env.FRONT_DOORS,
+            DiagnosticProbe.Env.CLIMATE_ZONES,
         )
     }
 }

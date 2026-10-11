@@ -536,4 +536,20 @@ class ConditionEvaluatorTest {
         // car that answers nothing, which is not what a coin toss does.
         assertEquals(null, ConditionType.RANDOM_CHANCE.snapshotKey)
     }
+
+    @Test
+    fun `before the clock is set time weekday and date are unavailable not false`() {
+        // 2019-01-01 on a cold boot was a Tuesday at midnight: a "weekdays, 00:00-01:00" rule
+        // would have fired on it.
+        val unset = Snapshot(minutesOfDay = 30, dayOfWeek = Calendar.TUESDAY, localDate = "2019-01-01", clockSet = false)
+        listOf(
+            Condition(ConditionType.TIME_OF_DAY, minutesFrom = 0, minutesTo = 60),
+            Condition(ConditionType.DAY_OF_WEEK, days = listOf(Calendar.TUESDAY)),
+            Condition(ConditionType.DATE, text = "2019-01-01")
+        ).forEach {
+            assertEquals(it.type.name, ConditionOutcome.UNAVAILABLE, ConditionEvaluator.evaluate(it, unset))
+            assertEquals(it.type.name, ConditionOutcome.MATCH, ConditionEvaluator.evaluate(it, unset.copy(clockSet = true)))
+        }
+        assertEquals(false, com.evsuite.tasker.util.WallClock.isSet(1546300805736L))
+    }
 }

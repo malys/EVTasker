@@ -43,6 +43,12 @@ data class Snapshot(
     /** Current local calendar date in ISO-8601 format (yyyy-MM-dd). */
     val localDate: String = "",
     /**
+     * False while the head unit still runs on its boot default ([com.evsuite.tasker.util.WallClock]).
+     * The three fields above are then unreadable, not a time: a "weekdays only" rule must not
+     * fire because 2019-01-01 was a Tuesday.
+     */
+    val clockSet: Boolean = true,
+    /**
      * Last known position, null when there is no fix. Like every vehicle signal, absent
      * means "cannot tell", so a location rule does not fire on a car that has not yet
      * acquired GPS rather than firing as if it were somewhere else.

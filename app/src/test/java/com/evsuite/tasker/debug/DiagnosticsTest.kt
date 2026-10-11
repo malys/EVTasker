@@ -368,6 +368,9 @@ class DiagnosticsTest {
             // The weather query needs a position and a live round-trip: a check run in a
             // garage answers nothing about whether this head unit has a weather service.
             Diagnostics.Reason.WEATHER_UNANSWERED,
+            // Set within minutes of boot: a check run before that must not hide the clock
+            // conditions for good.
+            Diagnostics.Reason.CLOCK_UNSET,
             Diagnostics.Reason.NOT_DRIVEN_YET,
             Diagnostics.Reason.NO_HANDSFREE_INFO,
             // A phone leaves the car with its owner. "No phone on the message profile" is

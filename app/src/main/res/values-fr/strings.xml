@@ -16,6 +16,12 @@
     <string name="config_section_rule_editor">ÉDITEUR DE RÈGLES</string>
     <string name="config_expert_rules">Mode expert</string>
     <string name="config_expert_rules_explain">Autorise les branches Sinon si et Sinon lors de la création des règles. Les règles avancées existantes restent toujours visibles.</string>
+    <string name="config_section_weather">MÉTÉO</string>
+    <string name="config_weather_fallback">Position de secours : %1$s</string>
+    <string name="config_weather_fallback_none">aucune</string>
+    <string name="config_weather_fallback_title">Position de secours pour la météo</string>
+    <string name="config_weather_fallback_explain">Utilisée par les conditions météo quand la voiture n\'a eu aucune position GPS depuis 24 h. Choisissez un lieu enregistré, en général la maison.</string>
+    <string name="config_weather_fallback_empty">Aucun lieu enregistré. Enregistrez-en un depuis une condition de position.</string>
 
     <!-- Groupes du catalogue -->
 
@@ -288,11 +294,14 @@
     <string name="diag_reason_no_navigation">aucune application de navigation</string>
     <string name="diag_reason_no_location">aucune position disponible</string>
     <string name="diag_reason_weather_unanswered">aucune réponse du service météo</string>
+    <string name="diag_reason_clock_unset">heure pas encore réglée</string>
     <string name="diag_reason_not_driven_yet">aucun téléphone à bord (voiture pas encore roulée, aucun téléphone actif)</string>
     <string name="diag_reason_no_handsfree">téléphone mains-libres illisible</string>
     <string name="paste_header">**Mot de passe :** `%1$s` · expire une heure après l’envoi.\n\nHébergé gracieusement par [April](https://www.april.org) sur %2$s. Si cela vous a évité un passage au garage, [faites un don](https://www.april.org/adherer).</string>
     <string name="diag_env_glass">Vitres et verrouillage</string>
     <string name="diag_env_lights">Feux extérieurs</string>
+    <string name="diag_env_doors">Portes avant</string>
+    <string name="diag_env_climate_zones">Zones de climatisation</string>
     <string name="editor_trigger">Se déclenche</string>
     <string name="physical_press_short">Appui court</string>
     <string name="physical_press_long">Appui long</string>

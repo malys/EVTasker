@@ -14,10 +14,14 @@ import com.evsuite.hardware.saic.SaicRadio
 import com.evsuite.hardware.saic.SaicNav
 import com.evsuite.hardware.saic.SaicWeather
 import com.evsuite.hardware.saic.SaicVehicleControl
+import com.evsuite.tasker.engine.ConditionEvaluator
 import com.evsuite.tasker.model.Snapshot
+import com.evsuite.tasker.store.AppState
+import com.evsuite.tasker.store.PlaceStore
 import com.evsuite.tasker.util.CarLocation
 import com.evsuite.tasker.util.DriveClock
 import com.evsuite.tasker.util.PlatformContext
+import com.evsuite.tasker.util.WallClock
 import java.util.Calendar
 
 /**
@@ -82,6 +86,7 @@ object VehicleReader {
                 minutesOfDay = minutes,
                 dayOfWeek = day,
                 localDate = date,
+                clockSet = WallClock.isSet(),
                 latitude = fix?.latitude,
                 longitude = fix?.longitude,
                 bridgeAvailable = false
@@ -163,6 +168,7 @@ object VehicleReader {
             minutesOfDay = minutes,
             dayOfWeek = day,
             localDate = date,
+            clockSet = WallClock.isSet(),
             latitude = fix?.latitude,
             longitude = fix?.longitude,
             bridgeAvailable = true
@@ -259,9 +265,10 @@ object VehicleReader {
         // Costs real time — see `wanted`.
         if (wants(wanted, SnapshotKeys.KEY_WEATHER_CONDITION)) {
             val where = fix ?: CarLocation.lastKnown(context, CarLocation.WEATHER_MAX_AGE_MS)
+                ?: weatherFallback(context)
             if (where == null) {
                 // Says which half failed: no position at all, or a service that did not answer.
-                AppLogger.i(TAG, "weather not asked — no fix in the last 24 h")
+                AppLogger.i(TAG, "weather not asked — no fix in the last 24 h, no fallback place")
                 return@buildMap
             }
             SaicWeather.currentAt(where.latitude, where.longitude, weatherLanguage())
@@ -269,6 +276,19 @@ object VehicleReader {
                 ?.let { WeatherConditions.classify(it) }
                 ?.let { put(SnapshotKeys.KEY_WEATHER_CONDITION, it) }
         }
+    }
+
+    /**
+     * The saved place the user chose in Settings for weather when the car has no position at
+     * all — a cold boot after days parked. Null when none is chosen, or when that place has
+     * since been deleted: a name pointing nowhere is no position.
+     */
+    private fun weatherFallback(context: Context): CarLocation.Fix? {
+        val name = AppState.weatherFallbackPlace(context) ?: return null
+        val point = PlaceStore.all(context).firstOrNull { it.name == name }?.point ?: return null
+        val (latitude, longitude) = ConditionEvaluator.parsePoint(point) ?: return null
+        AppLogger.i(TAG, "weather asked at fallback place \"$name\" — no fix in the last 24 h")
+        return CarLocation.Fix(latitude, longitude)
     }
 
     /** Null means "everything": the diagnostic asks for readings no rule may be using. */
