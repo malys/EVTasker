@@ -3,13 +3,17 @@ package com.evsuite.tasker.debug
 import android.content.Context
 import com.google.gson.GsonBuilder
 import com.evsuite.hardware.AppLogger
+import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.diag.CrashLogger
+import com.evsuite.tasker.model.Action
+import com.evsuite.tasker.model.Rule
 import com.evsuite.tasker.store.HistoryStore
 import com.evsuite.tasker.store.RuleStore
 import com.evsuite.tasker.store.RuleTransfer
 import com.evsuite.tasker.store.StorageBrowser
 import java.io.File
 import java.io.IOException
+import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -83,9 +87,9 @@ object DebugReport {
 
         section("Rules")
         // The export format, not a bespoke dump: the rules can be pasted straight back into
-        // an import to reproduce the problem on another car.
+        // an import to reproduce the problem on another car — minus what [redacted] takes out.
         appendLine(RuleStore(context).getAll().let { rules ->
-            if (rules.isEmpty()) "(none)" else RuleTransfer.encode(rules)
+            if (rules.isEmpty()) "(none)" else RuleTransfer.encode(redacted(rules))
         })
         appendLine()
 
@@ -151,7 +155,7 @@ object DebugReport {
         }
         fenced("Rules", language = "json") {
             appendLine(RuleStore(context).getAll().let { rules ->
-                if (rules.isEmpty()) "(none)" else RuleTransfer.encode(rules)
+                if (rules.isEmpty()) "(none)" else RuleTransfer.encode(redacted(rules))
             })
         }
         fenced("Storage") { appendLine(storage(context)) }
@@ -187,6 +191,39 @@ object DebugReport {
             )
         }
     }.trimEnd()
+
+    /**
+     * The rules with what lets a reader act in the owner's name taken out.
+     *
+     * A report is made to be handed to whoever debugs the app, and it carried the rules
+     * verbatim: a webhook URL whose query was the key to a gate controller, and the phone
+     * numbers of the people the car calls. The webhook keeps its host — which service it
+     * reaches is what a failing webhook is debugged with — and loses path, query and body.
+     */
+    internal fun redacted(rules: List<Rule>): List<Rule> = rules.map { rule ->
+        rule.copy(
+            actions = rule.actions.map(::redacted),
+            elseIf = rule.elseIf?.map { branch -> branch.copy(actions = branch.actions.map(::redacted)) },
+            elseActions = rule.elseActions?.map(::redacted)
+        )
+    }
+
+    private fun redacted(action: Action): Action = when (action.type) {
+        ActionType.WEBHOOK -> action.copy(
+            text = runCatching { URI(action.text) }.getOrNull()
+                ?.takeIf { it.scheme != null && it.host != null }
+                ?.let { "${it.scheme}://${it.host}/$MASK" }
+                ?: MASK,
+            payload = action.payload?.let { MASK }
+        )
+        ActionType.SEND_SMS, ActionType.CALL_NUMBER, ActionType.CALL_CONTACT -> action.copy(
+            text = MASK,
+            displayName = action.displayName?.let { MASK }
+        )
+        else -> action
+    }
+
+    private const val MASK = "(redacted)"
 
     private fun StringBuilder.section(title: String) {
         appendLine(SEPARATOR)
