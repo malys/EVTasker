@@ -6,6 +6,16 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.15.1] - 2026-10-11
+
+### Changed
+
+- **Rules that read the clock wait for it.** Before the head unit's clock is set at boot, the
+  rules of a cycle that use a time, weekday or date condition are held back and run once it is
+  set, up to five minutes; the other rules run at once as before. They are dropped if the
+  ignition changes meanwhile, and run anyway after five minutes, when the history shows them
+  not evaluable for `CLOCK_UNSET`. The manual test does not wait.
+
 ## [2.15.0] - 2026-10-11
 
 ### Added
