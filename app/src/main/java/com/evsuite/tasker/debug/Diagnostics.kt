@@ -12,6 +12,7 @@ import com.evsuite.tasker.model.CompareOp
 import com.evsuite.tasker.model.Condition
 import com.evsuite.tasker.model.ConditionOutcome
 import com.evsuite.tasker.model.Snapshot
+import com.evsuite.tasker.util.WallClock
 
 /**
  * Turns the execution context into a per-catalogue-entry verdict.
@@ -272,16 +273,10 @@ object Diagnostics {
         type in BLUETOOTH_CONDITIONS -> Reason.BLUETOOTH_OFF
         type == ConditionType.LOCATION_WITHIN -> Reason.NO_LOCATION
         type == ConditionType.WEATHER_NOW -> Reason.WEATHER_UNANSWERED
-        !snapshot.clockSet && type in CLOCK_CONDITIONS -> Reason.CLOCK_UNSET
+        !snapshot.clockSet && type in WallClock.CONDITIONS -> Reason.CLOCK_UNSET
         !snapshot.bridgeAvailable -> Reason.LAYER_NOT_READY
         else -> Reason.NOT_READABLE
     }
-
-    private val CLOCK_CONDITIONS = setOf(
-        ConditionType.TIME_OF_DAY,
-        ConditionType.DAY_OF_WEEK,
-        ConditionType.DATE
-    )
 
     private val BLUETOOTH_CONDITIONS = setOf(
         ConditionType.BT_DEVICE_CONNECTED,

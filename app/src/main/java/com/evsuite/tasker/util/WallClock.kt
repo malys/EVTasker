@@ -1,5 +1,7 @@
 package com.evsuite.tasker.util
 
+import com.evsuite.hardware.catalog.ConditionType
+
 /**
  * Whether the head unit's clock tells the time yet.
  *
@@ -14,4 +16,7 @@ object WallClock {
     const val FLOOR_MS = 1_767_225_600_000L
 
     fun isSet(nowMs: Long = System.currentTimeMillis()): Boolean = nowMs >= FLOOR_MS
+
+    /** The conditions that read this clock, and so cannot be answered before it is set. */
+    val CONDITIONS = setOf(ConditionType.TIME_OF_DAY, ConditionType.DAY_OF_WEEK, ConditionType.DATE)
 }

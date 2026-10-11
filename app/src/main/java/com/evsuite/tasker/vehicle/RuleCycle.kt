@@ -7,8 +7,12 @@ import com.evsuite.tasker.engine.RuleEngine
 import com.evsuite.tasker.store.HistoryStore
 import com.evsuite.tasker.store.RuleStore
 import com.evsuite.tasker.model.EngineRun
+import com.evsuite.tasker.model.Rule
 import com.evsuite.tasker.util.BtDevices
 import com.evsuite.tasker.util.CarLocation
+import com.evsuite.tasker.util.WallClock
+import android.os.SystemClock
+import kotlin.concurrent.thread
 
 /**
  * Bluetooth devices currently connected to the vehicle.
@@ -115,6 +119,14 @@ object RuleCycle {
     const val MANUAL = "MANUAL"
     const val PHYSICAL_BUTTON = "PHYSICAL_BUTTON"
 
+    /**
+     * How long rules that read the clock wait for it after boot. The head unit corrects its
+     * RTC default from the network or GPS; past this, the rules run anyway and the history
+     * shows them not evaluable for `CLOCK_UNSET` rather than leaving no trace.
+     */
+    private const val CLOCK_WAIT_MS = 5 * 60_000L
+    private const val CLOCK_POLL_MS = 2_000L
+
     // A P cycle can still be closing glass when ignition-off arrives. Keep whole cycles,
     // not just individual writes, atomic against every other trigger.
     @Synchronized
@@ -122,12 +134,14 @@ object RuleCycle {
         context: Context,
         trigger: String,
         eventReadings: Map<String, Any> = emptyMap(),
-        ruleId: String? = null
+        ruleId: String? = null,
+        /** The rules held back by [waitForClock], run once it is over. */
+        clockWaited: Set<String>? = null
     ) {
         val all = RuleStore(context).getAll()
         // Rules wired to a different event are not "skipped", they were never addressed: the
         // history would otherwise fill with a line per rule per ignition saying nothing.
-        val rules = when (trigger) {
+        var rules = when (trigger) {
             MANUAL -> all.filter { it.id == ruleId }
             PHYSICAL_BUTTON -> all.filter { it.hasPhysicalButtonCondition }
             // A position event belongs to the one rule whose place it is: its neighbours are
@@ -137,9 +151,19 @@ object RuleCycle {
                     (ruleId == null || it.id == ruleId)
             }
         }
+        if (clockWaited != null) rules = rules.filter { it.id in clockWaited }
         if (rules.isEmpty()) {
             AppLogger.i(TAG, "no rules for $trigger (${all.size} total) — skipped")
             return
+        }
+        // A manual test answers now, clock or not: the user is looking at the result.
+        if (trigger != MANUAL && clockWaited == null && !WallClock.isSet()) {
+            val (needClock, now) = rules.partition(::readsClock)
+            if (needClock.isNotEmpty()) {
+                waitForClock(context.applicationContext, trigger, eventReadings, needClock.map { it.id }.toSet())
+            }
+            rules = now
+            if (rules.isEmpty()) return
         }
 
         val startedAt = System.currentTimeMillis()
@@ -178,6 +202,42 @@ object RuleCycle {
             CycleReporter.publish(result)
         } finally {
             profileBridge?.disconnect()
+        }
+    }
+
+    /** Whether any case of [rule], "else if" ones included, asks the time, weekday or date. */
+    internal fun readsClock(rule: Rule): Boolean =
+        rule.branches.any { branch -> branch.conditions.any { it.type in WallClock.CONDITIONS } }
+
+    /**
+     * Runs [ruleIds] again once the head unit's clock is set.
+     *
+     * At boot the clock reads 2019-01-01 until the network or GPS corrects it, and the
+     * ignition cycle runs before that. Rules that read the time, the weekday or the date
+     * wait for it; the others ran already and are not held up. Abandoned if the ignition
+     * changes meanwhile: a start-of-drive rule must not fire after the drive is over. Waits
+     * on elapsed time, because the wall clock is precisely what jumps.
+     */
+    private fun waitForClock(
+        context: Context,
+        trigger: String,
+        eventReadings: Map<String, Any>,
+        ruleIds: Set<String>
+    ) {
+        val ignition = EVHardware.getCurrentIgnitionState()
+        AppLogger.i(TAG, "clock not set — ${ruleIds.size} $trigger rule(s) wait for it")
+        thread(name = "mg4-tasker-clock-wait") {
+            val start = SystemClock.elapsedRealtime()
+            while (!WallClock.isSet() && SystemClock.elapsedRealtime() - start < CLOCK_WAIT_MS) {
+                Thread.sleep(CLOCK_POLL_MS)
+            }
+            val waitedS = (SystemClock.elapsedRealtime() - start) / 1000
+            if (EVHardware.getCurrentIgnitionState() != ignition) {
+                AppLogger.i(TAG, "ignition changed during the ${waitedS} s clock wait — $trigger rules dropped")
+                return@thread
+            }
+            AppLogger.i(TAG, "clock ${if (WallClock.isSet()) "set" else "still not set"} after ${waitedS} s — running held $trigger rules")
+            run(context, trigger, eventReadings, clockWaited = ruleIds)
         }
     }
 }
