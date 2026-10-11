@@ -163,6 +163,7 @@
     <string name="history_trigger_button">Bouton physique</string>
     <string name="history_trigger_deferred">Appliqué à l\'arrêt</string>
     <string name="history_no_bridge">La couche véhicule n\'était pas prête — aucune règle n\'a pu s\'appliquer.</string>
+    <string name="history_clock_unset">Heure pas encore réglée</string>
 
     <string name="outcome_fired">Appliquée</string>
     <string name="outcome_failed">Échouée</string>

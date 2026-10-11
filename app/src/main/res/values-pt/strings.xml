@@ -146,6 +146,7 @@
     <string name="history_trigger_location">Localização atingida</string>
     <string name="history_trigger_deferred">Aplicado em paragem</string>
     <string name="history_no_bridge">A camada do veículo não estava pronta — nenhuma regra pôde ser aplicada.</string>
+    <string name="history_clock_unset">Relógio ainda não acertado</string>
 
     <string name="outcome_fired">Aplicada</string>
     <string name="outcome_failed">Falhou</string>

@@ -163,6 +163,7 @@
     <string name="history_trigger_button">Physical button</string>
     <string name="history_trigger_deferred">Applied at a standstill</string>
     <string name="history_no_bridge">Vehicle layer was not ready — no rule could be applied.</string>
+    <string name="history_clock_unset">Clock not set yet</string>
 
     <string name="outcome_fired">Applied</string>
     <string name="outcome_failed">Failed</string>

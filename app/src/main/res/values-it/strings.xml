@@ -146,6 +146,7 @@
     <string name="history_trigger_location">Posizione raggiunta</string>
     <string name="history_trigger_deferred">Applicato da fermo</string>
     <string name="history_no_bridge">Il livello veicolo non era pronto — nessuna regola è stata applicata.</string>
+    <string name="history_clock_unset">Orologio non ancora impostato</string>
 
     <string name="outcome_fired">Applicata</string>
     <string name="outcome_failed">Non riuscita</string>

@@ -69,6 +69,10 @@ class HistoryFragment : Fragment() {
 
         private val timeFormat = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
 
+        // ponytail: fixed floor (2026-01-01 UTC), earlier than any build of this app; a clock
+        // behind it is unset. Move to the build time if a later RTC default ever shows up.
+        private val CLOCK_FLOOR_MS = 1_767_225_600_000L
+
         class Holder(val binding: ItemHistoryRunBinding) : RecyclerView.ViewHolder(binding.root)
 
         override fun getItemCount() = runs.size
@@ -94,7 +98,12 @@ class HistoryFragment : Fragment() {
                     else -> R.string.history_trigger_ignition
                 }
             )
-            holder.binding.runHeader.text = "${timeFormat.format(Date(run.timestamp))} — $trigger"
+            // The head unit boots on its RTC default, 2019-01-01, and an ignition cycle can
+            // run before the network sets the clock. That run is still in its right place —
+            // the list is newest first by insertion — but its date is fiction.
+            val time = if (run.timestamp < CLOCK_FLOOR_MS) context.getString(R.string.history_clock_unset)
+                else timeFormat.format(Date(run.timestamp))
+            holder.binding.runHeader.text = "$time — $trigger"
 
             holder.binding.runWarning.visibility = if (run.bridgeAvailable) View.GONE else View.VISIBLE
             holder.binding.runWarning.setText(R.string.history_no_bridge)
