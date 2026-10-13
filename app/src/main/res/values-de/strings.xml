@@ -285,6 +285,9 @@
     <string name="diag_env_lights">Außenbeleuchtung</string>
     <string name="diag_env_doors">Vordertüren</string>
     <string name="diag_env_climate_zones">Klimazonen</string>
+    <string name="diag_env_radio_state">Radiostatus</string>
+    <string name="diag_env_oem_screens">Herstellerbildschirme</string>
+    <string name="diag_env_power_cycle">Stromzyklus</string>
     <string name="editor_trigger">Läuft bei</string>
     <string name="physical_press_short">Kurzer Druck</string>
     <string name="physical_press_long">Langer Druck</string>
@@ -377,4 +380,10 @@
     <string name="diag_glass_result_left_open">⚠️ Das Fenster blieb offen — bitte von Hand schließen.</string>
     <string name="diag_glass_result_steps">Getestete Befehle: %1$s</string>
     <string name="diag_glass_forget">Verwerfen</string>
+    <string name="diag_surface_hint">Herstellerwerte: erfassen, im Stand eine Einstellung am Bildschirm des Autos ändern, 2 s warten, erneut erfassen, dann exportieren.</string>
+    <string name="diag_surface_before">Vorher erfassen</string>
+    <string name="diag_surface_after">Nachher erfassen</string>
+    <string name="diag_surface_running">Alle Herstellerwerte werden gelesen…</string>
+    <string name="diag_surface_before_done">Vorher: %1$d Werte gelesen. Einstellung ändern, 2 s warten, dann nachher erfassen.</string>
+    <string name="diag_surface_after_done">Nachher: %1$d Werte gelesen, %2$d geändert. Exportieren, um die Liste zu behalten.</string>
 </resources>

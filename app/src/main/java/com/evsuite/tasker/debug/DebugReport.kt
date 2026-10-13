@@ -85,6 +85,12 @@ object DebugReport {
         report.actions.forEach { appendLine(entryRow(it)) }
         appendLine()
 
+        SurfaceCaptures.report()?.let {
+            section("Vendor surface diff (CR-045)")
+            appendLine(it)
+            appendLine()
+        }
+
         section("Rules")
         // The export format, not a bespoke dump: the rules can be pasted straight back into
         // an import to reproduce the problem on another car — minus what [redacted] takes out.
@@ -153,6 +159,7 @@ object DebugReport {
         fenced("Actions — ${report.blockedActions} blocked of ${report.actions.size}") {
             report.actions.forEach { appendLine(entryRow(it)) }
         }
+        SurfaceCaptures.report()?.let { diff -> fenced("Vendor surface diff (CR-045)") { appendLine(diff) } }
         fenced("Rules", language = "json") {
             appendLine(RuleStore(context).getAll().let { rules ->
                 if (rules.isEmpty()) "(none)" else RuleTransfer.encode(redacted(rules))

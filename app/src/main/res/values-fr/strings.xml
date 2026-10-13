@@ -302,6 +302,9 @@
     <string name="diag_env_lights">Feux extérieurs</string>
     <string name="diag_env_doors">Portes avant</string>
     <string name="diag_env_climate_zones">Zones de climatisation</string>
+    <string name="diag_env_radio_state">État de la radio</string>
+    <string name="diag_env_oem_screens">Écrans constructeur</string>
+    <string name="diag_env_power_cycle">Cycle d\'alimentation</string>
     <string name="editor_trigger">Se déclenche</string>
     <string name="physical_press_short">Appui court</string>
     <string name="physical_press_long">Appui long</string>
@@ -394,4 +397,10 @@
     <string name="diag_glass_result_left_open">⚠️ La vitre est restée ouverte — refermez-la à la main.</string>
     <string name="diag_glass_result_steps">Commandes essayées : %1$s</string>
     <string name="diag_glass_forget">Oublier</string>
+    <string name="diag_surface_hint">Valeurs constructeur : capturer, changer un réglage sur l\'écran de la voiture à l\'arrêt, attendre 2 s, capturer à nouveau, puis Exporter.</string>
+    <string name="diag_surface_before">Capturer avant</string>
+    <string name="diag_surface_after">Capturer après</string>
+    <string name="diag_surface_running">Lecture de toutes les valeurs constructeur…</string>
+    <string name="diag_surface_before_done">Avant : %1$d valeurs lues. Changez le réglage, attendez 2 s, puis capturez après.</string>
+    <string name="diag_surface_after_done">Après : %1$d valeurs lues, %2$d modifiées. Exportez pour garder la liste.</string>
 </resources>

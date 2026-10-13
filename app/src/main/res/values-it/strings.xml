@@ -285,6 +285,9 @@
     <string name="diag_env_lights">Luci esterne</string>
     <string name="diag_env_doors">Porte anteriori</string>
     <string name="diag_env_climate_zones">Zone climatiche</string>
+    <string name="diag_env_radio_state">Stato della radio</string>
+    <string name="diag_env_oem_screens">Schermate del costruttore</string>
+    <string name="diag_env_power_cycle">Ciclo di alimentazione</string>
     <string name="editor_trigger">Si attiva</string>
     <string name="physical_press_short">Pressione breve</string>
     <string name="physical_press_long">Pressione lunga</string>
@@ -377,4 +380,10 @@
     <string name="diag_glass_result_left_open">⚠️ Il finestrino è rimasto aperto — chiuderlo a mano.</string>
     <string name="diag_glass_result_steps">Comandi provati: %1$s</string>
     <string name="diag_glass_forget">Dimentica</string>
+    <string name="diag_surface_hint">Valori del costruttore: acquisire, cambiare un\'impostazione sullo schermo dell\'auto da fermi, attendere 2 s, acquisire di nuovo, poi esportare.</string>
+    <string name="diag_surface_before">Acquisisci prima</string>
+    <string name="diag_surface_after">Acquisisci dopo</string>
+    <string name="diag_surface_running">Lettura di tutti i valori del costruttore…</string>
+    <string name="diag_surface_before_done">Prima: %1$d valori letti. Cambia l\'impostazione, attendi 2 s, poi acquisisci dopo.</string>
+    <string name="diag_surface_after_done">Dopo: %1$d valori letti, %2$d cambiati. Esporta per conservare l\'elenco.</string>
 </resources>

@@ -17,6 +17,7 @@ import com.evsuite.hardware.PhysicalButtonEventDecoder
 import com.evsuite.hardware.VehicleWriteGate
 import com.evsuite.tasker.model.RuleTrigger
 import com.evsuite.tasker.store.AppState
+import com.evsuite.tasker.store.PowerCycleStore
 import com.evsuite.tasker.util.BtDevices
 import com.evsuite.tasker.util.BtMessaging
 import com.evsuite.tasker.util.CarLocation
@@ -150,6 +151,14 @@ class TaskerVehicleService : Service() {
         }
     }
 
+    /** RI-004: proves the head unit is still running, on the sampling thread. No wakelock. */
+    private val heartbeat = object : Runnable {
+        override fun run() {
+            PowerCycleStore.heartbeat(applicationContext)
+            onboardHandler.postDelayed(this, PowerCycleStore.HEARTBEAT_MS)
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -193,6 +202,9 @@ class TaskerVehicleService : Service() {
         CarLocation.startTracking(applicationContext)
         registerBtReceiver()
         registerHardkeyReceiver()
+        // Before the listener: the first beat after a restart is what closes the previous
+        // cycle, and an OFF reported right away belongs to this one.
+        heartbeat.run()
         registerIgnitionListener()
         // START_STICKY means this service can be recreated mid-drive. Waiting for the next
         // IGNITION_ON would then leave the whole drive unsampled, and every "phone on board"
@@ -237,6 +249,7 @@ class TaskerVehicleService : Service() {
         onboardHandler.removeCallbacks(onboardSampler)
         onboardHandler.removeCallbacks(parkSampler)
         onboardHandler.removeCallbacks(locationSampler)
+        onboardHandler.removeCallbacks(heartbeat)
         onboardThread.quitSafely()
     }
 
@@ -320,6 +333,7 @@ class TaskerVehicleService : Service() {
                     startOnboardSampling()
                 } else {
                     stopOnboardSampling()
+                    PowerCycleStore.ignitionOff(applicationContext)
                 }
                 runRulesFor(trigger, "Ignition $state")
             }

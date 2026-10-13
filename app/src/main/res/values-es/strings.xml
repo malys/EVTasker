@@ -285,6 +285,9 @@
     <string name="diag_env_lights">Luces exteriores</string>
     <string name="diag_env_doors">Puertas delanteras</string>
     <string name="diag_env_climate_zones">Zonas de climatización</string>
+    <string name="diag_env_radio_state">Estado de la radio</string>
+    <string name="diag_env_oem_screens">Pantallas del fabricante</string>
+    <string name="diag_env_power_cycle">Ciclo de encendido</string>
     <string name="editor_trigger">Se ejecuta</string>
     <string name="physical_press_short">Pulsación corta</string>
     <string name="physical_press_long">Pulsación larga</string>
@@ -377,4 +380,10 @@
     <string name="diag_glass_result_left_open">⚠️ La ventanilla se quedó abierta — ciérrela a mano.</string>
     <string name="diag_glass_result_steps">Órdenes probadas: %1$s</string>
     <string name="diag_glass_forget">Olvidar</string>
+    <string name="diag_surface_hint">Valores del fabricante: capturar, cambiar un ajuste en la pantalla del coche parado, esperar 2 s, capturar de nuevo y exportar.</string>
+    <string name="diag_surface_before">Capturar antes</string>
+    <string name="diag_surface_after">Capturar después</string>
+    <string name="diag_surface_running">Leyendo todos los valores del fabricante…</string>
+    <string name="diag_surface_before_done">Antes: %1$d valores leídos. Cambie el ajuste, espere 2 s y capture después.</string>
+    <string name="diag_surface_after_done">Después: %1$d valores leídos, %2$d cambiados. Exporte para conservar la lista.</string>
 </resources>

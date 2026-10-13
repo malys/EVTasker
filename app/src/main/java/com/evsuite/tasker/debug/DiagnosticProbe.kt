@@ -17,6 +17,7 @@ import com.evsuite.hardware.saic.SaicVehicleControl
 import com.evsuite.tasker.bridge.BridgeContract
 import com.evsuite.tasker.service.TaskerVehicleService
 import com.evsuite.tasker.store.AppState
+import com.evsuite.tasker.store.PowerCycleStore
 import com.evsuite.tasker.store.SupportStore
 import com.evsuite.tasker.util.BtDevices
 import com.evsuite.tasker.util.CarLocation
@@ -27,6 +28,7 @@ import com.evsuite.tasker.vehicle.BtTracker
 import com.evsuite.tasker.vehicle.DeferredWrites
 import com.evsuite.tasker.vehicle.VendorServices
 import com.evsuite.tasker.vehicle.ProfileBridge
+import com.evsuite.tasker.vehicle.RadioState
 import com.evsuite.tasker.vehicle.VehicleReader
 
 /**
@@ -117,6 +119,12 @@ object DiagnosticProbe {
          * why `PASSENGER_TEMP` and `SET_PASSENGER_TEMP` are hidden where it shows.
          */
         CLIMATE_ZONES,
+        /** The tuner as `SaicRadio.currentStation()` answers it: band, kHz, playing (CR-020). */
+        RADIO_STATE,
+        /** Exported activities of the `com.saicmotor.*` apps, bounded; nothing launched (CR-030). */
+        OEM_SCREENS,
+        /** The previous ignition-off, last heartbeat and this boot: the post-off run window (RI-004). */
+        POWER_CYCLE,
     }
 
     data class Report(
@@ -324,6 +332,13 @@ object DiagnosticProbe {
                 detail = "driver=${SaicClimate.driverTemp() ?: "?"} " +
                     "passenger=${SaicClimate.passengerTempState() ?: "?"} (raw)"
             ),
+            SaicRadio.currentStation().let {
+                EnvCheck(Env.RADIO_STATE, ok = it != null, detail = RadioState.describe(it))
+            },
+            OemScreens.read(context).let {
+                EnvCheck(Env.OEM_SCREENS, ok = it.isNotEmpty(), detail = OemScreens.format(it))
+            },
+            EnvCheck(Env.POWER_CYCLE, ok = true, detail = PowerCycleStore.describe(context)),
         )
     }
 

@@ -16,6 +16,8 @@ import com.evsuite.hardware.GlassProbe
 import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.ConditionType
 import com.evsuite.hardware.catalog.ValueKind
+import com.evsuite.hardware.probe.VendorSurfaceProbe
+import com.evsuite.hardware.probe.VendorSurfaceRules
 import com.evsuite.hardware.saic.SaicVehicleControl
 import com.evsuite.tasker.R
 import com.evsuite.tasker.bridge.BridgeContract
@@ -25,6 +27,7 @@ import com.evsuite.tasker.databinding.ItemDiagnosticHeaderBinding
 import com.evsuite.tasker.debug.DebugReport
 import com.evsuite.tasker.debug.DiagnosticProbe
 import com.evsuite.tasker.debug.Diagnostics
+import com.evsuite.tasker.debug.SurfaceCaptures
 import com.evsuite.tasker.store.SupportChecker
 import com.evsuite.tasker.store.SupportStore
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -65,6 +68,9 @@ class DiagnosticFragment : Fragment() {
         binding.exportButton.setOnClickListener { export() }
         binding.checkSupportButton.setOnClickListener { checkSupport() }
         binding.glassProbeButton.setOnClickListener { confirmGlassProbe() }
+        binding.surfaceBeforeButton.setOnClickListener { captureSurface(before = true) }
+        binding.surfaceAfterButton.setOnClickListener { captureSurface(before = false) }
+        binding.surfaceAfterButton.isEnabled = SurfaceCaptures.before != null
         load()
         showSupport()
         showGlass()
@@ -210,6 +216,38 @@ class DiagnosticFragment : Fragment() {
             .show()
     }
 
+    // ── Vendor surface (CR-045, CR-046) ──────────────────────────────────────
+    //
+    // Read everything, let the driver flip one setting on the car's own screen, read again:
+    // the export lists what changed. Getters only — VendorSurfaceRules refuses every setter.
+
+    private fun captureSurface(before: Boolean) {
+        binding.surfaceStatus.setText(R.string.diag_surface_running)
+        binding.surfaceBeforeButton.isEnabled = false
+        binding.surfaceAfterButton.isEnabled = false
+        // Up to VendorSurfaceProbe.BUDGET_MS of binder reads.
+        thread(name = "mg4-tasker-surface") {
+            // A throw on this thread would take the app down; a failed capture is a value too.
+            val values = runCatching { VendorSurfaceProbe.capture() }
+                .getOrElse { mapOf("capture" to "ERR ${it.javaClass.simpleName}") }
+            if (before) {
+                SurfaceCaptures.before = values
+                SurfaceCaptures.after = null
+            } else {
+                SurfaceCaptures.after = values
+            }
+            val changed = SurfaceCaptures.before?.let { VendorSurfaceRules.diff(it, values).size } ?: 0
+            Handler(Looper.getMainLooper()).post {
+                if (_binding == null) return@post
+                binding.surfaceBeforeButton.isEnabled = true
+                binding.surfaceAfterButton.isEnabled = true
+                binding.surfaceStatus.text =
+                    if (before) getString(R.string.diag_surface_before_done, values.size)
+                    else getString(R.string.diag_surface_after_done, values.size, changed)
+            }
+        }
+    }
+
     private fun load() {
         binding.summaryStatus.setText(R.string.diag_reading)
         binding.bridgeHint.visibility = View.GONE
@@ -315,6 +353,9 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.EXTERIOR_LIGHTS -> R.string.diag_env_lights
             DiagnosticProbe.Env.FRONT_DOORS -> R.string.diag_env_doors
             DiagnosticProbe.Env.CLIMATE_ZONES -> R.string.diag_env_climate_zones
+            DiagnosticProbe.Env.RADIO_STATE -> R.string.diag_env_radio_state
+            DiagnosticProbe.Env.OEM_SCREENS -> R.string.diag_env_oem_screens
+            DiagnosticProbe.Env.POWER_CYCLE -> R.string.diag_env_power_cycle
         }
     )
 
@@ -356,7 +397,10 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.GLASS_AND_LOCKS,
             DiagnosticProbe.Env.EXTERIOR_LIGHTS,
             DiagnosticProbe.Env.FRONT_DOORS,
-            DiagnosticProbe.Env.CLIMATE_ZONES -> R.string.diag_bt_off
+            DiagnosticProbe.Env.CLIMATE_ZONES,
+            DiagnosticProbe.Env.RADIO_STATE,
+            DiagnosticProbe.Env.OEM_SCREENS,
+            DiagnosticProbe.Env.POWER_CYCLE -> R.string.diag_bt_off
         }
     )
 
@@ -508,6 +552,9 @@ class DiagnosticFragment : Fragment() {
             DiagnosticProbe.Env.EXTERIOR_LIGHTS,
             DiagnosticProbe.Env.FRONT_DOORS,
             DiagnosticProbe.Env.CLIMATE_ZONES,
+            DiagnosticProbe.Env.RADIO_STATE,
+            DiagnosticProbe.Env.OEM_SCREENS,
+            DiagnosticProbe.Env.POWER_CYCLE,
         )
     }
 }

@@ -88,6 +88,18 @@ class DirectExecutor(
                 "write effect not established for ${action.type.name}"
             )
         }
+        // CR-020 probe, read-only: the tuner as it reports itself on both sides of the call.
+        // The pause is on the rule's own worker thread, never the main one.
+        val radioBefore =
+            if (action.type in RadioState.PROBED) RadioState.describe(SaicRadio.currentStation()) else null
+        val result = dispatch(action)
+        if (radioBefore == null) return result
+        Thread.sleep(RadioState.SETTLE_MS)
+        val radioAfter = RadioState.describe(SaicRadio.currentStation())
+        return result.copy(detail = RadioState.detail(result.detail, radioBefore, radioAfter))
+    }
+
+    private fun dispatch(action: Action): ActionResult {
         return when (action.type) {
         ActionType.APPLY_PROFILE     -> applyProfile(action)
         ActionType.SHOW_PROFILE_PICKER -> showProfilePicker(action)

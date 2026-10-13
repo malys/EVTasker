@@ -302,6 +302,9 @@
     <string name="diag_env_lights">Exterior lights</string>
     <string name="diag_env_doors">Front doors</string>
     <string name="diag_env_climate_zones">Climate zones</string>
+    <string name="diag_env_radio_state">Radio state</string>
+    <string name="diag_env_oem_screens">OEM screens</string>
+    <string name="diag_env_power_cycle">Power cycle</string>
     <string name="editor_trigger">Runs at</string>
     <string name="physical_press_short">Short press</string>
     <string name="physical_press_long">Long press</string>
@@ -398,4 +401,10 @@
     <string name="diag_glass_result_left_open">⚠️ The window was left open — close it by hand.</string>
     <string name="diag_glass_result_steps">Commands tried: %1$s</string>
     <string name="diag_glass_forget">Forget</string>
+    <string name="diag_surface_hint">Vendor values: capture, change one setting on the car\'s own screen at standstill, wait 2 s, capture again, then Export.</string>
+    <string name="diag_surface_before">Capture before</string>
+    <string name="diag_surface_after">Capture after</string>
+    <string name="diag_surface_running">Reading every vendor value…</string>
+    <string name="diag_surface_before_done">Before: %1$d values read. Change the setting, wait 2 s, then capture after.</string>
+    <string name="diag_surface_after_done">After: %1$d values read, %2$d changed. Export to keep the list.</string>
 </resources>

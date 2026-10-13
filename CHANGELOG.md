@@ -6,6 +6,23 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Radio actions record the tuner before and after (CR-020).** `PLAY_RADIO`, `PAUSE_RADIO`,
+  `TUNE_RADIO`, `RADIO_PLAY_PAUSE` and the next/previous station actions read the tuner just
+  before the call and 1.5 s after it, and the history detail says both, e.g.
+  `before=FM 101500 kHz playing after=FM 101500 kHz paused`. Read only; nothing extra is sent.
+- **Diagnostic: `RADIO_STATE` row.** The same tuner read on demand: band, frequency, playing.
+- **Diagnostic: `OEM_SCREENS` row (CR-030).** The exported activities of the installed
+  `com.saicmotor.*` apps, capped at 150 lines with the rest counted. Nothing is launched.
+- **Diagnostic: *Capture before* / *Capture after* (CR-045, CR-046).** Reads every vendor value
+  EVHardware can read, getters only. Capture, change one setting on the car's own screen at
+  standstill, wait 2 s, capture again: Export adds the list of values that changed.
+- **Diagnostic: `POWER_CYCLE` row (RI-004).** The vehicle service records the time of each
+  ignition-off and a heartbeat every 30 s in app-private storage. The row prints the previous
+  cycle's ignition-off, its last heartbeat and the gap between them, then this boot: how long
+  the head unit kept running after the car was switched off, to 30 s.
+
 ## [2.15.1] - 2026-10-11
 
 ### Changed

@@ -285,6 +285,9 @@
     <string name="diag_env_lights">Luzes exteriores</string>
     <string name="diag_env_doors">Portas dianteiras</string>
     <string name="diag_env_climate_zones">Zonas de climatização</string>
+    <string name="diag_env_radio_state">Estado do rádio</string>
+    <string name="diag_env_oem_screens">Ecrãs do fabricante</string>
+    <string name="diag_env_power_cycle">Ciclo de energia</string>
     <string name="editor_trigger">Executa</string>
     <string name="physical_press_short">Pressão curta</string>
     <string name="physical_press_long">Pressão longa</string>
@@ -377,4 +380,10 @@
     <string name="diag_glass_result_left_open">⚠️ O vidro ficou aberto — feche-o à mão.</string>
     <string name="diag_glass_result_steps">Comandos tentados: %1$s</string>
     <string name="diag_glass_forget">Esquecer</string>
+    <string name="diag_surface_hint">Valores do fabricante: capturar, mudar uma definição no ecrã do carro parado, esperar 2 s, capturar de novo e exportar.</string>
+    <string name="diag_surface_before">Capturar antes</string>
+    <string name="diag_surface_after">Capturar depois</string>
+    <string name="diag_surface_running">A ler todos os valores do fabricante…</string>
+    <string name="diag_surface_before_done">Antes: %1$d valores lidos. Mude a definição, espere 2 s e capture depois.</string>
+    <string name="diag_surface_after_done">Depois: %1$d valores lidos, %2$d alterados. Exporte para guardar a lista.</string>
 </resources>

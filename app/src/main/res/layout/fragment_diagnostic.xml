@@ -104,6 +104,39 @@
             android:text="@string/diag_glass_probe" />
     </LinearLayout>
 
+    <!-- Vendor surface (CR-045, CR-046): capture, change one setting on the car's own screen
+         at standstill, capture again; Export carries what changed. Read-only. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/surfaceStatus"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/diag_surface_hint"
+            android:textAppearance="@style/Text.EV.Body" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/surfaceBeforeButton"
+            style="@style/Widget.EV.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/diag_surface_before" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/surfaceAfterButton"
+            style="@style/Widget.EV.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:text="@string/diag_surface_after" />
+    </LinearLayout>
+
     <!-- Always shown: outside temperature is the only catalogue signal whose
          availability has not been verified on a vehicle. The user must be able to link
          "unreadable here" to "my weather rule never fires". -->
