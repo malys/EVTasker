@@ -245,7 +245,7 @@ class DiagnosticsTest {
         val none = Diagnostics.actions(allowed, FirmwareGen.SWI68)
 
         assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "SET_CABIN_TEMP").reason)
-        assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "SET_CHARGE_LIMIT").reason)
+        assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "SET_CHARGING_ENABLED").reason)
         assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "PLAY_RADIO").reason)
         assertEquals(Diagnostics.Reason.NO_VENDOR_SERVICE, entry(none, "CALL_NUMBER").reason)
 
@@ -257,7 +257,9 @@ class DiagnosticsTest {
             FirmwareGen.SWI68
         )
         assertEquals(Diagnostics.Status.OK, entry(bound, "SET_CABIN_TEMP").status)
-        assertEquals(Diagnostics.Status.OK, entry(bound, "SET_CHARGE_LIMIT").status)
+        assertEquals(Diagnostics.Status.OK, entry(bound, "SET_CHARGING_ENABLED").status)
+        // Bound or not, the limit stays out: SWI68 reads it back as a code, the write sends a percent.
+        assertEquals(Diagnostics.Reason.WRITE_UNPROVEN, entry(bound, "SET_CHARGE_LIMIT").reason)
         assertEquals(Diagnostics.Status.OK, entry(bound, "PLAY_RADIO").status)
         assertEquals(Diagnostics.Status.OK, entry(bound, "CALL_NUMBER").status)
     }
