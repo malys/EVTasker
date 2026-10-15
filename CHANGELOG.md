@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.16.0] - 2026-10-15
+
 ### Added
 
 - **Radio actions record the tuner before and after (CR-020).** `PLAY_RADIO`, `PAUSE_RADIO`,
