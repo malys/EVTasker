@@ -6,6 +6,22 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **Rules wait for the phone and the position at boot, not only for the clock.** A slow head
+  unit linked the phone after the ignition cycle had run, so the profile rule took its "else"
+  branch; the gate button found no fix for 20 s and four presses did nothing. A rule that reads
+  a Bluetooth condition at ignition waits up to 20 s for a device, one that reads a place up to
+  60 s for a fix, both only in the first three minutes after boot. A repeated button press while
+  waiting fires once. Only the evaluation waits: the actions still meet the standstill gate when
+  they run, and a refusal stays final.
+- Tracks EVHardware master (ee370da): brightness rounds both ways (10 % no longer reads back 9 %),
+  hard-stop threshold and probe fixes.
+
+### Fixed
+
+- `POWER_CYCLE` no longer reports a wake on the factory clock (2019-01-01) as the previous cycle.
+
 ## [2.16.0] - 2026-10-15
 
 ### Added

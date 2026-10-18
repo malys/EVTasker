@@ -27,7 +27,7 @@ class PowerCycleStoreTest {
 
     @Test
     fun `a heartbeat gap closes the previous cycle with its off time`() {
-        val t0 = 1_000_000_000L
+        val t0 = 1_792_000_000_000L
         PowerCycleStore.heartbeat(context, t0)
         PowerCycleStore.ignitionOff(context, t0 + 10_000)
         for (t in 30_000L..270_000L step 30_000L) PowerCycleStore.heartbeat(context, t0 + t)
@@ -41,5 +41,18 @@ class PowerCycleStoreTest {
         // The next cycle had no off of its own.
         PowerCycleStore.heartbeat(context, t0 + 7_200_000)
         assertTrue(PowerCycleStore.describe(context).startsWith("previous: off none"))
+    }
+
+    @Test
+    fun `a wake on the factory clock is not a cycle`() {
+        val t0 = 1_792_000_000_000L
+        PowerCycleStore.heartbeat(context, t0)
+        PowerCycleStore.ignitionOff(context, t0 + 10_000)
+        PowerCycleStore.heartbeat(context, t0 + 30_000)
+        PowerCycleStore.heartbeat(context, 1_546_300_836_000L)   // 36 s into 2019-01-01
+        PowerCycleStore.heartbeat(context, t0 + 3_600_000)
+
+        val text = PowerCycleStore.describe(context)
+        assertTrue(text, "(+20 s)" in text && "2019" !in text)
     }
 }

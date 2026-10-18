@@ -3,11 +3,13 @@ package com.evsuite.tasker.vehicle
 import android.content.Context
 import com.evsuite.hardware.AppLogger
 import com.evsuite.hardware.EVHardware
+import com.evsuite.hardware.catalog.ConditionType
 import com.evsuite.tasker.engine.RuleEngine
 import com.evsuite.tasker.store.HistoryStore
 import com.evsuite.tasker.store.RuleStore
 import com.evsuite.tasker.model.EngineRun
 import com.evsuite.tasker.model.Rule
+import com.evsuite.tasker.model.RuleTrigger
 import com.evsuite.tasker.util.BtDevices
 import com.evsuite.tasker.util.CarLocation
 import com.evsuite.tasker.util.WallClock
@@ -120,12 +122,39 @@ object RuleCycle {
     const val PHYSICAL_BUTTON = "PHYSICAL_BUTTON"
 
     /**
-     * How long rules that read the clock wait for it after boot. The head unit corrects its
-     * RTC default from the network or GPS; past this, the rules run anyway and the history
-     * shows them not evaluable for `CLOCK_UNSET` rather than leaving no trace.
+     * What a rule may have to wait for before it can be evaluated, and for how long at most.
+     *
+     * Past its wait a rule runs anyway, and the history shows it not evaluable (`CLOCK_UNSET`,
+     * no fix) or on the branch the inputs pointed to, rather than leaving no trace. Only the
+     * evaluation waits: the actions still go through the standstill gate when they run, and a
+     * refusal then is final like any other.
      */
-    private const val CLOCK_WAIT_MS = 5 * 60_000L
-    private const val CLOCK_POLL_MS = 2_000L
+    internal enum class Input(val waitMs: Long) {
+        /** The RTC default, until the network or GPS corrects it. Waited for at any time. */
+        CLOCK(5 * 60_000L),
+
+        /** A slow boot links the phone after the ignition cycle has run (2026-10-17). */
+        BLUETOOTH(20_000L),
+
+        /** A cold receiver: the gate button found no fix for 20 s after boot (2026-10-16). */
+        LOCATION(60_000L),
+    }
+
+    private const val INPUT_POLL_MS = 2_000L
+
+    /**
+     * Bluetooth and position are waited for only this long after the head unit booted. Later,
+     * no phone means no phone and no fix means no fix, and a rule must not sit on them.
+     */
+    private const val BOOT_WINDOW_MS = 3 * 60_000L
+
+    private val BT_CONDITIONS = setOf(
+        ConditionType.BT_DEVICE_CONNECTED, ConditionType.ANY_BT_CONNECTED,
+        ConditionType.BT_DEVICE_ONBOARD, ConditionType.BT_DEVICE_HANDSFREE,
+    )
+
+    /** Held cycles, so a button pressed four times while the GPS warms up fires once. */
+    private val waiting = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
     // A P cycle can still be closing glass when ignition-off arrives. Keep whole cycles,
     // not just individual writes, atomic against every other trigger.
@@ -135,8 +164,8 @@ object RuleCycle {
         trigger: String,
         eventReadings: Map<String, Any> = emptyMap(),
         ruleId: String? = null,
-        /** The rules held back by [waitForClock], run once it is over. */
-        clockWaited: Set<String>? = null
+        /** The rules held back by [waitForInputs], run once it is over. */
+        waited: Set<String>? = null
     ) {
         val all = RuleStore(context).getAll()
         // Rules wired to a different event are not "skipped", they were never addressed: the
@@ -151,18 +180,21 @@ object RuleCycle {
                     (ruleId == null || it.id == ruleId)
             }
         }
-        if (clockWaited != null) rules = rules.filter { it.id in clockWaited }
+        if (waited != null) rules = rules.filter { it.id in waited }
         if (rules.isEmpty()) {
             AppLogger.i(TAG, "no rules for $trigger (${all.size} total) — skipped")
             return
         }
-        // A manual test answers now, clock or not: the user is looking at the result.
-        if (trigger != MANUAL && clockWaited == null && !WallClock.isSet()) {
-            val (needClock, now) = rules.partition(::readsClock)
-            if (needClock.isNotEmpty()) {
-                waitForClock(context.applicationContext, trigger, eventReadings, needClock.map { it.id }.toSet())
+        // A manual test answers now, inputs or not: the user is looking at the result.
+        if (trigger != MANUAL && waited == null) {
+            val app = context.applicationContext
+            val held = rules.associateWith { rule -> inputsRead(rule).filter { missing(app, it, trigger) } }
+                .filterValues { it.isNotEmpty() }
+            if (held.isNotEmpty()) {
+                waitForInputs(app, trigger, eventReadings, held.keys.map { it.id }.toSet(),
+                    held.values.flatten().toSet())
             }
-            rules = now
+            rules = rules - held.keys
             if (rules.isEmpty()) return
         }
 
@@ -205,39 +237,69 @@ object RuleCycle {
         }
     }
 
-    /** Whether any case of [rule], "else if" ones included, asks the time, weekday or date. */
-    internal fun readsClock(rule: Rule): Boolean =
-        rule.branches.any { branch -> branch.conditions.any { it.type in WallClock.CONDITIONS } }
+    /** What any case of [rule], "else if" ones included, reads that can be late at boot. */
+    internal fun inputsRead(rule: Rule): Set<Input> =
+        rule.branches.flatMap { it.conditions }.mapNotNullTo(mutableSetOf()) {
+            when (it.type) {
+                in WallClock.CONDITIONS -> Input.CLOCK
+                in BT_CONDITIONS -> Input.BLUETOOTH
+                ConditionType.LOCATION_WITHIN -> Input.LOCATION
+                else -> null
+            }
+        }
+
+    private fun missing(context: Context, input: Input, trigger: String): Boolean {
+        val booting = SystemClock.elapsedRealtime() < BOOT_WINDOW_MS
+        return when (input) {
+            Input.CLOCK -> !WallClock.isSet()
+            // At ignition only: a phone missing at P or at a button press is simply not there.
+            Input.BLUETOOTH -> booting && trigger == RuleTrigger.IGNITION_ON.name &&
+                BtTracker.snapshot(context).isEmpty()
+            Input.LOCATION -> booting && CarLocation.lastKnown(context) == null
+        }
+    }
 
     /**
-     * Runs [ruleIds] again once the head unit's clock is set.
+     * Runs [ruleIds] again once [inputs] are there, or once each has been waited for long enough.
      *
-     * At boot the clock reads 2019-01-01 until the network or GPS corrects it, and the
-     * ignition cycle runs before that. Rules that read the time, the weekday or the date
-     * wait for it; the others ran already and are not held up. Abandoned if the ignition
-     * changes meanwhile: a start-of-drive rule must not fire after the drive is over. Waits
-     * on elapsed time, because the wall clock is precisely what jumps.
+     * At boot the clock reads 2019-01-01 until the network or GPS corrects it, the phone links
+     * seconds after the ignition cycle and the GPS has no fix yet. Rules that read one of those
+     * wait for it; the others ran already and are not held up. Abandoned if the ignition changes
+     * meanwhile: a start-of-drive rule must not fire after the drive is over. Waits on elapsed
+     * time, because the wall clock is precisely what jumps.
      */
-    private fun waitForClock(
+    private fun waitForInputs(
         context: Context,
         trigger: String,
         eventReadings: Map<String, Any>,
-        ruleIds: Set<String>
+        ruleIds: Set<String>,
+        inputs: Set<Input>,
     ) {
+        val key = "$trigger ${ruleIds.sorted()} $eventReadings"
+        if (!waiting.add(key)) {
+            AppLogger.i(TAG, "$trigger already waiting for ${inputs.joinToString()} — repeat dropped")
+            return
+        }
         val ignition = EVHardware.getCurrentIgnitionState()
-        AppLogger.i(TAG, "clock not set — ${ruleIds.size} $trigger rule(s) wait for it")
-        thread(name = "mg4-tasker-clock-wait") {
-            val start = SystemClock.elapsedRealtime()
-            while (!WallClock.isSet() && SystemClock.elapsedRealtime() - start < CLOCK_WAIT_MS) {
-                Thread.sleep(CLOCK_POLL_MS)
+        AppLogger.i(TAG, "waiting for ${inputs.joinToString()} — ${ruleIds.size} $trigger rule(s) held")
+        thread(name = "mg4-tasker-input-wait") {
+            try {
+                val start = SystemClock.elapsedRealtime()
+                fun late() = inputs.filter {
+                    missing(context, it, trigger) && SystemClock.elapsedRealtime() - start < it.waitMs
+                }
+                while (late().isNotEmpty()) Thread.sleep(INPUT_POLL_MS)
+                val waitedS = (SystemClock.elapsedRealtime() - start) / 1000
+                if (EVHardware.getCurrentIgnitionState() != ignition) {
+                    AppLogger.i(TAG, "ignition changed during the ${waitedS} s wait — $trigger rules dropped")
+                    return@thread
+                }
+                val still = inputs.filter { missing(context, it, trigger) }
+                AppLogger.i(TAG, "after ${waitedS} s, ${if (still.isEmpty()) "inputs ready" else "still missing ${still.joinToString()}"} — running held $trigger rules")
+                run(context, trigger, eventReadings, waited = ruleIds)
+            } finally {
+                waiting.remove(key)
             }
-            val waitedS = (SystemClock.elapsedRealtime() - start) / 1000
-            if (EVHardware.getCurrentIgnitionState() != ignition) {
-                AppLogger.i(TAG, "ignition changed during the ${waitedS} s clock wait — $trigger rules dropped")
-                return@thread
-            }
-            AppLogger.i(TAG, "clock ${if (WallClock.isSet()) "set" else "still not set"} after ${waitedS} s — running held $trigger rules")
-            run(context, trigger, eventReadings, clockWaited = ruleIds)
         }
     }
 }
