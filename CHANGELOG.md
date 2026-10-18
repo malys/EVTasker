@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.17.0] - 2026-10-18
+
 ### Added
 
 - **Console → Send to server.** The diagnostic report, the same as the USB export, posted to an
@@ -26,8 +28,8 @@ All notable changes to this project are documented here. Format follows
   a Bluetooth condition at ignition waits up to 20 s for a device, one that reads a place up to
   60 s for a fix, both only in the first three minutes after boot. A repeated button press while
   waiting fires once. Only the evaluation waits: the actions still meet the standstill gate when
-  they run, and a refusal stays final.
-- Tracks EVHardware master (ee370da): brightness rounds both ways (10 % no longer reads back 9 %),
+  they run.
+- Tracks EVHardware master (e4e1158): brightness rounds both ways (10 % no longer reads back 9 %),
   hard-stop threshold and probe fixes.
 
 ### Fixed
