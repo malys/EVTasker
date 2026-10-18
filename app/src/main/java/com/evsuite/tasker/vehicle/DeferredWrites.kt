@@ -15,16 +15,17 @@ import com.evsuite.tasker.store.HistoryStore
 import kotlin.concurrent.thread
 
 /**
- * Legacy delayed-write queue, runtime-disabled for the legal and safety audit.
+ * Writes the standstill gate refused while the car moved, applied once at the next standstill.
  *
- * Gate refusals are final: production call sites must not enqueue or later reapply a vehicle
- * write. The implementation remains temporarily so its former policy stays testable while it
- * is removed in a dedicated cleanup.
+ * Re-enabled by the owner on 2026-10-18: a slow head unit boots with the car already rolling,
+ * and the profile rule's writes were refused for the whole drive. The gate is not relaxed — a
+ * queued write is attempted only when [VehicleWriteGate.decideNow] says ALLOWED, i.e. a valid
+ * 0 km/h read — and each entry is tried once, expires after [EXPIRY_MS] and is dropped at
+ * ignition off ([clear]), so a write never lands in another drive than the one that asked.
  */
 object DeferredWrites {
 
     private const val TAG = "EVTasker.Deferred"
-    private const val REAPPLY_ENABLED = false
 
     /** Marks the history entry, the way "MANUAL" marks a test run. */
     const val TRIGGER = "DEFERRED"
@@ -54,15 +55,11 @@ object DeferredWrites {
     @Volatile
     private var draining = false
 
-    /** For the diagnostic report. This remains zero while reapplication is disabled. */
+    /** For the diagnostic report. */
     val size: Int get() = synchronized(pending) { pending.size }
 
-    /** Refuses all attempts to enqueue while delayed vehicle writes are disabled. */
+    /** Queues the cycle's MOVING and UNKNOWN_SPEED refusals and starts waiting for a stop. */
     fun offer(context: Context, run: EngineRun, rules: List<Rule>) {
-        if (!REAPPLY_ENABLED) {
-            AppLogger.i(TAG, "Gate refusals are final; deferred vehicle writes are disabled")
-            return
-        }
         val kept = refusalsIn(run, rules, System.currentTimeMillis())
         if (kept.isEmpty()) return
         synchronized(pending) {

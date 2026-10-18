@@ -6,7 +6,19 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Console → Send to server.** The diagnostic report, the same as the USB export, posted to an
+  HTTPS address typed into the dialog — your own inbox, such as the Node-RED flow in the
+  workspace's `tools/nodered/`. The address is shown again before every send.
+
 ### Changed
+
+- **A write refused while moving is applied at the next stop (owner decision, 2026-10-18).**
+  A head unit that boots with the car already rolling had every ignition write refused for the
+  whole drive. MOVING and UNKNOWN_SPEED refusals are now tried once when the fixed gate next
+  allows (valid 0 km/h), within 15 minutes, and dropped at ignition off. The gate is unchanged;
+  applying an EVProfile profile and the profile picker stay refused.
 
 - **Rules wait for the phone and the position at boot, not only for the clock.** A slow head
   unit linked the phone after the ignition cycle had run, so the profile rule took its "else"

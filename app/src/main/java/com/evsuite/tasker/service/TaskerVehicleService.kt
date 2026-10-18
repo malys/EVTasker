@@ -27,6 +27,7 @@ import com.evsuite.tasker.util.Notifier
 import com.evsuite.tasker.util.ParkTriggerDetector
 import com.evsuite.tasker.vehicle.BtOnboard
 import com.evsuite.tasker.vehicle.BtTracker
+import com.evsuite.tasker.vehicle.DeferredWrites
 import com.evsuite.tasker.vehicle.ProfileBridge
 import com.evsuite.tasker.vehicle.RuleCycle
 import com.evsuite.tasker.vehicle.VendorServices
@@ -333,6 +334,8 @@ class TaskerVehicleService : Service() {
                     startOnboardSampling()
                 } else {
                     stopOnboardSampling()
+                    // A write queued during the drive belongs to that drive.
+                    DeferredWrites.clear()
                     PowerCycleStore.ignitionOff(applicationContext)
                 }
                 runRulesFor(trigger, "Ignition $state")

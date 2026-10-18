@@ -168,11 +168,13 @@ The action is refused. The threshold is fixed at exactly 0 km/h, cannot be raise
 secondary signal — including the gear position — can rescue an unreadable speed. The
 Diagnostic tab reports this fixed policy and the current verdict.
 
-### Refused because you were moving? The refusal is final
+### Refused because you were moving? Applied at the next stop
 
-EVTasker does not retain or reapply a refused vehicle write at a later red light. A moving
-or unreadable-speed refusal cancels that attempt. This prevents a setting from changing
-after the moment and conditions that triggered the rule have passed.
+A vehicle write refused because the car was moving, or its speed was unreadable, is kept and
+attempted **once** at the next standstill (a valid 0 km/h read), within 15 minutes. It is
+dropped when the ignition goes off, so it never changes a setting in another drive. The
+History tab marks it *Applied at a standstill*. Applying an EVProfile profile and showing the
+profile picker are not kept: they stay refused.
 
 Transient action failures are different: each failed action is retried independently up to
 three times with exponential backoff (250 ms, then 500 ms). Actions that already succeeded

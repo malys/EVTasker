@@ -107,11 +107,14 @@ this was written down the whole window family was ungated in both directions; th
 check is what brought it back under the gate, and it is the narrowest exception that keeps the
 rain case working.
 
-## A gate refusal is final
+## A gate refusal is applied once at the next standstill, or not at all
 
-MOVING and UNKNOWN_SPEED refusals are reported and are not queued or retried at a later
-standstill. `DeferredWrites` is retained only as disabled legacy code during the audit; do
-not reconnect its poller or introduce another delayed-write path.
+Owner decision, 2026-10-18: a head unit that boots with the car already rolling had every
+ignition write refused for the whole drive. MOVING and UNKNOWN_SPEED refusals are queued in
+`DeferredWrites` and attempted **once**, only when the fixed gate allows (valid 0 km/h read),
+within 15 minutes, and never after ignition off. The profile application and the profile
+picker stay refused. Do not add a second delayed-write path, retry a deferred write that
+failed, or let a queued write outlive its ignition cycle.
 
 ## Vehicle primitives go in EVHardware
 

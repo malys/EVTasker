@@ -6,6 +6,8 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.content.Context
+import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -13,6 +15,7 @@ import com.evsuite.tasker.R
 import com.evsuite.tasker.databinding.FragmentConsoleBinding
 import com.evsuite.hardware.AppLogger
 import com.evsuite.hardware.diag.CrashLogger
+import com.evsuite.hardware.diag.DiagnosticInbox
 import com.evsuite.hardware.diag.PrivateBin
 import com.evsuite.tasker.debug.DebugReport
 import com.evsuite.tasker.debug.DiagnosticProbe
@@ -38,6 +41,7 @@ class ConsoleFragment : Fragment() {
         binding.clearButton.setOnClickListener { AppLogger.clear(); render() }
         binding.exportButton.setOnClickListener { export() }
         binding.shareButton.setOnClickListener { share() }
+        binding.sendButton.setOnClickListener { askInboxAddress() }
         binding.crashShowButton.setOnClickListener { showCrashReport() }
         binding.crashDismissButton.setOnClickListener {
             CrashLogger.clear(requireContext())
@@ -151,6 +155,66 @@ class ConsoleFragment : Fragment() {
         }
     }
 
+    /**
+     * Sends the exported report to the driver's own server instead of a stick.
+     *
+     * The address is shown every time: this dialog is both where it is set and the
+     * confirmation that the report is about to leave the car.
+     */
+    private fun askInboxAddress() {
+        val prefs = requireContext().getSharedPreferences(INBOX_PREFS, Context.MODE_PRIVATE)
+        val input = EditText(requireContext()).apply {
+            setSingleLine()
+            hint = getString(R.string.console_send_hint)
+            setText(prefs.getString(INBOX_URL, ""))
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.console_send)
+            .setMessage(R.string.console_send_message)
+            .setView(input)
+            .setNegativeButton(R.string.editor_cancel, null)
+            .setPositiveButton(R.string.console_send_confirm) { _, _ ->
+                val url = input.text.toString().trim()
+                val refused = DiagnosticInbox.refuse(url)
+                if (refused != null) {
+                    Toast.makeText(requireContext(), getString(R.string.console_send_refused, refused), Toast.LENGTH_LONG).show()
+                } else {
+                    prefs.edit().putString(INBOX_URL, url).apply()
+                    sendReport(url)
+                }
+            }
+            .show()
+    }
+
+    private fun sendReport(url: String) {
+        val appCtx = requireContext().applicationContext
+        thread(name = "mg4-tasker-log-send") {
+            val report = DiagnosticProbe.run(appCtx)
+            val outcome = DiagnosticInbox.send(
+                url,
+                DiagnosticInbox.Artifact(
+                    app = "EVTasker",
+                    version = report.appVersion,
+                    name = DebugReport.fileName(),
+                    createdAtMs = System.currentTimeMillis(),
+                    content = DebugReport.render(appCtx, report).toByteArray(Charsets.UTF_8),
+                ),
+            )
+            val message = when (outcome) {
+                is DiagnosticInbox.Outcome.Sent -> appCtx.getString(R.string.console_send_ok)
+                is DiagnosticInbox.Outcome.Failed -> {
+                    AppLogger.w(SHARE_TAG, "diagnostic send failed — ${outcome.reason}")
+                    appCtx.getString(R.string.console_send_failed, outcome.reason)
+                }
+            }
+            Handler(Looper.getMainLooper()).post {
+                if (_binding == null) return@post
+                render()
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -177,5 +241,7 @@ class ConsoleFragment : Fragment() {
 
     private companion object {
         const val SHARE_TAG = "EVTasker.Share"
+        const val INBOX_PREFS = "diagnostic_inbox"
+        const val INBOX_URL = "url"
     }
 }

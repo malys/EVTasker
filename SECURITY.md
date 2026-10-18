@@ -54,7 +54,9 @@ moving. A proof of concept helps; a working exploit is not required.
 - **The standstill gate is fixed and fails closed.** There is no threshold control and no
   park rescue: a valid immediate speed read must be exactly 0 km/h. Automation defaults off
   and requires acceptance of the current versioned warning.
-- **A gate refusal is final.** The runtime does not queue the write for a later red light.
+- **A gate refusal waits for the next standstill, once.** A write refused while moving is
+  attempted once when the fixed gate next allows it (valid 0 km/h), within 15 minutes and in
+  the same ignition cycle; it is dropped at ignition off. The gate itself is never relaxed.
 - **Position never leaves the car.** The "near a place" condition reads the last known fix
   (no live request), compares it with a point stored in the rule, and yields a yes/no. The
   coordinates are not sent anywhere, including in a shared paste's rule dump, which stores
@@ -67,6 +69,9 @@ moving. A proof of concept helps; a working exploit is not required.
   (`https://paste.chapril.org`). PrivateBin is zero-knowledge — the report is encrypted and
   the key never leaves the device, travelling only in the URL fragment — the paste is
   password-protected and expires after one hour, and nothing is sent unless the user
-  confirms the dialog — on stable the Console tab itself is reached only through three taps
+  confirms the dialog. *Send to server* posts the same report as the USB export to an HTTPS
+  address the driver types into the dialog — their own inbox, such as a Node-RED flow at
+  home — shown again before every send; no redirect is followed, and an address carrying
+  credentials or a query is refused — on stable the Console tab itself is reached only through three taps
   on the Diagnostic tab. The unstable OTA hook is suspended during the suite safety and
   legal audit; stable contains no updater implementation.

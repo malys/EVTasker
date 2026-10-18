@@ -244,6 +244,13 @@
 
     <!-- Console -->
     <string name="tab_console">Console</string>
+    <string name="console_send">Send to server</string>
+    <string name="console_send_message">The diagnostic report goes to this address, over HTTPS. Nothing else is sent.</string>
+    <string name="console_send_hint">https://…/evsuite</string>
+    <string name="console_send_confirm">Send</string>
+    <string name="console_send_refused">Address refused: %1$s</string>
+    <string name="console_send_ok">Report sent</string>
+    <string name="console_send_failed">Could not send: %1$s</string>
     <string name="console_share">Share</string>
     <string name="console_share_confirm">The log, the diagnostic and your rules will be uploaded to %1$s, encrypted and password-protected, and deleted after one hour. The link and the password go into the log below.</string>
     <string name="console_share_send">Upload</string>

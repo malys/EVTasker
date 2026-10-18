@@ -227,6 +227,13 @@
 
     <!-- Console -->
     <string name="tab_console">Console</string>
+    <string name="console_send">Invia al server</string>
+    <string name="console_send_message">Il rapporto diagnostico va a questo indirizzo, via HTTPS. Nient’altro viene inviato.</string>
+    <string name="console_send_hint">https://…/evsuite</string>
+    <string name="console_send_confirm">Invia</string>
+    <string name="console_send_refused">Indirizzo rifiutato: %1$s</string>
+    <string name="console_send_ok">Rapporto inviato</string>
+    <string name="console_send_failed">Invio non riuscito: %1$s</string>
     <string name="console_share">Condividi</string>
     <string name="console_share_confirm">Il registro, la diagnostica e le tue regole verranno caricati su %1$s, cifrati e protetti da password, ed eliminati dopo un’ora. Il link e la password compariranno nel registro qui sotto.</string>
     <string name="console_share_send">Invia</string>

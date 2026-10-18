@@ -222,7 +222,9 @@ object RuleCycle {
             val result = RuleEngine(DirectExecutor(context, profileBridge))
                 .run(rules, snapshot, trigger, System.currentTimeMillis())
             HistoryStore(context).append(result)
-            // Gate refusals are final. Never queue a write for a later traffic stop.
+            // A write refused because the car was moving is tried once at the next standstill
+            // of the same drive (owner decision, 2026-10-18); see [DeferredWrites].
+            DeferredWrites.offer(context, result, rules)
             // Timed, because "the car must stay responsive" is a claim that needs a number.
             // The line lands in the log and therefore in every exported and shared report.
             AppLogger.i(

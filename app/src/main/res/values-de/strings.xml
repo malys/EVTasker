@@ -227,6 +227,13 @@
 
     <!-- Console -->
     <string name="tab_console">Konsole</string>
+    <string name="console_send">An Server senden</string>
+    <string name="console_send_message">Der Diagnosebericht geht an diese Adresse, über HTTPS. Sonst wird nichts gesendet.</string>
+    <string name="console_send_hint">https://…/evsuite</string>
+    <string name="console_send_confirm">Senden</string>
+    <string name="console_send_refused">Adresse abgelehnt: %1$s</string>
+    <string name="console_send_ok">Bericht gesendet</string>
+    <string name="console_send_failed">Senden fehlgeschlagen: %1$s</string>
     <string name="console_share">Teilen</string>
     <string name="console_share_confirm">Protokoll, Diagnose und Ihre Regeln werden verschlüsselt und passwortgeschützt zu %1$s hochgeladen und nach einer Stunde gelöscht. Link und Passwort erscheinen unten im Protokoll.</string>
     <string name="console_share_send">Hochladen</string>

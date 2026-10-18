@@ -254,7 +254,7 @@ object DebugReport {
     }
 
     /** Timestamped: a report is evidence, and overwriting the previous one loses the before. */
-    private fun fileName(): String {
+    internal fun fileName(): String {
         val stamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
         return "$NAME_PREFIX$stamp.$FILE_EXTENSION"
     }
