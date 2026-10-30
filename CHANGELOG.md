@@ -6,6 +6,13 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.17.1] - 2026-10-30
+
+### Changed
+
+- Tracks EVHardware master (e40f637). Its changes since e4e1158 (charge history, consumption
+  model, eco score, survey serial redaction) are in code EVTasker does not call.
+
 ### Fixed
 
 - **Button capture closes when its screen goes away.** The capture dialog swallows every
