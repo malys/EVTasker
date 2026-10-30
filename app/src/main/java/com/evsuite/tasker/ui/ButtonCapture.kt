@@ -2,6 +2,9 @@ package com.evsuite.tasker.ui
 
 import android.content.Context
 import android.content.DialogInterface
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import com.evsuite.hardware.PhysicalButtonEventDecoder
 import com.evsuite.tasker.R
 import com.evsuite.tasker.service.TaskerVehicleService
@@ -35,7 +38,18 @@ object ButtonCapture {
         dialog.setOnShowListener {
             dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = false
         }
-        dialog.setOnDismissListener { TaskerVehicleService.buttonCapture = null }
+        // The capture swallows every press, so it must not outlive the screen that asked for
+        // it: a driver who leaves for another app with the dialog up would otherwise have every
+        // button rule silently dead until the dialog is closed again.
+        val lifecycle = (context as? LifecycleOwner)?.lifecycle
+        val closeOnStop = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) dialog.dismiss()
+        }
+        lifecycle?.addObserver(closeOnStop)
+        dialog.setOnDismissListener {
+            lifecycle?.removeObserver(closeOnStop)
+            TaskerVehicleService.buttonCapture = null
+        }
         // A double tap arrives as a short press then a double: the latest one is the answer.
         TaskerVehicleService.buttonCapture = { event ->
             last = event

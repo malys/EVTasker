@@ -6,6 +6,12 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **Button capture closes when its screen goes away.** The capture dialog swallows every
+  steering-wheel press; left open behind another app, it kept every button rule silent until
+  the dialog was closed again. It now closes when its screen stops.
+
 ## [2.17.0] - 2026-10-18
 
 ### Added
