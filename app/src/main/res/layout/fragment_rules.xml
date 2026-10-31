@@ -117,6 +117,27 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/spacing_sm"
                         android:text="@string/rules_delete" />
+
+                    <!-- Rules run in the order listed: these set which one acts first. -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/moveUpButton"
+                        style="@style/Widget.EV.Button.Outlined"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="@dimen/touch_target"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:text="@string/editor_move_up_glyph"
+                        android:contentDescription="@string/editor_move_up" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/moveDownButton"
+                        style="@style/Widget.EV.Button.Outlined"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="@dimen/touch_target"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:text="@string/editor_move_down_glyph"
+                        android:contentDescription="@string/editor_move_down" />
                 </LinearLayout>
 
                 <TextView

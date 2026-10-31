@@ -66,6 +66,8 @@ class RulesFragment : Fragment() {
         }
         binding.deleteButton.setOnClickListener { confirmDelete() }
         binding.runNowButton.setOnClickListener { runNow() }
+        binding.moveUpButton.setOnClickListener { selected?.let { store.move(it.id, -1); refresh() } }
+        binding.moveDownButton.setOnClickListener { selected?.let { store.move(it.id, +1); refresh() } }
     }
 
     private fun showWriteConsent() {
@@ -167,6 +169,9 @@ class RulesFragment : Fragment() {
 
         binding.emptyState.visibility = View.GONE
         binding.detailScroll.visibility = View.VISIBLE
+        val position = rules.indexOf(current)
+        binding.moveUpButton.isEnabled = position > 0
+        binding.moveDownButton.isEnabled = position < rules.size - 1
 
         val labels = Labels(requireContext(), btNames = BtDevices.bondedNamesByMac(requireContext()))
         binding.detailName.text = current.name + "  ·  " + getString(

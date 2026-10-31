@@ -40,6 +40,18 @@ class RuleStoreTest {
     }
 
     @Test
+    fun `move changes the stored order, and stops at either end`() {
+        val store = RuleStore(context())
+        val (a, b, c) = listOf("a", "b", "c").map { sampleRule(it).also { r -> store.save(r) } }
+
+        store.move(c.id, -1)
+        assertEquals(listOf("a", "c", "b"), store.getAll().map { it.name })
+        store.move(a.id, -1)
+        store.move(b.id, +1)
+        assertEquals(listOf("a", "c", "b"), store.getAll().map { it.name })
+    }
+
+    @Test
     fun `a second store instance sees the saved rule`() {
         val rule = sampleRule()
         RuleStore(context()).save(rule)

@@ -170,6 +170,24 @@ class RuleStore(context: Context) {
         Unit
     }
 
+    /**
+     * Moves the rule one place up ([delta] = -1) or down (+1). The stored order is the order
+     * a cycle runs its rules in, so this is how the user decides which one acts first.
+     */
+    fun move(ruleId: String, delta: Int) = synchronized(MUTATION_LOCK) {
+        val current = read()
+        if (current is Stored.Rules) {
+            val rules = current.rules.toMutableList()
+            val from = rules.indexOfFirst { it.id == ruleId }
+            val to = from + delta
+            if (from >= 0 && to in rules.indices) {
+                rules.add(to, rules.removeAt(from))
+                persist(rules)
+            }
+        }
+        Unit
+    }
+
     /** @return whether the write reached disk. commit(), not apply(): the next mutation
      *  re-reads the blob immediately, and the caller needs a real answer. */
     private fun persist(rules: List<Rule>): Boolean = try {
