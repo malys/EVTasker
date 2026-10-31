@@ -3,6 +3,7 @@ package com.evsuite.tasker.vehicle
 import android.content.Context
 import com.evsuite.hardware.AppLogger
 import com.evsuite.hardware.EVHardware
+import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.ConditionType
 import com.evsuite.tasker.engine.RuleEngine
 import com.evsuite.tasker.store.HistoryStore
@@ -199,7 +200,10 @@ object RuleCycle {
         }
 
         val startedAt = System.currentTimeMillis()
-        val profileBridge = ProfileBridge(context).takeIf { it.connect() }
+        // Bound only when a rule of this pass can use it: at boot the bind cold-starts EVProfile
+        // and waits up to 8 s, ahead of every action — including the ones that never need it.
+        val profileBridge =
+            if (rules.any(::usesProfileBridge)) ProfileBridge(context).takeIf { it.connect() } else null
         try {
             val snapshotStartedAt = System.currentTimeMillis()
             // Only what these rules read. A pass with no weather condition must not pay for
@@ -238,6 +242,12 @@ object RuleCycle {
             profileBridge?.disconnect()
         }
     }
+
+    /** Whether any case of [rule], the "else" included, has an action that goes through EVProfile. */
+    internal fun usesProfileBridge(rule: Rule): Boolean =
+        (rule.branches.flatMap { it.actions } + rule.otherwise).any {
+            it.type == ActionType.APPLY_PROFILE || it.type == ActionType.SHOW_PROFILE_PICKER
+        }
 
     /** What any case of [rule], "else if" ones included, reads that can be late at boot. */
     internal fun inputsRead(rule: Rule): Set<Input> =

@@ -1,11 +1,15 @@
 package com.evsuite.tasker.vehicle
 
+import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.ConditionType
+import com.evsuite.tasker.model.Action
 import com.evsuite.tasker.model.Branch
 import com.evsuite.tasker.model.Condition
 import com.evsuite.tasker.model.Rule
 import com.evsuite.tasker.vehicle.RuleCycle.Input
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RuleCycleClockTest {
@@ -45,5 +49,16 @@ class RuleCycleClockTest {
         )
         assertEquals(setOf(Input.BLUETOOTH), RuleCycle.inputsRead(profile))
         assertEquals(setOf(Input.LOCATION), RuleCycle.inputsRead(gate))
+    }
+
+    @Test fun `EVProfile is bound only for a pass that has a profile action, else included`() {
+        val beep = Action(ActionType.entries.first { it != ActionType.APPLY_PROFILE && it != ActionType.SHOW_PROFILE_PICKER })
+        assertFalse(RuleCycle.usesProfileBridge(Rule(name = "r", actions = listOf(beep))))
+        assertTrue(RuleCycle.usesProfileBridge(Rule(name = "r", actions = listOf(Action(ActionType.APPLY_PROFILE)))))
+        assertTrue(
+            RuleCycle.usesProfileBridge(
+                Rule(name = "r", actions = listOf(beep), elseActions = listOf(Action(ActionType.SHOW_PROFILE_PICKER)))
+            )
+        )
     }
 }
