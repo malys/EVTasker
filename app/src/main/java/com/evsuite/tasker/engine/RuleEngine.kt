@@ -40,7 +40,9 @@ class RuleEngine(
     private val initialDelayMs: Long = 250,
     private val backoffFactor: Double = 2.0,
     private val sleep: (Long) -> Unit = Thread::sleep,
-    private val delayBudgetMs: Long = DELAY_BUDGET_MS
+    private val delayBudgetMs: Long = DELAY_BUDGET_MS,
+    /** Where a variable a rule set is kept beyond this cycle: name, Boolean or Float, keep. */
+    private val onVariableSet: (String, Any, Boolean) -> Unit = { _, _, _ -> }
 ) {
 
     /**
@@ -50,13 +52,21 @@ class RuleEngine(
      */
     private var remainingDelayMs: Long = delayBudgetMs
 
+    /**
+     * The variables as this cycle has left them so far. A rule reads what the rules before it
+     * set — the order of the list is the order things happened — while the snapshot of the
+     * car stays the one taken at the start.
+     */
+    private var variables: MutableMap<String, Any> = HashMap()
+
     fun run(rules: List<Rule>, snapshot: Snapshot, trigger: String, now: Long): EngineRun {
         remainingDelayMs = delayBudgetMs
+        variables = HashMap(snapshot.variables)
         return EngineRun(
             timestamp = now,
             trigger = trigger,
             bridgeAvailable = snapshot.bridgeAvailable,
-            ruleRuns = rules.map { evaluateRule(it, snapshot) }
+            ruleRuns = rules.map { evaluateRule(it, snapshot.copy(variables = variables)) }
         )
     }
 
@@ -133,7 +143,11 @@ class RuleEngine(
         val results = mutableListOf<ActionResult>()
         for (action in actions) {
             val result =
-                if (action.type == ActionType.DELAY) pause(action) else executeWithBackoff(action)
+                when (action.type) {
+                    ActionType.DELAY -> pause(action)
+                    ActionType.SET_VARIABLE_FLAG, ActionType.SET_VARIABLE_NUMBER -> setVariable(action)
+                    else -> executeWithBackoff(action)
+                }
             results += result
             // A declined confirmation ends the branch where it stands — that is what the
             // action is for. The actions after it are not reported: nothing was attempted,
@@ -171,6 +185,19 @@ class RuleEngine(
                 "${granted / 1000} s of ${requested / 1000} s — cycle wait budget spent"
             )
         }
+    }
+
+    /** The engine's own business like [pause]: the value has to reach the next rule's conditions. */
+    private fun setVariable(action: Action): ActionResult {
+        if (!Variables.isSettable(action.text)) {
+            return ActionResult(action.type, false, BridgeContract.VERDICT_UNSUPPORTED, "invalid variable name")
+        }
+        val name = Variables.normalize(action.text)
+        val value: Any =
+            if (action.type == ActionType.SET_VARIABLE_FLAG) action.flag else action.number.toFloat()
+        variables[name] = value
+        onVariableSet(name, value, action.keep == true)
+        return ActionResult(action.type, true, BridgeContract.VERDICT_ALLOWED, "$name = $value")
     }
 
     private fun executeWithBackoff(action: Action): ActionResult {

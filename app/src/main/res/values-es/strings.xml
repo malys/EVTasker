@@ -114,6 +114,21 @@
     <string name="value_radio_play">reproducir</string>
     <string name="value_radio_band_any">banda según la frecuencia</string>
     <string name="value_confirm_timeout_no">sin respuesta = no</string>
+    <string name="var_sunrise">Amanecer</string>
+    <string name="var_sunset">Puesta de sol</string>
+    <string name="var_dawn">Alba civil</string>
+    <string name="var_dusk">Crepúsculo civil</string>
+    <string name="var_night">Noche</string>
+    <string name="value_true">verdadero</string>
+    <string name="value_false">falso</string>
+    <string name="value_variable_name">Nombre de la variable</string>
+    <string name="value_variable_value">Valor</string>
+    <string name="value_variable_offset">Desfase (+/−)</string>
+    <string name="value_ref_fixed">Un valor fijo</string>
+    <string name="value_variable_keep">Conservar tras apagar el vehículo</string>
+    <string name="value_variable_kept">conservada</string>
+    <string name="value_variable_name_invalid">Introduce un nombre que no sea una variable predefinida</string>
+    <string name="value_number_invalid">Introduce un número</string>
     <string name="value_confirm_timeout_yes">sin respuesta = sí</string>
     <string name="editor_confirm_timeout_switch">Sin respuesta cuenta como sí</string>
     <string name="value_no_bt_devices">Ningún dispositivo Bluetooth emparejado</string>

@@ -3,6 +3,7 @@ package com.evsuite.tasker.ui
 import android.content.Context
 import com.evsuite.tasker.R
 import com.evsuite.tasker.bridge.BridgeContract
+import com.evsuite.tasker.engine.Variables
 import com.evsuite.tasker.model.Action
 import com.evsuite.tasker.model.ActionResult
 import com.evsuite.tasker.model.CompareOp
@@ -41,7 +42,7 @@ class Labels(
 
             ValueKind.NUMBER -> {
                 val unit = condition.type.spec.unitRes.takeIf { it != 0 }?.let { " " + context.getString(it) } ?: ""
-                "$name ${operator(condition.op)} ${formatNumber(condition.number)}$unit"
+                "$name ${operator(condition.op)} ${compared(condition, unit) { formatNumber(it) + unit }}"
             }
 
             ValueKind.ENUM -> {
@@ -59,8 +60,15 @@ class Labels(
             ValueKind.TIME_RANGE ->
                 "$name ${formatTime(condition.minutesFrom)} – ${formatTime(condition.minutesTo)}"
 
-            ValueKind.TIME ->
-                "$name ${operator(condition.op)} ${formatTime(condition.number.toInt())}"
+            ValueKind.TIME -> {
+                val unit = " " + context.getString(com.evsuite.hardware.R.string.unit_minute)
+                "$name ${operator(condition.op)} ${compared(condition, unit) { formatTime(it.toInt()) }}"
+            }
+
+            ValueKind.VARIABLE_FLAG -> "${variableName(condition.text)} : ${truth(condition.flag)}"
+
+            ValueKind.VARIABLE_NUMBER ->
+                "${variableName(condition.text)} ${operator(condition.op)} ${compared(condition, "") { formatNumber(it) }}"
 
             ValueKind.DAYS ->
                 "$name : ${condition.days.sortedBy { weekOrder(it) }.joinToString(", ") { dayLabel(it) }}"
@@ -83,6 +91,29 @@ class Labels(
             else -> name
         }
     }
+
+    /** The fixed value, or the variable and its offset: "Sunset + 30 min". */
+    private fun compared(condition: Condition, offsetUnit: String, fixed: (Float) -> String): String {
+        val ref = condition.ref ?: return fixed(condition.number)
+        val offset = condition.number
+        return when {
+            offset > 0f -> "${variableName(ref)} + ${formatNumber(offset)}$offsetUnit"
+            offset < 0f -> "${variableName(ref)} − ${formatNumber(-offset)}$offsetUnit"
+            else -> variableName(ref)
+        }
+    }
+
+    /** A computed variable in the user's language; one a rule set, as it was typed. */
+    fun variableName(name: String): String = when (Variables.normalize(name)) {
+        Variables.SUNRISE -> context.getString(R.string.var_sunrise)
+        Variables.SUNSET -> context.getString(R.string.var_sunset)
+        Variables.DAWN -> context.getString(R.string.var_dawn)
+        Variables.DUSK -> context.getString(R.string.var_dusk)
+        Variables.NIGHT -> context.getString(R.string.var_night)
+        else -> Variables.normalize(name)
+    }
+
+    private fun truth(flag: Boolean) = context.getString(if (flag) R.string.value_true else R.string.value_false)
 
     private fun formatDate(isoDate: String): String {
         val date = runCatching { java.time.LocalDate.parse(isoDate) }.getOrNull() ?: return isoDate
@@ -117,6 +148,13 @@ class Labels(
 
             ValueKind.TEXT ->
                 "$name : ${action.text}"
+
+            ValueKind.VARIABLE_FLAG, ValueKind.VARIABLE_NUMBER -> {
+                val value = if (action.type.spec.kind == ValueKind.VARIABLE_FLAG) truth(action.flag)
+                    else action.number.toString()
+                val kept = if (action.keep == true) " (${context.getString(R.string.value_variable_kept)})" else ""
+                "$name : ${variableName(action.text)} = $value$kept"
+            }
 
             ValueKind.CONFIRM -> {
                 val unit = action.type.spec.unitRes.takeIf { it != 0 }

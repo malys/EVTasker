@@ -114,6 +114,21 @@
     <string name="value_radio_play">Wiedergabe</string>
     <string name="value_radio_band_any">Band aus der Frequenz</string>
     <string name="value_confirm_timeout_no">keine Antwort = nein</string>
+    <string name="var_sunrise">Sonnenaufgang</string>
+    <string name="var_sunset">Sonnenuntergang</string>
+    <string name="var_dawn">Bürgerliche Morgendämmerung</string>
+    <string name="var_dusk">Bürgerliche Abenddämmerung</string>
+    <string name="var_night">Nacht</string>
+    <string name="value_true">wahr</string>
+    <string name="value_false">falsch</string>
+    <string name="value_variable_name">Variablenname</string>
+    <string name="value_variable_value">Wert</string>
+    <string name="value_variable_offset">Versatz (+/−)</string>
+    <string name="value_ref_fixed">Ein fester Wert</string>
+    <string name="value_variable_keep">Nach dem Ausschalten behalten</string>
+    <string name="value_variable_kept">behalten</string>
+    <string name="value_variable_name_invalid">Gib einen Namen ein, der keine vordefinierte Variable ist</string>
+    <string name="value_number_invalid">Gib eine Zahl ein</string>
     <string name="value_confirm_timeout_yes">keine Antwort = ja</string>
     <string name="editor_confirm_timeout_switch">Keine Antwort gilt als Ja</string>
     <string name="value_no_bt_devices">Kein gekoppeltes Bluetooth-Gerät</string>

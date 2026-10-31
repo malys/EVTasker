@@ -33,8 +33,14 @@ object RuleTransfer {
     /** Format written before MG4Tasker was renamed to EVTasker. Import remains compatible. */
     private const val LEGACY_FORMAT = "mg4tasker-rules"
 
-    /** The format this build writes and reads. Version 2 added the "else if" / "else" branches. */
-    const val VERSION = 2
+    /**
+     * The format this build writes and reads. Version 2 added the "else if" / "else" branches,
+     * version 3 conditions compared against a variable ([Condition.ref]).
+     */
+    const val VERSION = 3
+
+    /** What a file with branches but no variable comparison claims — see [VERSION_BASE]. */
+    const val VERSION_BRANCHES = 2
 
     /**
      * What a file whose rules are all plain if/then still claims.
@@ -67,7 +73,11 @@ object RuleTransfer {
     fun encode(rules: List<Rule>): String = Gson().toJson(
         Envelope(
             format = FORMAT,
-            version = if (rules.any { it.hasAlternatives }) VERSION else VERSION_BASE,
+            version = when {
+                rules.any { it.usesVariableRef } -> VERSION
+                rules.any { it.hasAlternatives } -> VERSION_BRANCHES
+                else -> VERSION_BASE
+            },
             rules = rules.map { rule ->
                 RuleDto(
                     id = rule.id,
@@ -103,7 +113,8 @@ object RuleTransfer {
         text = condition.text,
         minutesFrom = condition.minutesFrom,
         minutesTo = condition.minutesTo,
-        days = condition.days
+        days = condition.days,
+        ref = condition.ref
     )
 
     private fun actionDto(action: Action) = ActionDto(
@@ -115,7 +126,8 @@ object RuleTransfer {
         displayName = action.displayName,
         minutesFrom = action.minutesFrom,
         minutesTo = action.minutesTo,
-        yesOnNoAnswer = action.yesOnNoAnswer
+        yesOnNoAnswer = action.yesOnNoAnswer,
+        keep = action.keep
     )
 
     fun decode(json: String): Result {
@@ -151,7 +163,11 @@ object RuleTransfer {
         // A file carrying cases while claiming the version that predates them is telling a
         // build without cases that it may apply those rules — which it would do by keeping
         // the "if" and dropping everything after it. The number and the content have to agree.
-        if (version < VERSION && rules.any { it.hasAlternatives }) {
+        if (version < VERSION_BRANCHES && rules.any { it.hasAlternatives }) {
+            return Result.Invalid(Reason.MALFORMED)
+        }
+        // Same for a variable comparison: a build without it reads the offset as the value.
+        if (version < VERSION && rules.any { it.usesVariableRef }) {
             return Result.Invalid(Reason.MALFORMED)
         }
 
@@ -256,7 +272,8 @@ object RuleTransfer {
                 text = raw.text.orEmpty(),
                 minutesFrom = raw.minutesFrom ?: 0,
                 minutesTo = raw.minutesTo ?: 0,
-                days = days.filterNotNull()
+                days = days.filterNotNull(),
+                ref = raw.ref?.takeIf { it.isNotBlank() }
             )
         }
         return Parsed.Ok(conditions)
@@ -279,7 +296,8 @@ object RuleTransfer {
                 minutesTo = raw.minutesTo ?: 0,
                 // Absent in every file exported before the setting existed, and false is what
                 // those rules did: silence stopped them.
-                yesOnNoAnswer = raw.yesOnNoAnswer ?: false
+                yesOnNoAnswer = raw.yesOnNoAnswer ?: false,
+                keep = raw.keep
             )
         }
         return Parsed.Ok(actions)
@@ -326,7 +344,8 @@ object RuleTransfer {
         val text: String? = null,
         val minutesFrom: Int? = null,
         val minutesTo: Int? = null,
-        val days: List<Int?>? = null
+        val days: List<Int?>? = null,
+        val ref: String? = null
     )
 
     private class ActionDto(
@@ -338,6 +357,7 @@ object RuleTransfer {
         val displayName: String? = null,
         val minutesFrom: Int? = null,
         val minutesTo: Int? = null,
-        val yesOnNoAnswer: Boolean? = null
+        val yesOnNoAnswer: Boolean? = null,
+        val keep: Boolean? = null
     )
 }

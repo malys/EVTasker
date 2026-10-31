@@ -6,6 +6,22 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Variables.** A rule can set a named variable — true/false or a number — with *Set a
+  variable*, kept across ignitions or forgotten at the next one, as the action chooses. The
+  rules after it in the same cycle read the new value. *Variable* conditions test it; an
+  unset variable is unavailable, never false or zero.
+- **Sun times, computed offline.** Sunrise, sunset, civil dawn and dusk, from the position
+  and the date, plus a *Night* flag. A new *Time now* condition compares the clock against
+  them with an offset ("time now > sunset + 30 min"). It compares on a 24-hour circle:
+  "after" is the twelve hours that follow, so "after sunset" still holds at 01:00. No position
+  or an unset clock leaves them unavailable. A manual test shows what a rule would set without
+  saving it. Numeric conditions can compare against a number variable the same way.
+- Exports with a variable comparison are written as format version 3; older builds refuse
+  them instead of reading the offset as the value. No dew point: neither the car nor its
+  weather service reports the outside humidity.
+
 ## [2.17.1] - 2026-10-30
 
 ### Changed

@@ -56,7 +56,13 @@ data class Snapshot(
     val latitude: Double? = null,
     val longitude: Double? = null,
     /** false when EVProfile did not answer: everything is unreadable, nothing fires. */
-    val bridgeAvailable: Boolean = true
+    val bridgeAvailable: Boolean = true,
+    /**
+     * Variables by name, as Boolean or Float: the ones rules set, and the ones computed for
+     * the cycle (see [com.evsuite.tasker.engine.Variables]). Missing means "not set" and
+     * reads as unavailable, never as false or zero.
+     */
+    val variables: Map<String, Any> = emptyMap()
 ) {
     fun number(key: String): Float? = when (val v = readings[key]) {
         is Float -> v

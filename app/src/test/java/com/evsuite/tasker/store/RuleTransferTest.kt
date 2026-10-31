@@ -111,7 +111,7 @@ class RuleTransferTest {
 
     @Test
     fun `a newer format version is refused rather than partly read`() {
-        val json = """{"format":"evtasker-rules","version":3,"rules":[]}"""
+        val json = """{"format":"evtasker-rules","version":4,"rules":[]}"""
 
         assertEquals(RuleTransfer.Reason.VERSION, invalidReason(json))
     }
@@ -334,6 +334,31 @@ class RuleTransferTest {
                "conditions":[{"type":"IN_PARK","op":"EQ"}],
                "actions":[{"type":"SET_ONE_PEDAL"}],
                "elseIf":[{"match":"ALL","conditions":[],"actions":[{"type":"SET_ONE_PEDAL"}]}]}]}
+        """.trimIndent()
+
+        assertEquals(RuleTransfer.Reason.MALFORMED, invalidReason(json))
+    }
+
+    @Test
+    fun `a variable comparison and a kept variable survive the round trip`() {
+        val rules = listOf(rule().copy(
+            conditions = listOf(Condition(ConditionType.CURRENT_TIME, CompareOp.GT, 30f, ref = "SUNSET")),
+            actions = listOf(Action(ActionType.SET_VARIABLE_FLAG, text = "COLD", keep = true))
+        ))
+        val json = RuleTransfer.encode(rules)
+
+        assertTrue(json.contains("\"version\":3"))
+        assertEquals(RuleTransfer.Result.Ok(rules), decodeOf(json))
+    }
+
+    @Test
+    fun `a variable comparison claiming an older version is refused`() {
+        // A build without variables would compare against the offset alone.
+        val json = """
+            {"format":"evtasker-rules","version":2,"rules":[
+              {"id":"r1","name":"X","match":"ALL",
+               "conditions":[{"type":"OUTSIDE_TEMP","op":"LT","number":0,"ref":"LIMIT"}],
+               "actions":[{"type":"SET_ONE_PEDAL"}]}]}
         """.trimIndent()
 
         assertEquals(RuleTransfer.Reason.MALFORMED, invalidReason(json))

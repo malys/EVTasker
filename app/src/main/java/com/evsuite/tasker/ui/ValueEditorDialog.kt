@@ -12,6 +12,9 @@ import com.google.android.material.chip.Chip
 import com.evsuite.tasker.R
 import com.evsuite.tasker.bridge.BridgeContract
 import com.evsuite.tasker.engine.ConditionEvaluator
+import com.evsuite.tasker.engine.Variables
+import com.evsuite.tasker.store.RuleStore
+import com.evsuite.tasker.store.VariableStore
 import com.evsuite.tasker.databinding.DialogValueEditorBinding
 import com.evsuite.tasker.databinding.ScreenValueEditorBinding
 import com.evsuite.tasker.model.Action
@@ -92,7 +95,8 @@ object ValueEditorDialog {
         // Operator: offered only where ordering means something. On a drive mode,
         // "below Sport" is meaningless — so it is not offered.
         val ops = if (condition.type.comparable) CompareOp.entries else listOf(CompareOp.EQ, CompareOp.NE)
-        if (spec.kind == ValueKind.NUMBER || spec.kind == ValueKind.ENUM || spec.kind == ValueKind.TIME) {
+        if (spec.kind == ValueKind.NUMBER || spec.kind == ValueKind.ENUM || spec.kind == ValueKind.TIME ||
+            spec.kind == ValueKind.VARIABLE_NUMBER) {
             binding.opSpinner.visibility = View.VISIBLE
             binding.opSpinner.adapter = simpleAdapter(context, ops.map { labels.operator(it) })
             binding.opSpinner.setSelection(ops.indexOf(condition.op).coerceAtLeast(0))
@@ -119,18 +123,35 @@ object ValueEditorDialog {
             emptyChoiceMessage = context.getString(R.string.value_no_bt_devices),
             initialMinutesFrom = condition.minutesFrom,
             initialMinutesTo = condition.minutesTo,
-            initialDays = condition.days
+            initialDays = condition.days,
+            variableNames = knownVariables(context, flag = spec.kind == ValueKind.VARIABLE_FLAG, computed = true)
         )
+        val variable = spec.kind == ValueKind.VARIABLE_FLAG || spec.kind == ValueKind.VARIABLE_NUMBER
+        val ref = bindRef(context, binding, condition, labels)
 
         showEditor(context, condition.type.labelRes, binding) {
                 val op = if (binding.opSpinner.visibility == View.VISIBLE)
                     ops[binding.opSpinner.selectedItemPosition] else condition.op
+                if (variable && Variables.normalize(state.text()).isEmpty()) {
+                    binding.variableNameBlock.error = context.getString(R.string.value_variable_name_invalid)
+                    return@showEditor false
+                }
+                // The typed field is the value of a number variable, or the offset added to the
+                // compared variable — where an empty offset means none.
+                val typed = binding.variableValueInput.text?.toString().orEmpty().trim().replace(',', '.')
+                val usesTyped = ref() != null || spec.kind == ValueKind.VARIABLE_NUMBER
+                val typedNumber = if (typed.isEmpty() && ref() != null) 0f else typed.toFloatOrNull()
+                if (usesTyped && (typedNumber == null || !typedNumber.isFinite())) {
+                    binding.variableValueBlock.error = context.getString(R.string.value_number_invalid)
+                    return@showEditor false
+                }
                 onDone(
                     condition.copy(
                         op = op,
-                        number = state.number(),
+                        number = if (usesTyped) typedNumber!! else state.number(),
                         flag = state.flag(),
-                        text = state.text(),
+                        text = if (variable) Variables.normalize(state.text()) else state.text(),
+                        ref = ref(),
                         minutesFrom = state.minutesFrom,
                         minutesTo = state.minutesTo,
                         days = state.days()
@@ -225,8 +246,18 @@ object ValueEditorDialog {
             }),
             initialMinutesFrom = action.minutesFrom,
             initialMinutesTo = action.minutesTo,
-            initialDays = emptyList()
+            initialDays = emptyList(),
+            variableNames = knownVariables(context, flag = spec.kind == ValueKind.VARIABLE_FLAG, computed = false)
         )
+
+        val variable = spec.kind == ValueKind.VARIABLE_FLAG || spec.kind == ValueKind.VARIABLE_NUMBER
+        if (variable) {
+            binding.variableKeepSwitch.visibility = View.VISIBLE
+            binding.variableKeepSwitch.isChecked = action.keep ?: true
+            // The action stores a whole number; the condition side accepts decimals.
+            binding.variableValueInput.inputType =
+                android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_SIGNED
+        }
 
         // The radio entry carries band, frequency and playback together; this switch is the
         // third of the three, and it is what keeps "change station, stay silent" reachable.
@@ -257,11 +288,20 @@ object ValueEditorDialog {
                         return@showEditor false
                     }
                 }
+                if (variable && !Variables.isSettable(state.text())) {
+                    binding.variableNameBlock.error = context.getString(R.string.value_variable_name_invalid)
+                    return@showEditor false
+                }
+                val typed = binding.variableValueInput.text?.toString()?.trim()?.toIntOrNull()
+                if (spec.kind == ValueKind.VARIABLE_NUMBER && typed == null) {
+                    binding.variableValueBlock.error = context.getString(R.string.value_number_invalid)
+                    return@showEditor false
+                }
                 onDone(
                     action.copy(
-                        number = state.number().toInt(),
+                        number = if (spec.kind == ValueKind.VARIABLE_NUMBER) typed!! else state.number().toInt(),
                         flag = if (radioPlay) binding.radioPlaySwitch.isChecked else state.flag(),
-                        text = state.text(),
+                        text = if (variable) Variables.normalize(state.text()) else state.text(),
                         payload = state.payload(),
                         displayName = if (spec.kind == ValueKind.CONTACT || spec.kind == ValueKind.SMS)
                             state.choiceLabel().ifBlank { null }
@@ -269,7 +309,8 @@ object ValueEditorDialog {
                         minutesFrom = state.minutesFrom,
                         minutesTo = state.minutesTo,
                         yesOnNoAnswer = if (confirm) binding.confirmTimeoutSwitch.isChecked
-                            else action.yesOnNoAnswer
+                            else action.yesOnNoAnswer,
+                        keep = if (variable) binding.variableKeepSwitch.isChecked else action.keep
                     )
                 )
                 true
@@ -352,7 +393,8 @@ object ValueEditorDialog {
         emptyChoiceMessage: String,
         initialMinutesFrom: Int,
         initialMinutesTo: Int,
-        initialDays: List<Int>
+        initialDays: List<Int>,
+        variableNames: List<String> = emptyList()
     ): State {
         if (gated) {
             binding.gatedExplain.visibility = View.VISIBLE
@@ -701,10 +743,96 @@ object ValueEditorDialog {
                 ) { text = it }
             }
 
+            ValueKind.VARIABLE_FLAG, ValueKind.VARIABLE_NUMBER -> {
+                binding.variableNameBlock.visibility = View.VISIBLE
+                binding.variableNameInput.setText(initialText)
+                binding.variableNameInput.setAdapter(ArrayAdapter(context, R.layout.item_value_choice, variableNames))
+                binding.variableNameInput.setOnClickListener { binding.variableNameInput.showDropDown() }
+                binding.variableNameInput.addTextChangedListener { text = it }
+                if (spec.kind == ValueKind.VARIABLE_FLAG) {
+                    fun truth(on: Boolean) = if (on) R.string.value_true else R.string.value_false
+                    binding.boolSwitch.visibility = View.VISIBLE
+                    binding.boolSwitch.isChecked = initialFlag
+                    binding.boolSwitch.setText(truth(initialFlag))
+                    binding.boolSwitch.setOnCheckedChangeListener { view, checked ->
+                        flag = checked
+                        view.setText(truth(checked))
+                    }
+                } else {
+                    // Read back by the caller on save: it has to refuse what does not parse.
+                    binding.variableValueBlock.visibility = View.VISIBLE
+                    binding.variableValueInput.setText(typedNumber(initialNumber))
+                }
+            }
+
             ValueKind.NONE, ValueKind.CONTACT, ValueKind.PHYSICAL_BUTTON -> Unit
         }
 
         return state
+    }
+
+    private fun typedNumber(value: Float): String =
+        if (value % 1f == 0f) value.toInt().toString() else value.toString()
+
+    /**
+     * The variables a field can name: those a rule sets or a cycle has stored, of the right
+     * type, plus — for a condition — the computed one of that type.
+     */
+    private fun knownVariables(context: Context, flag: Boolean, computed: Boolean): List<String> {
+        val setter = if (flag) ActionType.SET_VARIABLE_FLAG else ActionType.SET_VARIABLE_NUMBER
+        val fromRules = RuleStore(context).getAll()
+            .flatMap { rule -> rule.branches.flatMap { it.actions } + rule.otherwise }
+            .filter { it.type == setter }
+            .map { Variables.normalize(it.text) }
+        val stored = VariableStore.all(context).filterValues { if (flag) it is Boolean else it is Float }.keys
+        val predefined = if (computed && flag) listOf(Variables.NIGHT) else emptyList()
+        return (predefined + (fromRules + stored).sorted()).filter { it.isNotEmpty() }.distinct()
+    }
+
+    /**
+     * "Compare with": a fixed value, or a variable plus an offset. Offered on comparable
+     * numbers and times; the times also get the sun.
+     *
+     * @return the selected variable, read on save — null for a fixed value.
+     */
+    private fun bindRef(
+        context: Context,
+        binding: DialogValueEditorBinding,
+        condition: Condition,
+        labels: Labels
+    ): () -> String? {
+        val kind = condition.type.spec.kind
+        val stored = condition.ref?.let(Variables::normalize)
+        if (!condition.type.comparable ||
+            kind !in setOf(ValueKind.NUMBER, ValueKind.TIME, ValueKind.VARIABLE_NUMBER)) return { stored }
+
+        val sun = if (kind == ValueKind.TIME) Variables.TIMES else emptyList()
+        val options: List<String?> =
+            listOf(null) + (sun + knownVariables(context, flag = false, computed = false) + listOfNotNull(stored)).distinct()
+        var ref = stored
+        if (ref != null) binding.variableValueInput.setText(typedNumber(condition.number))
+        fun show() {
+            val byRef = ref != null
+            val fixed = if (byRef) View.GONE else View.VISIBLE
+            when (kind) {
+                ValueKind.NUMBER -> binding.numberBlock.visibility = fixed
+                ValueKind.TIME -> binding.timeSingle.visibility = fixed
+                else -> Unit
+            }
+            binding.variableValueBlock.visibility =
+                if (byRef || kind == ValueKind.VARIABLE_NUMBER) View.VISIBLE else View.GONE
+            binding.variableValueBlock.hint = context.getString(
+                if (byRef) R.string.value_variable_offset else R.string.value_variable_value
+            )
+        }
+        binding.refSpinner.visibility = View.VISIBLE
+        binding.refSpinner.adapter = simpleAdapter(context, options.map {
+            it?.let(labels::variableName) ?: context.getString(R.string.value_ref_fixed)
+        })
+        binding.refSpinner.setSelection(options.indexOf(ref))
+        binding.refSpinner.onItemSelected { ref = options[it]; show() }
+        show()
+        return { ref }
     }
 
     /**

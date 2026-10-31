@@ -18,5 +18,7 @@ object WallClock {
     fun isSet(nowMs: Long = System.currentTimeMillis()): Boolean = nowMs >= FLOOR_MS
 
     /** The conditions that read this clock, and so cannot be answered before it is set. */
-    val CONDITIONS = setOf(ConditionType.TIME_OF_DAY, ConditionType.DAY_OF_WEEK, ConditionType.DATE)
+    val CONDITIONS = setOf(
+        ConditionType.TIME_OF_DAY, ConditionType.DAY_OF_WEEK, ConditionType.DATE, ConditionType.CURRENT_TIME
+    )
 }

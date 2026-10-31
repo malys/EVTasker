@@ -218,6 +218,11 @@ object Diagnostics {
             if (type == ConditionType.PHYSICAL_BUTTON) {
                 return@map Entry(type.name, Status.OK, Reason.NONE, hidden = hidden)
             }
+            // A variable has a value only once a rule names it, so probing a blank name reads
+            // nothing — and NOT_READABLE would hide it from the editor as if the car lacked it.
+            if (type == ConditionType.VARIABLE_FLAG || type == ConditionType.VARIABLE_NUMBER) {
+                return@map Entry(type.name, Status.OK, Reason.NONE, hidden = hidden)
+            }
             if (outcome == ConditionOutcome.UNAVAILABLE) {
                 Entry(
                     name = type.name,
@@ -324,7 +329,8 @@ object Diagnostics {
         // Whether the target rule still exists, or whether anything is playing to receive
         // the key, is a per-rule matter this screen does not know.
         ActionType.ENABLE_RULE, ActionType.DISABLE_RULE, ActionType.MEDIA_CONTROL,
-        ActionType.SET_BLUETOOTH, ActionType.SET_WIFI -> Reason.NONE
+        ActionType.SET_BLUETOOTH, ActionType.SET_WIFI,
+        ActionType.SET_VARIABLE_FLAG, ActionType.SET_VARIABLE_NUMBER -> Reason.NONE
 
         // Not a vendor service: the message leaves through the paired phone over the
         // Bluetooth message profile, so what decides is whether a phone is connected on it.

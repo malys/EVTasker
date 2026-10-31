@@ -24,6 +24,24 @@
             android:textColor="@color/ev_warn"
             android:visibility="gone" />
 
+        <!-- VARIABLE_FLAG / VARIABLE_NUMBER — the name, offered from the variables that exist -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/variableNameBlock"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/value_variable_name"
+            android:visibility="gone">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/variableNameInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapCharacters"
+                android:minHeight="@dimen/touch_target"
+                android:textSize="@dimen/text_body" />
+        </com.google.android.material.textfield.TextInputLayout>
+
         <!-- Operator — comparable numeric conditions only -->
         <Spinner
             android:id="@+id/opSpinner"
@@ -31,6 +49,33 @@
             android:layout_height="wrap_content"
             android:minHeight="@dimen/touch_target"
             android:visibility="gone" />
+
+        <!-- Compare with a fixed value or with a variable — comparable conditions only -->
+        <Spinner
+            android:id="@+id/refSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target"
+            android:visibility="gone" />
+
+        <!-- A typed number: a variable's value, or the offset added to the compared variable.
+             Typed rather than a slider: a variable has no range to slide along. -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/variableValueBlock"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/value_variable_value"
+            android:visibility="gone">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/variableValueInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberSigned|numberDecimal"
+                android:minHeight="@dimen/touch_target"
+                android:textSize="@dimen/text_body" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- BOOL -->
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -300,5 +345,15 @@
                 android:layout_weight="1"
                 android:text="@string/value_place_save" />
         </LinearLayout>
+
+        <!-- SET_VARIABLE_* — whether the value outlives the ignition -->
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/variableKeepSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/touch_target"
+            android:text="@string/value_variable_keep"
+            android:textSize="@dimen/text_body"
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

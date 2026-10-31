@@ -6,8 +6,10 @@ import com.evsuite.hardware.EVHardware
 import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.ConditionType
 import com.evsuite.tasker.engine.RuleEngine
+import com.evsuite.tasker.engine.Variables
 import com.evsuite.tasker.store.HistoryStore
 import com.evsuite.tasker.store.RuleStore
+import com.evsuite.tasker.store.VariableStore
 import com.evsuite.tasker.model.EngineRun
 import com.evsuite.tasker.model.Rule
 import com.evsuite.tasker.model.RuleTrigger
@@ -154,6 +156,8 @@ object RuleCycle {
         ConditionType.BT_DEVICE_ONBOARD, ConditionType.BT_DEVICE_HANDSFREE,
     )
 
+    private val VARIABLE_CONDITIONS = setOf(ConditionType.VARIABLE_FLAG, ConditionType.VARIABLE_NUMBER)
+
     /** Held cycles, so a button pressed four times while the GPS warms up fires once. */
     private val waiting = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
@@ -168,6 +172,9 @@ object RuleCycle {
         /** The rules held back by [waitForInputs], run once it is over. */
         waited: Set<String>? = null
     ) {
+        // A variable not kept lasts one ignition. Here rather than in the service so the held
+        // re-run of the same ignition ([waited]) does not wipe what its first pass set.
+        if (trigger == RuleTrigger.IGNITION_ON.name && waited == null) VariableStore.clearCycle(context)
         val all = RuleStore(context).getAll()
         // Rules wired to a different event are not "skipped", they were never addressed: the
         // history would otherwise fill with a line per rule per ignition saying nothing.
@@ -221,10 +228,23 @@ object RuleCycle {
                 btHandsFreeMacs = BtDevices.activeHandsFree(context),
                 fix = CarLocation.lastKnown(context)
             )
-            val snapshot = baseSnapshot.copy(readings = baseSnapshot.readings + eventReadings)
+            val snapshot = baseSnapshot.copy(
+                readings = baseSnapshot.readings + eventReadings,
+                variables = VariableStore.all(context) + Variables.sun(
+                    baseSnapshot.latitude, baseSnapshot.longitude, baseSnapshot.clockSet,
+                    baseSnapshot.localDate, baseSnapshot.minutesOfDay,
+                    java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 60_000
+                )
+            )
             val snapshotMs = System.currentTimeMillis() - snapshotStartedAt
-            val result = RuleEngine(DirectExecutor(context, profileBridge))
-                .run(rules, snapshot, trigger, System.currentTimeMillis())
+            val result = RuleEngine(
+                DirectExecutor(context, profileBridge),
+                // A manual test shows what the rule would set without setting it: the next real
+                // cycle must not read a value nobody drove into.
+                onVariableSet = { name, value, keep ->
+                    if (trigger != MANUAL) VariableStore.set(context, name, value, keep)
+                }
+            ).run(rules, snapshot, trigger, System.currentTimeMillis())
             HistoryStore(context).append(result)
             // A write refused because the car was moving is tried once at the next standstill
             // of the same drive (owner decision, 2026-10-18); see [DeferredWrites].
@@ -251,12 +271,16 @@ object RuleCycle {
 
     /** What any case of [rule], "else if" ones included, reads that can be late at boot. */
     internal fun inputsRead(rule: Rule): Set<Input> =
-        rule.branches.flatMap { it.conditions }.mapNotNullTo(mutableSetOf()) {
-            when (it.type) {
-                in WallClock.CONDITIONS -> Input.CLOCK
-                in BT_CONDITIONS -> Input.BLUETOOTH
-                ConditionType.LOCATION_WITHIN -> Input.LOCATION
-                else -> null
+        rule.branches.flatMap { it.conditions }.flatMapTo(mutableSetOf()) {
+            // The sun needs the date and the place: same wait as the clock and the position.
+            val named = if (it.type in VARIABLE_CONDITIONS) it.text else null
+            val sun = listOfNotNull(it.ref, named).any { name -> Variables.normalize(name) in Variables.PREDEFINED }
+            when {
+                sun -> listOf(Input.CLOCK, Input.LOCATION)
+                it.type in WallClock.CONDITIONS -> listOf(Input.CLOCK)
+                it.type in BT_CONDITIONS -> listOf(Input.BLUETOOTH)
+                it.type == ConditionType.LOCATION_WITHIN -> listOf(Input.LOCATION)
+                else -> emptyList()
             }
         }
 

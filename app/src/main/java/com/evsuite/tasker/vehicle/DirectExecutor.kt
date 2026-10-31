@@ -267,7 +267,9 @@ class DirectExecutor(
             ActionType.TUNE_RADIO -> null
             // Waiting between two actions is the engine's business — it is what runs them in
             // sequence. Reaching here would mean an action ran outside a rule.
-            ActionType.DELAY -> null
+            ActionType.DELAY,
+            // So is a variable: the next rule of the cycle has to read it.
+            ActionType.SET_VARIABLE_FLAG, ActionType.SET_VARIABLE_NUMBER -> null
         }
     }
 

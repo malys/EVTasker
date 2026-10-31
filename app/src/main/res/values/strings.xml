@@ -131,6 +131,21 @@
     <string name="value_radio_play">play</string>
     <string name="value_radio_band_any">band from the frequency</string>
     <string name="value_confirm_timeout_no">no answer = no</string>
+    <string name="var_sunrise">Sunrise</string>
+    <string name="var_sunset">Sunset</string>
+    <string name="var_dawn">Dawn (civil)</string>
+    <string name="var_dusk">Dusk (civil)</string>
+    <string name="var_night">Night</string>
+    <string name="value_true">true</string>
+    <string name="value_false">false</string>
+    <string name="value_variable_name">Variable name</string>
+    <string name="value_variable_value">Value</string>
+    <string name="value_variable_offset">Offset (+/−)</string>
+    <string name="value_ref_fixed">A fixed value</string>
+    <string name="value_variable_keep">Keep after the car is switched off</string>
+    <string name="value_variable_kept">kept</string>
+    <string name="value_variable_name_invalid">Enter a name that is not a predefined variable</string>
+    <string name="value_number_invalid">Enter a number</string>
     <string name="value_confirm_timeout_yes">no answer = yes</string>
     <string name="editor_confirm_timeout_switch">No answer counts as yes</string>
     <string name="value_no_bt_devices">No paired Bluetooth device</string>

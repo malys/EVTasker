@@ -49,7 +49,15 @@ data class Condition(
     val minutesFrom: Int = 0,
     val minutesTo: Int = 0,
     /** [ConditionType.DAY_OF_WEEK] — java.util.Calendar.MONDAY…SUNDAY values. */
-    val days: List<Int> = emptyList()
+    val days: List<Int> = emptyList(),
+    /**
+     * A variable to compare against instead of a fixed value, [number] then being the offset
+     * added to it: "time now > sunset + 30 min", "battery < THRESHOLD".
+     *
+     * Nullable for the reason [Rule.trigger] is: absent from every condition saved before
+     * variables existed, and null is exactly "a fixed value" there.
+     */
+    val ref: String? = null
 )
 
 /** One configured action. */
@@ -78,7 +86,12 @@ data class Action(
      * Non-null with the cautious default, so an absent field — which is what Gson finds in
      * every rule saved before now — reads as the behaviour those rules were written for.
      */
-    val yesOnNoAnswer: Boolean = false
+    val yesOnNoAnswer: Boolean = false,
+    /**
+     * [ActionType.SET_VARIABLE_FLAG] / [ActionType.SET_VARIABLE_NUMBER] — whether the value
+     * survives the next ignition. Read as `keep == true`: an absent field forgets.
+     */
+    val keep: Boolean? = null
 )
 
 /**
@@ -215,6 +228,10 @@ data class Rule(
      */
     val totalDelayMs: Long get() =
         (branches.map { it.actions.delayMs() } + otherwise.delayMs()).max()
+
+    /** Whether a condition compares against a variable — what an export must declare. */
+    val usesVariableRef: Boolean get() =
+        branches.any { branch -> branch.conditions.any { it.ref != null } }
 
     /** [trigger], defaulting to vehicle start — what every rule written before this did. */
     val firesOn: RuleTrigger get() = trigger ?: RuleTrigger.IGNITION_ON

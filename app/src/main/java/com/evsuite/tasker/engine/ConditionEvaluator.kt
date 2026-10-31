@@ -27,6 +27,8 @@ object ConditionEvaluator {
     /** Tolerance for float equality comparisons (temperature above all). */
     private const val EPSILON = 0.01f
 
+    private const val MINUTES_PER_DAY = 24 * 60f
+
     fun evaluate(condition: Condition, snapshot: Snapshot): ConditionOutcome =
         when (condition.type.spec.kind) {
             ValueKind.BT_DEVICE  -> evaluateBtDevice(condition, snapshot)
@@ -42,6 +44,8 @@ object ConditionEvaluator {
             ValueKind.TIME       -> evaluateNumber(condition, snapshot)
             ValueKind.ENUM       -> evaluateEnum(condition, snapshot)
             ValueKind.TEXT       -> evaluateText(condition, snapshot)
+            ValueKind.VARIABLE_FLAG   -> evaluateVariableFlag(condition, snapshot)
+            ValueKind.VARIABLE_NUMBER -> evaluateVariableNumber(condition, snapshot)
             else                 -> ConditionOutcome.UNAVAILABLE
         }
 
@@ -185,6 +189,11 @@ object ConditionEvaluator {
             return match(random(100) < c.number.toInt().coerceIn(1, 100))
         }
 
+        if (c.type == ConditionType.CURRENT_TIME) {
+            if (!s.clockSet) return ConditionOutcome.UNAVAILABLE
+            return compareTo(s.minutesOfDay.toFloat(), c, s)
+        }
+
         val key = c.type.snapshotKey ?: return ConditionOutcome.UNAVAILABLE
 
         // Speed is a special case: the bridge distinguishes "0 km/h" from "unreadable"
@@ -195,7 +204,60 @@ object ConditionEvaluator {
         }
 
         val actual = s.number(key) ?: return ConditionOutcome.UNAVAILABLE
-        return match(compare(actual, c.number, c.op))
+        return compareTo(actual, c, s)
+    }
+
+    // -------------------------------------------------------------------------
+    // Variables
+    // -------------------------------------------------------------------------
+
+    /** A variable of the other type is not this one being false: it cannot be read as asked. */
+    private fun evaluateVariableFlag(c: Condition, s: Snapshot): ConditionOutcome {
+        val actual = s.variables[Variables.normalize(c.text)] as? Boolean
+            ?: return ConditionOutcome.UNAVAILABLE
+        return match(actual == c.flag)
+    }
+
+    private fun evaluateVariableNumber(c: Condition, s: Snapshot): ConditionOutcome {
+        val actual = s.variables[Variables.normalize(c.text)] as? Float
+            ?: return ConditionOutcome.UNAVAILABLE
+        return compareTo(actual, c, s)
+    }
+
+    /**
+     * [actual] against the condition's fixed value, or against its variable plus the offset.
+     * An unset variable leaves the comparison unanswerable, never against zero.
+     */
+    private fun compareTo(actual: Float, c: Condition, s: Snapshot): ConditionOutcome {
+        val expected = if (c.ref == null) c.number else {
+            val base = s.variables[Variables.normalize(c.ref)] as? Float
+                ?: return ConditionOutcome.UNAVAILABLE
+            base + c.number
+        }
+        if (c.type == ConditionType.CURRENT_TIME) return match(compareClock(actual, expected, c.op))
+        return match(compare(actual, expected, c.op))
+    }
+
+    /**
+     * Two times of day on a 24-hour circle: "after" is the twelve hours that follow [expected],
+     * "before" the twelve that precede it.
+     *
+     * Linear minutes would make "time now > sunset" false from midnight on, while it is still
+     * night, and "sunset + 300 min" — past 24:00 — never true. Wrapping both is what the driver
+     * means; an explicit window is what [ConditionType.TIME_OF_DAY] is for.
+     */
+    internal fun compareClock(now: Float, expected: Float, op: CompareOp): Boolean {
+        val since = (now - expected).mod(MINUTES_PER_DAY)
+        val same = since < EPSILON || MINUTES_PER_DAY - since < EPSILON
+        val after = !same && since < MINUTES_PER_DAY / 2
+        return when (op) {
+            CompareOp.EQ -> same
+            CompareOp.NE -> !same
+            CompareOp.GT -> after
+            CompareOp.GE -> after || same
+            CompareOp.LT -> !after && !same
+            CompareOp.LE -> !after
+        }
     }
 
     private fun evaluateEnum(c: Condition, s: Snapshot): ConditionOutcome {
