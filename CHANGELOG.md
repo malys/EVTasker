@@ -6,6 +6,14 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.18.1] - 2026-10-31
+
+### Added
+
+- **Start time in the diagnostic report.** The header says when EVTasker's process started
+  and how long ago, both counted from the head unit's boot, so a report sent right after
+  ignition shows how long the rules took to come up.
+
 ## [2.18.0] - 2026-10-31
 
 ### Added
