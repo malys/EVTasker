@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.18.0] - 2026-10-31
+
 ### Added
 
 - **Variables.** A rule can set a named variable — true/false or a number — with *Set a
@@ -21,6 +23,14 @@ All notable changes to this project are documented here. Format follows
 - Exports with a variable comparison are written as format version 3; older builds refuse
   them instead of reading the offset as the value. No dew point: neither the car nor its
   weather service reports the outside humidity.
+- **Rule order.** Up and down buttons in the rule list. A cycle runs its rules in that order,
+  so it decides which write lands last and which rule reads a variable another one set.
+
+### Changed
+
+- **Faster first action at boot.** EVProfile is bound only for a cycle with a profile action.
+  The bind cold-starts EVProfile and could hold every ignition rule for up to 8 s.
+- Tracks EVHardware 1.20.0.
 
 ## [2.17.1] - 2026-10-30
 
