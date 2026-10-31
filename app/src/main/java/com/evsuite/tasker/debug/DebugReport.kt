@@ -69,6 +69,12 @@ object DebugReport {
         appendLine("android   : ${android.os.Build.VERSION.SDK_INT}")
         appendLine("device    : ${android.os.Build.DEVICE} (${android.os.Build.MODEL})")
         appendLine("firmware  : ${report.firmwareGen}")
+        // Boot-relative, because the wall clock is the factory default early in a drive:
+        // "now" minus the log's last stamp dates every line against the boot.
+        appendLine(
+            "process   : started at boot + ${android.os.Process.getStartElapsedRealtime() / 1000} s, " +
+                "now boot + ${android.os.SystemClock.elapsedRealtime() / 1000} s"
+        )
         appendLine()
 
         section("Environment")
