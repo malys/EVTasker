@@ -6,6 +6,13 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.18.2] - 2026-11-01
+
+### Changed
+
+- **Smaller APK.** Unused resources are dropped from the release build: 3.0 MB instead of
+  3.6 MB.
+
 ## [2.18.1] - 2026-10-31
 
 ### Added
