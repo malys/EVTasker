@@ -6,6 +6,14 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.18.4] - 2026-11-09
+
+### Changed
+
+- **"Favourite" instead of "saved place".** The destination field says it takes an address,
+  a point or a favourite, and its button reads *Add to favourites*. The weather fallback
+  setting uses the same word.
+
 ## [2.18.3] - 2026-11-09
 
 ### Fixed

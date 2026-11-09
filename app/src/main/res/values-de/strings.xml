@@ -20,8 +20,8 @@
     <string name="config_weather_fallback">Ersatzposition: %1$s</string>
     <string name="config_weather_fallback_none">keine</string>
     <string name="config_weather_fallback_title">Ersatzposition für das Wetter</string>
-    <string name="config_weather_fallback_explain">Wird von Wetterbedingungen genutzt, wenn das Auto seit 24 Stunden keine GPS-Position hatte. Wählen Sie einen gespeicherten Ort, meist Zuhause.</string>
-    <string name="config_weather_fallback_empty">Noch kein Ort gespeichert. Speichern Sie einen über eine Positionsbedingung.</string>
+    <string name="config_weather_fallback_explain">Wird von Wetterbedingungen genutzt, wenn das Auto seit 24 Stunden keine GPS-Position hatte. Wählen Sie einen Favoriten, meist Zuhause.</string>
+    <string name="config_weather_fallback_empty">Noch kein Favorit. Fügen Sie einen über eine Positionsbedingung hinzu.</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automatisierung aktiviert</string>
@@ -269,9 +269,9 @@
     <string name="value_location_current">Aktuelle Position</string>
     <string name="value_location_map">Karte öffnen</string>
     <string name="value_location_map_none">Keine Kartenanwendung auf dieser Headunit</string>
-    <string name="value_destination_hint">Adresse oder Breite, Länge</string>
-    <string name="value_place_save">Ort speichern</string>
-    <string name="value_place_name">Name des Ortes</string>
+    <string name="value_destination_hint">Adresse, Breite, Länge oder Favorit</string>
+    <string name="value_place_save">Zu Favoriten hinzufügen</string>
+    <string name="value_place_name">Name des Favoriten</string>
     <string name="value_place_empty">Punkt eingeben oder wählen, bevor er gespeichert wird</string>
     <string name="confirm_title">Bestätigung</string>
     <string name="confirm_yes">Ja</string>

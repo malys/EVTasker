@@ -20,8 +20,8 @@
     <string name="config_weather_fallback">Position de secours : %1$s</string>
     <string name="config_weather_fallback_none">aucune</string>
     <string name="config_weather_fallback_title">Position de secours pour la météo</string>
-    <string name="config_weather_fallback_explain">Utilisée par les conditions météo quand la voiture n\'a eu aucune position GPS depuis 24 h. Choisissez un lieu enregistré, en général la maison.</string>
-    <string name="config_weather_fallback_empty">Aucun lieu enregistré. Enregistrez-en un depuis une condition de position.</string>
+    <string name="config_weather_fallback_explain">Utilisée par les conditions météo quand la voiture n\'a eu aucune position GPS depuis 24 h. Choisissez un favori, en général la maison.</string>
+    <string name="config_weather_fallback_empty">Aucun favori. Ajoutez-en un depuis une condition de position.</string>
 
     <!-- Groupes du catalogue -->
 
@@ -286,9 +286,9 @@
     <string name="value_location_current">Position actuelle</string>
     <string name="value_location_map">Ouvrir la carte</string>
     <string name="value_location_map_none">Aucune application de cartographie sur cet écran</string>
-    <string name="value_destination_hint">Adresse, ou latitude, longitude</string>
-    <string name="value_place_save">Enregistrer le lieu</string>
-    <string name="value_place_name">Nom du lieu</string>
+    <string name="value_destination_hint">Adresse, latitude, longitude ou favori</string>
+    <string name="value_place_save">Ajouter aux favoris</string>
+    <string name="value_place_name">Nom du favori</string>
     <string name="value_place_empty">Saisissez ou choisissez un point avant de l’enregistrer</string>
     <string name="confirm_title">Confirmation</string>
     <string name="confirm_yes">Oui</string>

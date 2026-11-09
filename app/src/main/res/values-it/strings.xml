@@ -20,8 +20,8 @@
     <string name="config_weather_fallback">Posizione di riserva: %1$s</string>
     <string name="config_weather_fallback_none">nessuna</string>
     <string name="config_weather_fallback_title">Posizione di riserva per il meteo</string>
-    <string name="config_weather_fallback_explain">Usata dalle condizioni meteo quando l\'auto non ha avuto una posizione GPS nelle ultime 24 ore. Scegli un luogo salvato, di solito casa.</string>
-    <string name="config_weather_fallback_empty">Nessun luogo salvato. Salvane uno da una condizione di posizione.</string>
+    <string name="config_weather_fallback_explain">Usata dalle condizioni meteo quando l\'auto non ha avuto una posizione GPS nelle ultime 24 ore. Scegli un preferito, di solito casa.</string>
+    <string name="config_weather_fallback_empty">Nessun preferito. Aggiungine uno da una condizione di posizione.</string>
 
     <!-- Rules screen -->
     <string name="rules_automation_switch">Automazione attivata</string>
@@ -269,9 +269,9 @@
     <string name="value_location_current">Posizione attuale</string>
     <string name="value_location_map">Apri la mappa</string>
     <string name="value_location_map_none">Nessuna app di mappe su questa unità</string>
-    <string name="value_destination_hint">Indirizzo, o latitudine, longitudine</string>
-    <string name="value_place_save">Salva luogo</string>
-    <string name="value_place_name">Nome del luogo</string>
+    <string name="value_destination_hint">Indirizzo, latitudine, longitudine o preferito</string>
+    <string name="value_place_save">Aggiungi ai preferiti</string>
+    <string name="value_place_name">Nome del preferito</string>
     <string name="value_place_empty">Inserire o scegliere un punto prima di salvarlo</string>
     <string name="confirm_title">Conferma</string>
     <string name="confirm_yes">Sì</string>

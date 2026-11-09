@@ -20,8 +20,8 @@
     <string name="config_weather_fallback">Fallback position: %1$s</string>
     <string name="config_weather_fallback_none">none</string>
     <string name="config_weather_fallback_title">Weather fallback position</string>
-    <string name="config_weather_fallback_explain">Used by weather conditions when the car has had no GPS position for 24 hours. Pick a saved place, usually home.</string>
-    <string name="config_weather_fallback_empty">No saved place yet. Save one from a location condition first.</string>
+    <string name="config_weather_fallback_explain">Used by weather conditions when the car has had no GPS position for 24 hours. Pick a favourite, usually home.</string>
+    <string name="config_weather_fallback_empty">No favourite yet. Add one from a location condition first.</string>
 
     <!-- Catalogue groups -->
 
@@ -286,9 +286,9 @@
     <string name="value_location_current">Use current position</string>
     <string name="value_location_map">Open map</string>
     <string name="value_location_map_none">No map application on this head unit</string>
-    <string name="value_destination_hint">Address, or latitude, longitude</string>
-    <string name="value_place_save">Save place</string>
-    <string name="value_place_name">Name of the place</string>
+    <string name="value_destination_hint">Address, latitude, longitude or favourite</string>
+    <string name="value_place_save">Add to favourites</string>
+    <string name="value_place_name">Favourite name</string>
     <string name="value_place_empty">Enter or pick a point before saving it</string>
     <string name="confirm_title">Confirmation</string>
     <string name="confirm_yes">Yes</string>
