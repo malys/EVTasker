@@ -22,6 +22,8 @@ import com.evsuite.hardware.saic.SaicClimate
 import com.evsuite.hardware.saic.RadioFrequency
 import com.evsuite.hardware.saic.SaicPhone
 import com.evsuite.hardware.saic.SaicMediaPlayer
+import com.evsuite.hardware.saic.NavigationHandoff
+import com.evsuite.hardware.saic.SaicNavGuidance
 import com.evsuite.hardware.saic.SaicRadio
 import com.evsuite.hardware.saic.SaicVehicleControl
 import com.evsuite.tasker.bridge.BridgeContract
@@ -456,24 +458,28 @@ class DirectExecutor(
      * history: the rule said applied, the driver saw nothing, and the two never met.
      */
     /**
-     * Hands the destination to whatever navigation app the head unit has.
+     * Hands the destination to the head unit's navigation.
      *
-     * `geo:` first — the standard every Android navigation app registers — then
-     * `google.navigation:`, which starts guidance rather than only showing the place. A car
-     * with neither is reported as unsupported with the destination in the detail, so the
-     * history says which rule found no navigator rather than just "failed".
+     * A point goes to the navigation adapter first — the channel EVChargePilot proved on the
+     * car (route taken, guidance started) — and the map is then brought forward. The MG4's
+     * map publishes no `geo:` filter, so an address can only open the map through [MapApps]:
+     * there is no offline geocoder to turn it into a point, and the destination stays behind.
+     * The detail says which happened, so the history does not claim guidance it never started.
      */
     private fun navigate(a: Action): ActionResult {
         if (a.text.isBlank()) {
             return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no destination")
         }
-        // The URI intents come first and carry the destination; the head unit's own map app
-        // has no geo: filter, so MapApps ends with an explicit component. See MapApps.
-        val opened = com.evsuite.tasker.util.MapApps.open(context, a.text)
-        return if (opened != null) {
-            ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, opened)
-        } else {
-            ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no navigation app")
+        val poi = com.evsuite.tasker.engine.ConditionEvaluator.parsePoint(a.text)
+            ?.let { (lat, lon) -> NavigationHandoff.poi(lat, lon) }
+        // A binder call that waits for the navigation app; this runs on the rule's worker.
+        val routed = poi != null &&
+            runCatching { SaicNavGuidance.startNavFromEvRoute(poi) }.getOrDefault(false)
+        val opened = com.evsuite.tasker.util.MapApps.open(context, if (routed) "" else a.text)
+        return when {
+            routed -> ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "route sent, map=${opened ?: "not raised"}")
+            opened != null -> ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED, "map only: $opened")
+            else -> ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "no navigation app")
         }
     }
 

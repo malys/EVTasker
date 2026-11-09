@@ -254,7 +254,9 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:visibility="gone">
 
-            <com.google.android.material.textfield.TextInputEditText
+            <!-- An autocomplete field so a destination can also be picked from the saved
+                 places; with no adapter (every other kind) it behaves as a plain field. -->
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/textInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -301,15 +303,6 @@
                 android:minHeight="@dimen/touch_target"
                 android:textSize="@dimen/text_body" />
         </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Saved places, shown only when there is at least one to pick. -->
-        <Spinner
-            android:id="@+id/placeSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:minHeight="@dimen/touch_target"
-            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/locationActions"

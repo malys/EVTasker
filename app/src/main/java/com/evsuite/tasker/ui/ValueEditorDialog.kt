@@ -486,7 +486,7 @@ object ValueEditorDialog {
                 binding.choiceSpinner.setSelection(index)
                 number = options[index].value.toFloat()
 
-                spec.hintRes.takeIf { it != 0 }?.let { binding.textInput.hint = context.getString(it) }
+                spec.hintRes.takeIf { it != 0 }?.let { binding.textBlock.hint = context.getString(it) }
                 binding.textInput.setText(initialText)
 
                 // A frequency that is not on screen is not part of what the rule says. Keeping
@@ -634,7 +634,7 @@ object ValueEditorDialog {
 
             ValueKind.TEXT -> {
                 binding.textBlock.visibility = View.VISIBLE
-                spec.hintRes.takeIf { it != 0 }?.let { binding.textInput.hint = context.getString(it) }
+                spec.hintRes.takeIf { it != 0 }?.let { binding.textBlock.hint = context.getString(it) }
                 binding.textInput.setText(initialText)
                 binding.textInput.addTextChangedListener { text = it }
             }
@@ -644,7 +644,7 @@ object ValueEditorDialog {
             // halves of one decision on two screens.
             ValueKind.CONFIRM -> {
                 binding.textBlock.visibility = View.VISIBLE
-                spec.hintRes.takeIf { it != 0 }?.let { binding.textInput.hint = context.getString(it) }
+                spec.hintRes.takeIf { it != 0 }?.let { binding.textBlock.hint = context.getString(it) }
                 binding.textInput.setText(initialText)
                 binding.textInput.addTextChangedListener { text = it }
 
@@ -668,7 +668,7 @@ object ValueEditorDialog {
 
             ValueKind.WEBHOOK -> {
                 binding.textBlock.visibility = View.VISIBLE
-                binding.textInput.hint = context.getString(R.string.value_webhook_url)
+                binding.textBlock.hint = context.getString(R.string.value_webhook_url)
                 binding.textInput.inputType = android.text.InputType.TYPE_CLASS_TEXT or
                     android.text.InputType.TYPE_TEXT_VARIATION_URI
                 binding.textInput.setText(initialText)
@@ -912,7 +912,7 @@ object ValueEditorDialog {
         onPoint: (String) -> Unit
     ): String {
         binding.textBlock.visibility = View.VISIBLE
-        binding.textInput.hint = context.getString(hintRes)
+        binding.textBlock.hint = context.getString(hintRes)
         val start = if (prefillWithCurrent) initialText.ifBlank { currentPoint.orEmpty() } else initialText
         binding.textInput.setText(start)
         binding.textInput.addTextChangedListener(onPoint)
@@ -947,26 +947,23 @@ object ValueEditorDialog {
     }
 
     /**
-     * Fills the saved-places dropdown, or hides it when there is nothing saved yet.
+     * Offers the saved places as the field's own dropdown: the driver types an address or a
+     * point, or taps the field and picks a place, and the place's point lands in the field.
      *
-     * Called again after a save so the place just named is immediately pickable, which is
-     * also why the whole spinner is rebuilt rather than the adapter mutated: it has to
-     * re-appear the first time, and one path is easier to be sure of than two.
+     * In the field rather than in a spinner beside it, because that is where the driver looks
+     * for it. Called again after a save so the place just named is immediately pickable.
      */
     private fun bindPlaces(context: Context, binding: DialogValueEditorBinding) {
         val places = com.evsuite.tasker.store.PlaceStore.all(context)
-        if (places.isEmpty()) {
-            binding.placeSpinner.visibility = View.GONE
-            return
-        }
-        // A "pick a place" row first: without it the spinner would claim the driver had
-        // chosen its first entry, and selecting that entry on purpose would fire nothing.
-        val labels = listOf(context.getString(R.string.value_place_pick)) + places.map { it.name }
-        binding.placeSpinner.visibility = View.VISIBLE
-        binding.placeSpinner.adapter = simpleAdapter(context, labels)
-        binding.placeSpinner.setSelection(0)
-        binding.placeSpinner.onItemSelected { index ->
-            if (index > 0) binding.textInput.setText(places[index - 1].point)
+        val field = binding.textInput
+        field.setAdapter(simpleAdapter(context, places.map { it.name }))
+        field.threshold = 1
+        field.setOnClickListener { if (places.isNotEmpty()) field.showDropDown() }
+        // The row is a name; the field must end on the point the place stands for. Looked up
+        // by name, not by position: the adapter filters as the driver types.
+        field.setOnItemClickListener { parent, _, index, _ ->
+            val name = parent.getItemAtPosition(index).toString()
+            places.firstOrNull { it.name == name }?.let { field.setText(it.point, false) }
         }
     }
 

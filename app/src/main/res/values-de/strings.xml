@@ -270,7 +270,6 @@
     <string name="value_location_map">Karte öffnen</string>
     <string name="value_location_map_none">Keine Kartenanwendung auf dieser Headunit</string>
     <string name="value_destination_hint">Adresse oder Breite, Länge</string>
-    <string name="value_place_pick">Gespeicherten Ort wählen</string>
     <string name="value_place_save">Ort speichern</string>
     <string name="value_place_name">Name des Ortes</string>
     <string name="value_place_empty">Punkt eingeben oder wählen, bevor er gespeichert wird</string>

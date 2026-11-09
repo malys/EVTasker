@@ -287,7 +287,6 @@
     <string name="value_location_map">Ouvrir la carte</string>
     <string name="value_location_map_none">Aucune application de cartographie sur cet écran</string>
     <string name="value_destination_hint">Adresse, ou latitude, longitude</string>
-    <string name="value_place_pick">Choisir un lieu enregistré</string>
     <string name="value_place_save">Enregistrer le lieu</string>
     <string name="value_place_name">Nom du lieu</string>
     <string name="value_place_empty">Saisissez ou choisissez un point avant de l’enregistrer</string>

@@ -4,6 +4,7 @@ import android.content.Context
 import com.evsuite.hardware.saic.SaicHub
 import com.evsuite.hardware.saic.SaicMediaPlayer
 import com.evsuite.hardware.saic.SaicNav
+import com.evsuite.hardware.saic.SaicNavGuidance
 import com.evsuite.hardware.saic.SaicPhone
 import com.evsuite.hardware.saic.SaicRadio
 import com.evsuite.hardware.saic.SaicTts
@@ -36,6 +37,8 @@ object VendorServices {
         // adapter answers the odometer, and the map stack's weather service answers the sky.
         // Separate binds, and a car without either simply leaves those two readings absent.
         SaicNav.connect(appContext)
+        // The adapter that takes a destination and starts guidance — NAVIGATE_TO with a point.
+        SaicNavGuidance.connect(appContext)
         SaicWeather.connect(appContext)
     }
 }

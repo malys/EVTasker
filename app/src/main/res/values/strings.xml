@@ -287,7 +287,6 @@
     <string name="value_location_map">Open map</string>
     <string name="value_location_map_none">No map application on this head unit</string>
     <string name="value_destination_hint">Address, or latitude, longitude</string>
-    <string name="value_place_pick">Pick a saved place</string>
     <string name="value_place_save">Save place</string>
     <string name="value_place_name">Name of the place</string>
     <string name="value_place_empty">Enter or pick a point before saving it</string>

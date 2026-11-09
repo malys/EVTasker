@@ -146,7 +146,7 @@ class Labels(
             ValueKind.APP ->
                 "$name : ${appLabel(action.text)}"
 
-            ValueKind.TEXT ->
+            ValueKind.TEXT, ValueKind.DESTINATION ->
                 "$name : ${action.text}"
 
             ValueKind.VARIABLE_FLAG, ValueKind.VARIABLE_NUMBER -> {

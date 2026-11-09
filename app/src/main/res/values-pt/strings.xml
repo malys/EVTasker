@@ -270,7 +270,6 @@
     <string name="value_location_map">Abrir o mapa</string>
     <string name="value_location_map_none">Nenhuma aplicação de mapas nesta unidade</string>
     <string name="value_destination_hint">Endereço, ou latitude, longitude</string>
-    <string name="value_place_pick">Escolher um local guardado</string>
     <string name="value_place_save">Guardar local</string>
     <string name="value_place_name">Nome do local</string>
     <string name="value_place_empty">Introduza ou escolha um ponto antes de o guardar</string>
