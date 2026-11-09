@@ -6,6 +6,21 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.18.3] - 2026-11-09
+
+### Fixed
+
+- **Navigate to.** A point (latitude, longitude) now goes to the car's navigation, which
+  starts guidance, and the map comes to the front. Before, the action only tried a `geo:`
+  link, which the MG4 map does not accept, and at best opened the map with no destination.
+  An address still opens only the map, because nothing on the car can turn it into a point
+  offline. The history says which of the two happened.
+- **Saved places in the destination field.** Type an address or a point, or tap the field
+  and pick a saved place; its point fills the field. The separate list below the field is gone.
+- **Field labels.** The text field of the destination, location, radio, question, webhook
+  and Wi-Fi entries was labelled "Message to show". Each one now shows its own label.
+- The rule summary shows the destination of a *Navigate to* action.
+
 ## [2.18.2] - 2026-11-01
 
 ### Changed
