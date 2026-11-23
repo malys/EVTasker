@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.19.0] - 2026-11-23
+
 ### Added
 
 - **Set the driver** action (CP-098): a rule names who is driving this ignition cycle, and a
