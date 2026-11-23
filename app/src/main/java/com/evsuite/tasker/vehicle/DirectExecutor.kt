@@ -34,6 +34,7 @@ import com.evsuite.tasker.model.ActionResult
 import com.evsuite.hardware.catalog.ActionType
 import com.evsuite.hardware.catalog.MediaCommand
 import com.evsuite.hardware.catalog.VehicleEnums
+import com.evsuite.tasker.store.DriverStore
 import com.evsuite.tasker.store.RuleStore
 import com.evsuite.tasker.ui.ConfirmPrompt
 import com.evsuite.tasker.util.EmulatorDetector
@@ -117,6 +118,7 @@ class DirectExecutor(
         ActionType.MEDIA_CONTROL     -> mediaControl(action)
         ActionType.SET_BLUETOOTH     -> setBluetooth(action)
         ActionType.SET_WIFI          -> setWifi(action)
+        ActionType.SET_DRIVER        -> setDriver(action)
         ActionType.TUNE_RADIO        -> tuneRadio(action)
         ActionType.RADIO_PLAY_PAUSE  -> radioPlayPause(action)
         ActionType.CALL_NUMBER,
@@ -256,6 +258,7 @@ class DirectExecutor(
             ActionType.MEDIA_CONTROL,
             ActionType.SET_BLUETOOTH,
             ActionType.SET_WIFI,
+            ActionType.SET_DRIVER,
             // Three outcomes, not two: an unreadable tuner state is neither a success nor a
             // vehicle that refused, and applyVehicle's boolean cannot say which it was.
             ActionType.RADIO_PLAY_PAUSE,
@@ -682,6 +685,14 @@ class DirectExecutor(
             ConfirmPrompt.Answer.NOT_ASKED ->
                 ActionResult(a.type, false, BridgeContract.VERDICT_DECLINED, "question not shown")
         }
+    }
+
+    /** Not a vehicle write: the name is published to the suite's other apps (CP-098). */
+    private fun setDriver(a: Action): ActionResult {
+        if (!DriverStore.set(context, a.text)) {
+            return ActionResult(a.type, false, BridgeContract.VERDICT_UNSUPPORTED, "invalid driver name")
+        }
+        return ActionResult(a.type, true, BridgeContract.VERDICT_ALLOWED)
     }
 
     private fun notify(a: Action): ActionResult {

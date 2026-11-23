@@ -6,6 +6,12 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Set the driver** action (CP-098): a rule names who is driving this ignition cycle, and a
+  read-only, signature-protected provider publishes it to the suite's other apps
+  (`com.evsuite.tasker.permission.READ_DRIVER`). Forgotten at every ignition.
+
 ## [2.18.4] - 2026-11-09
 
 ### Changed

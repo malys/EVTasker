@@ -9,6 +9,7 @@ import com.evsuite.tasker.engine.RuleEngine
 import com.evsuite.tasker.engine.Variables
 import com.evsuite.tasker.store.HistoryStore
 import com.evsuite.tasker.store.RuleStore
+import com.evsuite.tasker.store.DriverStore
 import com.evsuite.tasker.store.VariableStore
 import com.evsuite.tasker.model.EngineRun
 import com.evsuite.tasker.model.Rule
@@ -174,7 +175,11 @@ object RuleCycle {
     ) {
         // A variable not kept lasts one ignition. Here rather than in the service so the held
         // re-run of the same ignition ([waited]) does not wipe what its first pass set.
-        if (trigger == RuleTrigger.IGNITION_ON.name && waited == null) VariableStore.clearCycle(context)
+        if (trigger == RuleTrigger.IGNITION_ON.name && waited == null) {
+            VariableStore.clearCycle(context)
+            // The driver too (CP-098): a drive no rule names is "unknown", not the last driver.
+            DriverStore.clear(context)
+        }
         val all = RuleStore(context).getAll()
         // Rules wired to a different event are not "skipped", they were never addressed: the
         // history would otherwise fill with a line per rule per ignition saying nothing.

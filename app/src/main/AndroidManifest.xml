@@ -40,6 +40,13 @@
         android:name="com.evsuite.tasker.permission.RECEIVE_HARDKEY"
         android:protectionLevel="signature" />
 
+    <!-- CP-098: the driver a rule set this cycle, published to the suite's other apps
+         (EVChargePilot files trips under it). Signature: only an app signed with the
+         suite's key may read it. Readers declare the same permission themselves. -->
+    <permission
+        android:name="com.evsuite.tasker.permission.READ_DRIVER"
+        android:protectionLevel="signature" />
+
     <!-- Bluetooth: paired list for the editor, and live connection tracking for rules. -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
@@ -207,6 +214,13 @@
             android:name=".service.TaskerRunService"
             android:exported="false"
             android:foregroundServiceType="connectedDevice|location" />
+
+        <!-- Read-only, one row: the driver a rule set this ignition cycle (CP-098). -->
+        <provider
+            android:name=".store.DriverProvider"
+            android:authorities="com.evsuite.tasker.driver"
+            android:exported="true"
+            android:permission="com.evsuite.tasker.permission.READ_DRIVER" />
 
         <receiver
             android:name=".receiver.BootReceiver"

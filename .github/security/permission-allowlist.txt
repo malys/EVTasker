@@ -81,6 +81,10 @@ android.permission.SEND_SMS
 # Signature permission defined by EVTasker to reject forged OEM hard-key broadcasts.
 com.evsuite.tasker.permission.RECEIVE_HARDKEY
 
+# CP-098: defined here, signature-level, guards the read-only driver provider. Only an app
+# signed with the suite key reads the driver name; nothing can write it from outside.
+com.evsuite.tasker.permission.READ_DRIVER
+
 # --- Optional EVProfile bridge (profile action only) ---
 # Signature-level, obtained solely because both APKs share the platform key. Used only to
 # apply an EVProfile profile when EVProfile is installed.

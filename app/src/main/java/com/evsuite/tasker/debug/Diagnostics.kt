@@ -329,7 +329,7 @@ object Diagnostics {
         // Whether the target rule still exists, or whether anything is playing to receive
         // the key, is a per-rule matter this screen does not know.
         ActionType.ENABLE_RULE, ActionType.DISABLE_RULE, ActionType.MEDIA_CONTROL,
-        ActionType.SET_BLUETOOTH, ActionType.SET_WIFI,
+        ActionType.SET_BLUETOOTH, ActionType.SET_WIFI, ActionType.SET_DRIVER,
         ActionType.SET_VARIABLE_FLAG, ActionType.SET_VARIABLE_NUMBER -> Reason.NONE
 
         // Not a vendor service: the message leaves through the paired phone over the

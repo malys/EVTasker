@@ -289,6 +289,13 @@ because nobody types coordinates on a head unit. No fix means the condition is *
 not "somewhere else" — otherwise every "when I am NOT at home" rule would fire on the
 driveway while the GPS was still acquiring. The coordinates never leave the car.
 
+**Set the driver** names who is driving this ignition cycle — typically a rule *hands-free
+device is* your phone ⇒ *Set the driver* "Alice". The name is forgotten at every ignition, so
+a drive no rule names has no driver rather than the last one. Unlike a variable it is
+published: a read-only provider guarded by a `signature` permission lets the suite's other
+apps read it (EVChargePilot files trips and eco scores under it). Nothing else can read it,
+nothing outside EVTasker can change it, and it is never written to the car.
+
 Value controls open on **what the car reports right now** — the brightness slider starts where
 the screen already is, not at 5%. Reopening a saved action shows what the rule says instead,
 so editing a rule cannot quietly rewrite it.
