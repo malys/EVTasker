@@ -48,6 +48,11 @@ class RuleCycleClockTest {
             ),
         )
         assertEquals(setOf(Input.BLUETOOTH), RuleCycle.inputsRead(profile))
+        // Two named phones: the ranking is an input too (CP-100).
+        val twoPhones = profile.copy(
+            elseIf = listOf(Branch(conditions = listOf(Condition(ConditionType.BT_DEVICE_HANDSFREE, text = "a4:e2:87:cf:72:3b")))),
+        )
+        assertEquals(setOf(Input.BLUETOOTH, Input.PHONE_PRIORITY), RuleCycle.inputsRead(twoPhones))
         assertEquals(setOf(Input.LOCATION), RuleCycle.inputsRead(gate))
     }
 
@@ -60,5 +65,28 @@ class RuleCycleClockTest {
                 Rule(name = "r", actions = listOf(beep), elseActions = listOf(Action(ActionType.SHOW_PROFILE_PICKER)))
             )
         )
+    }
+
+    @Test fun `phones rank by the rule's cases, and only a lower phone alone waits for a higher one`() {
+        val cris = "88:46:04:6F:D1:6A"
+        val syl = "A4:E2:87:CF:72:3B"
+        val rule = Rule(
+            name = "Profil",
+            conditions = listOf(
+                Condition(ConditionType.BT_DEVICE_HANDSFREE, text = cris),
+                Condition(ConditionType.BT_DEVICE_CONNECTED, text = cris),
+            ),
+            elseIf = listOf(
+                Branch(conditions = listOf(Condition(ConditionType.BT_DEVICE_CONNECTED, text = syl.lowercase()))),
+                // "Not connected" names no phone to wait for.
+                Branch(conditions = listOf(Condition(ConditionType.BT_DEVICE_CONNECTED, flag = false, text = "11:22:33:44:55:66"))),
+            ),
+        )
+        val ranking = RuleCycle.phonePriority(rule)
+        assertEquals(listOf(cris, syl), ranking)
+        assertTrue(RuleCycle.higherPhoneMissing(ranking, setOf(syl)))
+        assertFalse(RuleCycle.higherPhoneMissing(ranking, setOf(cris)))
+        assertFalse(RuleCycle.higherPhoneMissing(ranking, setOf(cris, syl)))
+        assertFalse(RuleCycle.higherPhoneMissing(ranking, emptySet()))
     }
 }

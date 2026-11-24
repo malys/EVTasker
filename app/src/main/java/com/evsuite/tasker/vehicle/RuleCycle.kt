@@ -137,8 +137,19 @@ object RuleCycle {
         /** The RTC default, until the network or GPS corrects it. Waited for at any time. */
         CLOCK(5 * 60_000L),
 
-        /** A slow boot links the phone after the ignition cycle has run (2026-10-17). */
-        BLUETOOTH(20_000L),
+        /**
+         * A slow boot links the phone after the ignition cycle has run (2026-10-17). 45 s, not
+         * 20: on 2026-11-24 the profile rule twice fell to its "else" at 16:07 and 17:37 with
+         * the phone linking later; the delay itself was not logged, so this is a knob.
+         */
+        BLUETOOTH(45_000L),
+
+        /**
+         * CP-100. A rule naming several phones ranks them by its cases, top first, as MG4Link
+         * ranks its phones: when a lower one linked first, the higher one is given this long
+         * to join before the rule picks, so two phones in the car always give the same driver.
+         */
+        PHONE_PRIORITY(10_000L),
 
         /** A cold receiver: the gate button found no fix for 20 s after boot (2026-10-16). */
         LOCATION(60_000L),
@@ -155,6 +166,11 @@ object RuleCycle {
     private val BT_CONDITIONS = setOf(
         ConditionType.BT_DEVICE_CONNECTED, ConditionType.ANY_BT_CONNECTED,
         ConditionType.BT_DEVICE_ONBOARD, ConditionType.BT_DEVICE_HANDSFREE,
+    )
+
+    /** The Bluetooth conditions that name one phone by its address. */
+    private val NAMED_BT_CONDITIONS = setOf(
+        ConditionType.BT_DEVICE_CONNECTED, ConditionType.BT_DEVICE_ONBOARD, ConditionType.BT_DEVICE_HANDSFREE,
     )
 
     private val VARIABLE_CONDITIONS = setOf(ConditionType.VARIABLE_FLAG, ConditionType.VARIABLE_NUMBER)
@@ -201,11 +217,10 @@ object RuleCycle {
         // A manual test answers now, inputs or not: the user is looking at the result.
         if (trigger != MANUAL && waited == null) {
             val app = context.applicationContext
-            val held = rules.associateWith { rule -> inputsRead(rule).filter { missing(app, it, trigger) } }
+            val held = rules.associateWith { rule -> inputsRead(rule).filter { missing(app, it, trigger, listOf(rule)) } }
                 .filterValues { it.isNotEmpty() }
             if (held.isNotEmpty()) {
-                waitForInputs(app, trigger, eventReadings, held.keys.map { it.id }.toSet(),
-                    held.values.flatten().toSet())
+                waitForInputs(app, trigger, eventReadings, held.keys.toList(), held.values.flatten().toSet())
             }
             rules = rules - held.keys
             if (rules.isEmpty()) return
@@ -283,19 +298,46 @@ object RuleCycle {
             when {
                 sun -> listOf(Input.CLOCK, Input.LOCATION)
                 it.type in WallClock.CONDITIONS -> listOf(Input.CLOCK)
-                it.type in BT_CONDITIONS -> listOf(Input.BLUETOOTH)
+                it.type in BT_CONDITIONS ->
+                    if (phonePriority(rule).size > 1) listOf(Input.BLUETOOTH, Input.PHONE_PRIORITY)
+                    else listOf(Input.BLUETOOTH)
                 it.type == ConditionType.LOCATION_WITHIN -> listOf(Input.LOCATION)
                 else -> emptyList()
             }
         }
 
-    private fun missing(context: Context, input: Input, trigger: String): Boolean {
+    /** CP-100. The phones [rule] names, in priority order: its cases top to bottom. */
+    internal fun phonePriority(rule: Rule): List<String> =
+        rule.branches.flatMap { it.conditions }
+            .filter { it.type in NAMED_BT_CONDITIONS && it.flag && it.text.isNotBlank() }
+            .map { it.text.trim().uppercase() }
+            .distinct()
+
+    /** Whether a phone ranked above every connected one in [priority] may still join. */
+    internal fun higherPhoneMissing(priority: List<String>, connected: Set<String>): Boolean =
+        priority.indexOfFirst { it in connected } > 0
+
+    /** Every phone the car reports linked, by any of the three readings the conditions use. */
+    private fun linkedPhones(context: Context): Set<String> =
+        (BtTracker.snapshot(context) + BtDevices.activeHandsFree(context).orEmpty() +
+            BtOnboard.onboard(context).orEmpty()).mapTo(mutableSetOf()) { it.uppercase() }
+
+    private fun missing(context: Context, input: Input, trigger: String, rules: Collection<Rule>): Boolean {
         val booting = SystemClock.elapsedRealtime() < BOOT_WINDOW_MS
         return when (input) {
             Input.CLOCK -> !WallClock.isSet()
             // At ignition only: a phone missing at P or at a button press is simply not there.
-            Input.BLUETOOTH -> booting && trigger == RuleTrigger.IGNITION_ON.name &&
-                BtTracker.snapshot(context).isEmpty()
+            // CP-100: a rule naming phones waits for one of them, not for any device at all — a
+            // watch or the other driver's phone linking first used to end the wait.
+            Input.BLUETOOTH -> booting && trigger == RuleTrigger.IGNITION_ON.name && run {
+                val named = rules.flatMap(::phonePriority)
+                val linked = linkedPhones(context)
+                if (named.isEmpty()) linked.isEmpty() else named.none { it in linked }
+            }
+            Input.PHONE_PRIORITY -> booting && trigger == RuleTrigger.IGNITION_ON.name && run {
+                val linked = linkedPhones(context)
+                rules.any { higherPhoneMissing(phonePriority(it), linked) }
+            }
             Input.LOCATION -> booting && CarLocation.lastKnown(context) == null
         }
     }
@@ -313,9 +355,10 @@ object RuleCycle {
         context: Context,
         trigger: String,
         eventReadings: Map<String, Any>,
-        ruleIds: Set<String>,
+        heldRules: List<Rule>,
         inputs: Set<Input>,
     ) {
+        val ruleIds = heldRules.map { it.id }.toSet()
         val key = "$trigger ${ruleIds.sorted()} $eventReadings"
         if (!waiting.add(key)) {
             AppLogger.i(TAG, "$trigger already waiting for ${inputs.joinToString()} — repeat dropped")
@@ -327,7 +370,7 @@ object RuleCycle {
             try {
                 val start = SystemClock.elapsedRealtime()
                 fun late() = inputs.filter {
-                    missing(context, it, trigger) && SystemClock.elapsedRealtime() - start < it.waitMs
+                    missing(context, it, trigger, heldRules) && SystemClock.elapsedRealtime() - start < it.waitMs
                 }
                 while (late().isNotEmpty()) Thread.sleep(INPUT_POLL_MS)
                 val waitedS = (SystemClock.elapsedRealtime() - start) / 1000
@@ -335,7 +378,7 @@ object RuleCycle {
                     AppLogger.i(TAG, "ignition changed during the ${waitedS} s wait — $trigger rules dropped")
                     return@thread
                 }
-                val still = inputs.filter { missing(context, it, trigger) }
+                val still = inputs.filter { missing(context, it, trigger, heldRules) }
                 AppLogger.i(TAG, "after ${waitedS} s, ${if (still.isEmpty()) "inputs ready" else "still missing ${still.joinToString()}"} — running held $trigger rules")
                 run(context, trigger, eventReadings, waited = ruleIds)
             } finally {
