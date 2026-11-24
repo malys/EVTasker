@@ -6,6 +6,20 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.20.0] - 2026-11-24
+
+### Added
+
+- **Phone priority at ignition (CP-100).** A rule naming several phones ranks them by its cases,
+  top first, as MG4Link ranks its phones. When a lower phone links first, the rule waits up to
+  10 s for a higher one before it picks, so two phones in the car always give the same case.
+
+### Fixed
+
+- **The profile rule no longer falls to its "else" while the phone is still linking.** At
+  ignition a rule naming phones waits for one of *them* (up to 45 s, was 20 s for any device),
+  not for any Bluetooth device: a watch or the other driver's phone ended the wait early.
+
 ## [2.19.0] - 2026-11-23
 
 ### Added
