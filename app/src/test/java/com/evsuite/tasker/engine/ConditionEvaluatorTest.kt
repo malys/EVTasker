@@ -18,6 +18,16 @@ class ConditionEvaluatorTest {
         Snapshot(readings = readings.toMap())
 
     @Test
+    fun `a low tyre matches, a healthy one does not, and no reading is unavailable`() {
+        val below = Condition(ConditionType.TYRE_PRESSURE_LOWEST, op = CompareOp.LT, number = 200f)
+        val key = SnapshotKeys.KEY_TYRE_PRESSURE_LOWEST_KPA
+        assertEquals(ConditionOutcome.MATCH, ConditionEvaluator.evaluate(below, snapshot(key to 180f)))
+        assertEquals(ConditionOutcome.NO_MATCH, ConditionEvaluator.evaluate(below, snapshot(key to 230f)))
+        // The reader omits the key unless all four wheels answered: never "fine" by default.
+        assertEquals(ConditionOutcome.UNAVAILABLE, ConditionEvaluator.evaluate(below, snapshot()))
+    }
+
+    @Test
     fun `physical button condition is unavailable outside a button event`() {
         val condition = Condition(ConditionType.PHYSICAL_BUTTON, number =
             PhysicalButtonEventDecoder.Button.STAR_LEFT.codes.first().toFloat(), text = "LONG")

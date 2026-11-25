@@ -8,6 +8,7 @@ import com.evsuite.hardware.EVHardware
 import com.evsuite.hardware.catalog.SnapshotKeys
 import com.evsuite.hardware.catalog.WeatherConditions
 import com.evsuite.hardware.catalog.VehicleEnums
+import com.evsuite.hardware.telemetry.TirePressureSnapshot
 import com.evsuite.hardware.saic.SaicCharging
 import com.evsuite.hardware.saic.SaicClimate
 import com.evsuite.hardware.saic.SaicRadio
@@ -155,6 +156,16 @@ object VehicleReader {
 
             put(SnapshotKeys.KEY_FIRMWARE_GEN, FirmwareInfo.getGeneration().name)
             putAll(vendorReadings())
+            // CR-050: four reads, so only when a rule asks. Absent unless all four wheels
+            // answered — a silent sensor must not read as a healthy tyre.
+            if (wants(wanted, SnapshotKeys.KEY_TYRE_PRESSURE_LOWEST_KPA)) {
+                TirePressureSnapshot(
+                    frontLeftKpa = EVHardware.getTirePressureKpa(EVHardware.Wheel.FRONT_LEFT),
+                    frontRightKpa = EVHardware.getTirePressureKpa(EVHardware.Wheel.FRONT_RIGHT),
+                    rearLeftKpa = EVHardware.getTirePressureKpa(EVHardware.Wheel.REAR_LEFT),
+                    rearRightKpa = EVHardware.getTirePressureKpa(EVHardware.Wheel.REAR_RIGHT),
+                ).lowestKpa?.let { put(SnapshotKeys.KEY_TYRE_PRESSURE_LOWEST_KPA, it) }
+            }
             putAll(headUnitReadings(context, fix, wanted))
             putAll(platformReadings(context))
         }
