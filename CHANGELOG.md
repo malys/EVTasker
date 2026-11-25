@@ -6,6 +6,14 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.21.0] - 2026-11-25
+
+### Added
+
+- **Lowest tyre pressure** condition (CR-050), in kPa, read through EVHardware (SWI68). It has no
+  answer unless all four wheels reported, so a silent sensor never reads as a healthy tyre.
+  The threshold is yours; read-only.
+
 ## [2.20.0] - 2026-11-24
 
 ### Added
@@ -24,9 +32,6 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
-- **Lowest tyre pressure** condition (CR-050), in kPa, read through EVHardware (SWI68). It has no
-  answer unless all four wheels reported, so a silent sensor never reads as a healthy tyre.
-  The threshold is yours; read-only.
 - **Set the driver** action (CP-098): a rule names who is driving this ignition cycle, and a
   read-only, signature-protected provider publishes it to the suite's other apps
   (`com.evsuite.tasker.permission.READ_DRIVER`). Forgotten at every ignition.
