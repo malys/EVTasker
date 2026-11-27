@@ -226,7 +226,10 @@
             android:name=".receiver.BootReceiver"
             android:exported="true"
             android:directBootAware="true">
-            <intent-filter>
+            <!-- BOOT_COMPLETED is ordered: receivers are woken one after the other, highest
+                 priority first, each cold-starting its process. Dozens of SAIC apps hold it,
+                 and EVTasker started at boot + 35 s on 2026-11-26; ignition rules wait on it. -->
+            <intent-filter android:priority="1000">
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
