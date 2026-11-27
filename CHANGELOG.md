@@ -6,6 +6,17 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+## [2.22.0] - 2026-11-27
+
+### Changed
+
+- **Faster ignition rules.** EVTasker asks to be first when the head unit finishes booting. What
+  every case of a rule does, "else" included, runs at once when the rule only waits for a
+  higher-ranked phone: the regeneration level no longer waits the 10 s. Rules that read the
+  weather run after the others, so a cold-morning rule never waits on a forecast.
+- **Weather.** The car's weather service gets 5 s and a second try instead of 2 s, and the log
+  says for each try whether it answered and how fast.
+
 ## [2.21.0] - 2026-11-25
 
 ### Added
