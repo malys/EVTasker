@@ -225,7 +225,17 @@ object RuleCycle {
             rules = rules - held.keys
             if (rules.isEmpty()) return
         }
+        // The weather query can take ~10 s (5 s and a retry) when the service is slow: rules that
+        // read it go in a pass of their own, after the others, so "cold → heated wheel" does not
+        // wait on a forecast (2026-11-26: the wheel came 2.2 s late behind a 2 s query).
+        val (slow, fast) = rules.partition(::readsWeather)
+        for (pass in listOf(fast, slow)) if (pass.isNotEmpty()) evaluate(context, trigger, eventReadings, pass)
+    }
 
+    internal fun readsWeather(rule: Rule): Boolean =
+        rule.branches.any { branch -> branch.conditions.any { it.type == ConditionType.WEATHER_NOW } }
+
+    private fun evaluate(context: Context, trigger: String, eventReadings: Map<String, Any>, rules: List<Rule>) {
         val startedAt = System.currentTimeMillis()
         // Bound only when a rule of this pass can use it: at boot the bind cold-starts EVProfile
         // and waits up to 8 s, ahead of every action — including the ones that never need it.

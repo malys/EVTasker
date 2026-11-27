@@ -56,6 +56,19 @@ class RuleCycleClockTest {
         assertEquals(setOf(Input.LOCATION), RuleCycle.inputsRead(gate))
     }
 
+    @Test fun `a weather condition in any case puts the rule in the late pass`() {
+        assertFalse(RuleCycle.readsWeather(Rule(name = "cold", conditions = listOf(Condition(ConditionType.OUTSIDE_TEMP, number = 10f)))))
+        assertTrue(
+            RuleCycle.readsWeather(
+                Rule(
+                    name = "sky",
+                    conditions = listOf(Condition(ConditionType.DAY_OF_WEEK)),
+                    elseIf = listOf(Branch(conditions = listOf(Condition(ConditionType.WEATHER_NOW, number = 1f))))
+                )
+            )
+        )
+    }
+
     @Test fun `EVProfile is bound only for a pass that has a profile action, else included`() {
         val beep = Action(ActionType.entries.first { it != ActionType.APPLY_PROFILE && it != ActionType.SHOW_PROFILE_PICKER })
         assertFalse(RuleCycle.usesProfileBridge(Rule(name = "r", actions = listOf(beep))))
