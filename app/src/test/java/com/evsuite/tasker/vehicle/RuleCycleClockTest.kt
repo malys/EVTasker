@@ -69,6 +69,25 @@ class RuleCycleClockTest {
         )
     }
 
+    @Test fun `what every case of the profile rule does runs ahead, and only once`() {
+        val regen = Action(ActionType.SET_REGEN_LEVEL, number = 2, payload = "")
+        fun driver(name: String) = Action(ActionType.SET_DRIVER, text = name, payload = "")
+        val profile = Rule(
+            name = "Profil",
+            actions = listOf(Action(ActionType.SET_MEDIA_VOLUME, number = 6), regen, driver("Cris")),
+            elseIf = listOf(Branch(actions = listOf(regen, Action(ActionType.SET_AEB_ENABLED, flag = false), driver("Syl")))),
+            elseActions = listOf(driver("Cris"), regen),
+        )
+        assertEquals(listOf(regen), RuleCycle.commonActions(profile))
+        val late = RuleCycle.without(profile, listOf(regen))
+        assertFalse((late.branches.flatMap { it.actions } + late.otherwise).contains(regen))
+        assertEquals(listOf(driver("Cris")), late.otherwise)
+        // No "else": a rule matching nothing runs nothing, so nothing may run ahead.
+        assertEquals(emptyList<Action>(), RuleCycle.commonActions(profile.copy(elseActions = null)))
+        val wait = Action(ActionType.DELAY, number = 5)
+        assertEquals(emptyList<Action>(), RuleCycle.commonActions(Rule(name = "w", actions = listOf(wait), elseActions = listOf(wait))))
+    }
+
     @Test fun `EVProfile is bound only for a pass that has a profile action, else included`() {
         val beep = Action(ActionType.entries.first { it != ActionType.APPLY_PROFILE && it != ActionType.SHOW_PROFILE_PICKER })
         assertFalse(RuleCycle.usesProfileBridge(Rule(name = "r", actions = listOf(beep))))

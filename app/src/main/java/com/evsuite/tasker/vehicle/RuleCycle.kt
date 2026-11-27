@@ -11,6 +11,7 @@ import com.evsuite.tasker.store.HistoryStore
 import com.evsuite.tasker.store.RuleStore
 import com.evsuite.tasker.store.DriverStore
 import com.evsuite.tasker.store.VariableStore
+import com.evsuite.tasker.model.Action
 import com.evsuite.tasker.model.EngineRun
 import com.evsuite.tasker.model.Rule
 import com.evsuite.tasker.model.RuleTrigger
@@ -195,6 +196,8 @@ object RuleCycle {
             VariableStore.clearCycle(context)
             // The driver too (CP-098): a drive no rule names is "unknown", not the last driver.
             DriverStore.clear(context)
+            // A held run abandoned with the last ignition must not strip this one's actions.
+            early.clear()
         }
         val all = RuleStore(context).getAll()
         // Rules wired to a different event are not "skipped", they were never addressed: the
@@ -209,7 +212,9 @@ object RuleCycle {
                     (ruleId == null || it.id == ruleId)
             }
         }
-        if (waited != null) rules = rules.filter { it.id in waited }
+        if (waited != null) {
+            rules = rules.filter { it.id in waited }.map { rule -> early.remove(rule.id)?.let { without(rule, it) } ?: rule }
+        }
         if (rules.isEmpty()) {
             AppLogger.i(TAG, "no rules for $trigger (${all.size} total) — skipped")
             return
@@ -219,6 +224,15 @@ object RuleCycle {
             val app = context.applicationContext
             val held = rules.associateWith { rule -> inputsRead(rule).filter { missing(app, it, trigger, listOf(rule)) } }
                 .filterValues { it.isNotEmpty() }
+            // A rule waiting only for a higher-ranked phone already has a linked one, so every
+            // case can be decided now; what all of them do, the "else" included, runs at once
+            // instead of after the wait (2026-11-27: regen 2 waited 10 s in every Profil case).
+            val ahead = held.filterValues { it.toSet() == setOf(Input.PHONE_PRIORITY) }.keys
+                .associate { it.id to commonActions(it) }.filterValues { it.isNotEmpty() }
+            early.putAll(ahead)
+            val aheadRules = held.keys.filter { it.id in ahead }
+                .map { Rule(id = it.id, name = it.name, trigger = it.trigger, actions = ahead.getValue(it.id)) }
+            if (aheadRules.isNotEmpty()) evaluate(context, trigger, eventReadings, aheadRules)
             if (held.isNotEmpty()) {
                 waitForInputs(app, trigger, eventReadings, held.keys.toList(), held.values.flatten().toSet())
             }
@@ -230,6 +244,31 @@ object RuleCycle {
         // wait on a forecast (2026-11-26: the wheel came 2.2 s late behind a 2 s query).
         val (slow, fast) = rules.partition(::readsWeather)
         for (pass in listOf(fast, slow)) if (pass.isNotEmpty()) evaluate(context, trigger, eventReadings, pass)
+    }
+
+    /** The actions held rules already ran ahead of their wait, so the late run skips them. */
+    private val early = java.util.concurrent.ConcurrentHashMap<String, List<Action>>()
+
+    /**
+     * The actions every case of [rule] runs, "else" included, or none when it has no "else"
+     * (no match then runs nothing). Never a wait or a question: those order what follows.
+     */
+    internal fun commonActions(rule: Rule): List<Action> {
+        if (rule.otherwise.isEmpty()) return emptyList()
+        val cases = rule.branches.map { it.actions } + listOf(rule.otherwise)
+        return cases.first().distinct()
+            .filter { it.type != ActionType.DELAY && it.type != ActionType.ASK_CONFIRM }
+            .filter { action -> cases.all { action in it } }
+    }
+
+    /** [rule] with each of [ran] taken out once from every case. */
+    internal fun without(rule: Rule, ran: List<Action>): Rule {
+        fun strip(actions: List<Action>) = actions.toMutableList().apply { ran.forEach { remove(it) } }.toList()
+        return rule.copy(
+            actions = strip(rule.actions),
+            elseIf = rule.elseIf?.map { it.copy(actions = strip(it.actions)) },
+            elseActions = rule.elseActions?.let(::strip),
+        )
     }
 
     internal fun readsWeather(rule: Rule): Boolean =
